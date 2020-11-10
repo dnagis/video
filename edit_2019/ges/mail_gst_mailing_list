@@ -1,0 +1,139 @@
+https://lists.freedesktop.org/mailman/listinfo/gstreamer-devel
+
+
+fin janvier c'est toujours la merde pour la mailing list. Envoyer avec gmail à la list puis répondre avec:
+To: gstreamer-devel@lists.freedesktop.org
+Subject: Re: ges-launch and transition type
+
+
+première inscription 291219 gmail. Mais pb de réponse dans le thread avec gmail via web. 
+compilé un client: claws-mail, (tarball claws-mail_vvnx).
+pb = le client arrive à recevoir mais pas à envoyer avec gmail.
+free marche mais résiliation donc doute sur continuité de ma boîte mail. inscription le 080120 à la liste avec free: maxthaurac@free.fr	hautpoul
+je demande désinscription de gmail le 22 janvier car ça me pollue pas mal
+Je mets du temps mais je passe à hotmail
+
+	nouvelle adresse 21 janvier 2020 vvnx264 (dans la config de claws) 
+	mdp hotmail pas original: là où j'emménage + code postal minuscule pas de caractères spéciaux)
+	mdp de la mailing list gstreamer pour cette adresse hotmail: closbazin2
+
+
+Mail3 - hotmail
+
+
+ges rendering and vaapi
+
+I come before you humbly gstreamer wizards... Hoping I will not waste your time!
+
+I would like to run a ges-launch on two (or more) h264 coded video clips to render a h264 coded video output, using vaapi acceleration.
+
+Input clips 1.mp4 and 2.mp4 -> gst-discoverer returns on them "container: video/quicktime video/x-h264 ...", they show no problem, are readable, 20s long, and have been created using gstreamer.
+When I run:
+ges-launch-1.0 +clip 1.mp4 inpoint=2 duration=4 +clip 2.mp4 inpoint=2 duration=4 -o out.mp4 -f "video/quicktime:video/x-h264"
+out.mp4 is 8 seconds long. But it shows a very brief black frame output (less than a second), the expected cut from 1.mp4 which lasts about half of the 8s and black frames until the end.
+
+if input clips are video/x-raw I get the expected results. (but raw and disk space...)
+
+****à ce stade je fais un essai avec les .MOV et j'ai un gros moment de solitude:
+ça marche si les clips sont les .MOV de dji....
+ges-launch-1.0 +clip DJI_0157.MOV inpoint=65 duration=10 +clip DJI_0158.MOV inpoint=12 duration=5 -o out.mp4 -f "video/quicktime:video/x-h264"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Mail 2 que j'envoie avec free:
+
+ges-launch transition
+
+Hello gstreamer lovers!
+
+I'd love to get video transitions working from the ges-launch command line.
+
+Tried with several video formats (ogg/theora - mp4/x-raw): no luck (Ijust get a regular cut: direct switching from one clip to the other).
+
+even with test-clips it doesn't work for me (no transition effect observed):
+
+ges-launch-1.0 +test-clip red duration=5 +transition crossfade duration=2 +test-clip blue duration=5
+
+is my syntax wrong? am I missing something?
+
+I use a self compiled 1.16.0 gstreamer version, and of course I can provide any debug / log 
+
+Thank you for reading this!
+
+cheers!
+
+Vince
+
+
+ 
+
+
+###Premier Run à Mazamet avec gmail (difficile pour les threads)
+pour répondre dans un thread: cliquer en haut du dernier msg sur le nom du gars qui a répondu?
+c'est un lien mailto: (mailto protocol) qui ressemble à:
+mailto:gstreamer-devel@lists.freedesktop.org?Subject=Re:%20ges-launch%20tutorial&In-Reply-To=<CANYYV1zk=MXoZe+tp8VPte0J1cEZhRfU2OHnQ878igddA9kApg@mail.gmail.com>
+
+définir gmail dans chrome comme le handler par défaut pour ce protocole:
+gmail chrome register protocol handler mailto
+quand tu ouvres gmail à droite de la barre d'adresse il y a un double diamond
+
+j'espère que ma réponse du 30/12/19 (remerciement) est passée dans le bon thread, 
+
+
+gstreamer-devel@lists.freedesktop.org envoyé le 29 12 19
+
+ges-launch tutorial
+
+Hello
+
+The actual https://gstreamer.freedesktop.org ges-launch tutorial says:
+
+"ges-launch-1.0 +clip /path/to/media inpoint=4.0
+
+Assuming "media" is a 10 second long media sample, this will play the sample from the 4th second to the 10th, resulting in a 6-seconds long playback."
+
+However, my experience is:
+
+ges-launch-1.0 +clip file.ogg inpoint=2
+>>>fails with error: ERROR: Could not create timeline because: Couldn't add clip with id file:///path/to/file.ogg to layer with priority -1
+
+ges-launch-1.0 +clip file.ogg inpoint=2 duration=2
+>>>succeeds (I see the preview with correct cut)
+
+
+file.ogg contains one video/x-theora stream and is 0:00:24.024000000 long
+
+
+looking through the debug log I find in the case that fails :
+
+0:00:00.140059961  3054      0x111ce30 INFO                 gestree ges-timeline-tree.c:403:check_track_elements_overlaps_and_values: videourisource0<0x12ea190> [ 0:00:00.000000000 (0:00:02.000000000) - 0:00:24.024000000(0:00:24.024000000) layer: 0]  inpoint + duration 26024000000 > max_duration 24024000000
+0:00:00.140176027  3054      0x111ce30 INFO                 gestree ges-timeline-tree.c:403:check_track_elements_overlaps_and_values: videourisource0<0x12ea190> [ 0:00:00.000000000 (0:00:02.000000000) - 0:00:24.024000000(0:00:24.024000000) layer: 0]  inpoint + duration 26024000000 > max_duration 24024000000
+
+my guess is that the default duration is the total length, therefore an inpoint > 0 will result in failure
+
+indeed:
+ges-launch-1.0 +clip file.ogg inpoint=0
+>>>succeeds
+
+I am using a self compiled 1.16.0 gstreamer version 
+
+am I missing something?
+
+or should the tutorial be modified, as this is misleading (and it's one of the first examples: newcomers could want to run away?) 
+
+please apologize for my bad english, and if this is not the right place to post
+
+cheers!

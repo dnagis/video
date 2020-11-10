@@ -1,0 +1,91 @@
+Documentation:
+https://www.w3schools.com/TagS/tag_video.asp #tuto
+https://www.w3schools.com/TagS/ref_av_dom.asp #plus proche de la doc de reference
+https://html.spec.whatwg.org/multipage/media.html#htmlvideoelement #doc de ref qui a l'air archi exhaustif
+
+
+
+28 11 19 - Embrun
+Slow food. Piece by piece. Créer des briques Avant d'attaquer: juste envie pour commencer d'un element genre div timeline dans laquelle je puisse select au curseur
+à la ffplay. Puis placer les blocs sélectionnés bout à bout.
+Envie de tester aussi node-ffmpeg et les fonctionnalités videos html5
+
+--> Fouillage: qqun a déjà dû créer des elements html pour selectionner des blocs, peut être audio ou video ou autre chose. Type d'element?
+	<video> en html5 sort en premier avec les keywords of course...
+	
+--> Fouillage: video -> timeline il faut deux fonctions: une série de jpegs (ffmpeg le fait), mais surtout affichage frame pour select cut.
+
+--> Partir d'un mp4 du drone, rester en mp4 / h264 mais léger niveau pixels.
+	https://trac.ffmpeg.org/wiki/Hardware/VAAPI
+	ffmpeg -t 120 -hwaccel vaapi -hwaccel_output_format vaapi -i 7.mp4 -vf scale_vaapi=320:-1 -c:v h264_vaapi -b:v 4000k output.mp4
+
+--> element <video> 	
+	Fichier local: en relatif marche (html à côté), en absolu a l'air de marcher aussi avec src="/root/output.mp4"
+	mp4 / h264 ok. les attributs de taille width/height: inutile.
+	le control permet de seeker à la précision = seconde avec les touches droite/gauche
+	mais apparament ya moyen d'aller à la milliseconde:
+	https://stackoverflow.com/questions/44445812/is-it-possible-to-get-the-current-html5-video-timeframe-with-milliseconds
+		faut fouiller les animations et le DOM concernant les windows: requestAnimationFrame
+	
+--> créé un div avec du mouseOver qui renvoie la position au dessus pour pourcentage de seek dans la video 
+	-> **seek.html**
+	
+--> image représentative du cut pour mon élément --> une notion proche: https://html.spec.whatwg.org/multipage/media.html#htmlvideoelement à posterFrame
+	https://stackoverflow.com/questions/7323053/dynamically-using-the-first-frame-as-poster-in-html5-video
+	
+--> listen event -> pour commencer, créer un div à un endroit qui dure n secondes et qui soit un clone de l'element video mais qui commence à l'endroit
+		que j'ai sélectionné. Réagir au onkeystroke sur l'élément video (essayer avec n'importe quoi d'abord). Détecter quelle touche j'ai utilisé.
+	keypress j'essaie rapidos à Briançon mais marche super mal. stop, faire du click. https://www.w3schools.com/jsref/event_onkeypress.asp
+		https://developer.mozilla.org/fr/docs/Web/API/Document/keypress_event -> marche sur un hello world mais j'y arrive pas sur <video> 
+	monelement.onclick = mafonction; marche très bien (ordre définition après pas grave)
+	
+--> créer un element on click: element video qui start à la position récoltée dans la fonction.
+	créer un element comme ça out of nowhere: jquery je suppose? 
+	https://www.w3schools.com/jquery/jquery_dom_add.asp -> je fais un playground jquery add dans **add.html**
+	ok pour créer un <p> tu document.createElement("p") puis ton_element.innerHTML = "du texte!" sinon tu verras rien.
+	pour video ça va peut-être être un poil plus compliqué: je veux TOUT régler et ensuite TOUT récupérer au moment de lancer le parsing final. Yaurait pas
+	des properties get/set par hasard??? genre set la source, set le début, ...
+	https://developer.mozilla.org/fr/docs/Web/HTML/Element/video --> qu'est ce que je peux set dans les propriétés de ce truc???
+	javascript c'est juste magique: ajouter un element video que tu crées:
+	var new_elmt = document.createElement("video");
+	new_elmt.src = "/root/output.mp4";
+	
+--> ces nouveaux elements que je crée, ils sont bien jolis, mais est ce que je peux leur faire retenir l'info cruciale: tu
+	représente un bout de video de cette source, démarrant à tel point, et finissant à tel point?
+	je lis https://html.spec.whatwg.org/multipage/media.html#current-playback-position -> pas d'idée 
+	j'essaie new_elmt.currentTime = 30; -> mon nouvel element apparait avec une image qui correspond. C'est archi cool.
+	tout ce qui me manque maintenant c'est que l'élément retienne la position de fin. Où est ce que j'ai trouvé l'info sur la propriété 
+	currentTime?? https://html.spec.whatwg.org/multipage/media.html en parle.
+	ya duration. est ce que je peux???
+	new_elmt.duration = 5; ne plante pas en tout cas. si je mets un control pour pouvoir vérifier qu'il a bien créé un élément qui dure 5s???
+	controls c'est un attribute, comment je le set dynamically avec jquery???
+	new_elmt.setAttribute("controls", ""); -> me mets le control. mais pas de surprise, si je clique sur play il s'arrête pas
+	l'attribute seekable? (lu ici: https://html.spec.whatwg.org/multipage/media.html#media-timeline)
+	https://html.spec.whatwg.org/multipage/media.html#dom-media-seekable
+	https://html.spec.whatwg.org/multipage/media.html#normalised-timeranges-object
+	je crois pas qu'on puisse set les timeranges d'après ce que je lis sur https://developer.mozilla.org/fr/docs/Web/API/TimeRanges
+	à moins que ce soit l'attribute seekable qui récupère ça?
+	var seek = new_elmt.getAttribute("seekable"); ne plante pas.
+	comment est ce que je set start et end de cet attribute?
+	https://www.geeksforgeeks.org/html-dom-video-seekable-property/ -> se lit comme ça: v.seekable.start(0)
+	je lis "The Video seekable property is a read-only property." donc je vais pas pouvoir set. Ne retiendra pas l'info.
+	créer un attribut? easy: https://www.w3schools.com/jsref/met_document_createattribute.asp
+	je retourne sur duration mais console.log(new_elmt.duration); me donne un NaN. Peut être qu'il faut attendre que ça soit loadé? (il y a un 
+	évènement durationchange sur l'objet video)
+	https://html.spec.whatwg.org/multipage/media.html#htmlmediaelement --> tu as des properties readonly: c'est mort.
+	https://api.jquery.com/on/ -> non ça va pas marcher vu que je suis dans la création d'un objet DOM: plutôt
+	new_elmt.addEventListener("durationchange", ma_fn); //et tu définis ta fonction lancée à l'event durationchange 
+	https://www.w3schools.com/js/js_htmldom_eventlistener.asp
+	la fonction que tu définis passe l'event, tu récupères dedans des infos sur l'objet i.e.: evt.target.duration
+	
+--> Comment récupérer l'identité de l element video sur lequel j'ai cliqué?  dans l'event argument de onClick: e.target.currentSrc (src marche pas)
+	trouvé ça sur: https://www.w3schools.com/tags/ref_av_dom.asp
+	c'est un event -> https://developer.mozilla.org/fr/docs/Web/API/Event --> yaurait Event.currentTarget --> à essayer
+	
+	
+12 12 19 Alès
+	size des elements cut créés: conservation du ratio m'arrange pas. essai intrinsic size mais il faut une feature qui est pas
+	enabled. Intrinsic Size Attribute is not available. Please make sure the "Experimental Web Platform features" flag is enabled.
+	j'essaie: chrome://flags/ -> entrer "css fragment" dans la barre de recherche. enable -> marche pas
+	OK l'astuce pour avoir la geometry qu'on veut pour un element video c'est object-fit: fill en css, avec heigth et widdth en pixels
+	

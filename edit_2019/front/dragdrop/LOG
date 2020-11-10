@@ -1,0 +1,21 @@
+drag & drop 
+--> créer des elements, les ajouter à un sortable horizontal
+--> détecter les elements avec leur ordre au click: pour lecture
+
+https://github.com/SortableJS/Sortable 
+--> tuto simple? descendre sur la page principale github
+--> https://sortablejs.github.io/Sortable/ -> récup source, aller tout en bas: <script src="st/app.js"></script> -> récup aussi
+
+--> des elements côte à côte sur la même ligne et drag/drop-sortable, divs? canvas?
+jquery append() avait l'air de mettre côte à côte
+un div serait un block level elemt qui veut rien à côté de lui... https://www.computerhope.com/issues/ch001709.htm
+faut trouver des elements qui veulent bien être côte à côte! -> html c'est vraiment de l'imprimerie: block vs inline
+
+
+--> Avec des <span> marche: elements inline: onclick -> elements s'ajoutent. elmts_sortable.html. Aucun souci pour que les 
+nouveaux elements soient sortable: une fois que t'as créé le sortable les éléments ajoutés secondairement deviennent sortable et se
+comporte comme tel
+
+--> A la demande récupérer l'ordre des éléments, leur identité (ou la propriété video src), leurs propriétés (surtout offset et duration).
+	sortablejs_simplest.html -> bouton -> je récup un array avec je suppose les elements dedans (pour des <li> j'ai le bon texte)
+    avec: var listElements = $("#items").children();

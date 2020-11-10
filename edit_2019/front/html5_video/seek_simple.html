@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<body>
+	
+<video id="video" width="320" src="/root/DJI_0174.MOV" type="video/mp4" ></video>
+
+<script>
+var mavdo = document.getElementById('video');
+
+
+//onmousemove sur l'element video -> en fonction de x on seek (currentTime) au temps (règle de 3)
+mavdo.onmousemove = function(e) { 
+    var x = e.pageX - this.offsetLeft; 
+    mavdo.currentTime = Math.round((x/mavdo.offsetWidth)*mavdo.duration);
+}
+
+mavdo.onclick = clickFunction;
+
+function clickFunction(e) {
+	console.log("event: pos = " + e.target.currentTime + " src=" + e.target.currentSrc );
+	}
+
+</script>
+
+
+</body>
+</html>

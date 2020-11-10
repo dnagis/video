@@ -1,0 +1,29 @@
+ToDo:
+à partir d'un array de fichiers source (bach_convert le crée), avoir toute les videos en element (les ajouter avec jQuery)
+	je pars de html5_video -> mosic.html
+
+
+
+***cut.html*** point de départ: html5_video/seek_simple.html
+
+au premier click: garder l'info position et source, et les afficher (dans un div par exemple)
+
+au deuxième click: est ce que la source est la même et la position plus grande?
+
+ si oui action (on verra plus tard - ajouter un element -), si non annuler (effacer l'affichage et remettre la variable à 0)
+
+
+***Donc je veux stocker et afficher 2 variables: string (src) et integer (pos). Je pars sur: un objet, en esperant
+que son scope soit large. et actualisation d'un element <p> selon contenu. 
+onclick je rentre src et pos dans cet objet "clic_cut". Afficher ça dans un <p> qui reste en haut à droite
+
+***gestion du deuxième click: au onclick() -> détecter qu'on a déjà cliqué sur cet element. Si on a deuxième clic sur le même 
+élément, et qu'en plus on a une position plus grande que celle d'avant: bingo, on crée un segment.
+
+
+### create un element video représentatif du segment, je l'ai déjà fait: où??? créer un cut_create.html en fonction
+je copie cut.html dans cut_create.html et j'ajoute le code de add.html -> dans le if qui détecte 2ème clic
+la geometry de l'élément: pour avoir une width variable donc en s'affranchissant du pixel ratio: css: object-fit.
+
+
+	

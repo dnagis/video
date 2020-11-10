@@ -1,0 +1,124 @@
+###Stream: Tip Cell, rationale
+
+RTP est basé sur UDP, on commence par le plus simple: UDP
+Gstreamer udpsink -> vers kimsufi
+kimsufi redistribue l'UDP vers un/des clients éventuels
+
+
+
+#Déjà fait:
+hello world UDP en local, puis sendto() depuis un ordi vers kimsufi qui recvfrom(). C socket programming - style
+Du C compilé localement et qui tourne sur kimsufi -> possible
+
+
+
+###First Shot
+
+https://fr.wikipedia.org/wiki/Real-time_Transport_Protocol
+
+https://gstreamer.freedesktop.org/src/gst-rtsp-server/gst-rtsp-server-1.16.0.tar.xz
+
+Hello World: De gst vers gst
+gst-rtsp-server-1.16.0/examples/test-launch
+
+./test-launch "( videotestsrc ! vaapih264enc ! rtph264pay name=pay0 pt=96 )"
+./test-launch "( v4l2src ! videoconvert ! vaapih264enc ! rtph264pay name=pay0 pt=96 )"
+
+****Attention**** le serveur lancé par test-launch ne marche qu'une fois, après une première connexion d'un client faut relancer
+attention: si la pipeline plante, pas de message d'erreur de test-launch
+
+
+###Réception:
+#premier succès
+gst-launch-1.0 rtspsrc location=rtsp://127.0.0.1:8554/test latency=100 ! queue ! rtph264depay ! h264parse ! vaapih264dec ! videoconvert ! videoscale ! video/x-raw,width=640,height=480 ! autovideosink
+
+#marche aussi, plus simple
+gst-launch-1.0 playbin uri=rtsp://127.0.0.1:8554/test
+
+Réception avec des clients "mainstream":
+
+https://developer.mozilla.org/fr/docs/Web/Guide/Audio_and_video_delivery/Live_streaming_web_audio_and_video -> apparament pas possible
+https://groups.google.com/forum/#!topic/discuss-webrtc/wwrAIGtNnS4 -> disent que html5 supporte pas rtsp qu'il faut webrtc
+Facebook a l'air de prendre du rtsp, mais j'ai pas fouillé plus que ça
+
+###UDP sockets en C
+
+généralités sur les sockets: https://www.cs.rpi.edu/~moorthy/Courses/os98/Pgms/socket.html
+sockets pour du TCP (SOCK_STREAM): https://www.thegeekstuff.com/2011/12/c-socket-programming/ ->
+
+	listenfd = socket(AF_INET, SOCK_STREAM, 0);
+	préparer une struct sockaddr_in serv_addr; 
+	bind(listenfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)); 
+	listen(listenfd, 10); 
+	while(1)
+		connfd = accept(listenfd, (struct sockaddr*)NULL, NULL); 
+		**faire qq chose sur la connfd**;
+		close(connfd);
+
+https://www.geeksforgeeks.org/udp-server-client-implementation-c/
+UDP serait du datagram?
+contrairement à TCP, UDP c'est connection-less. 
+#tuto sockets UDP
+https://www.cs.rutgers.edu/~pxk/417/notes/sockets/udp.html -> une explication très complète des number conversions: (htonl, htons, ntohl, ntohs)
+
+
+
+struct sockaddr_in myaddr;
+
+//création du socket
+fd = socket(AF_INET, SOCK_DGRAM, 0)
+
+//identify/name -- bind syscall
+memset((char *)&myaddr, 0, sizeof(myaddr));
+myaddr.sin_family = AF_INET;
+myaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+myaddr.sin_port = htons(0);
+bind(fd, (struct sockaddr *)&myaddr, sizeof(myaddr))
+
+//TX message du server vers client. buffer et length = msg. dest_len = size de dest_addr (comme le dernier arg de bind()
+int sendto(int socket, const void *buffer, size_t length, int flags, const struct sockaddr *dest_addr, socklen_t dest_len)
+
+
+//RX msg. src_addr et src_len à 0 possibles: 
+int recvfrom(int socket, void *restrict buffer, size_t length, int flags, struct sockaddr src_addr, socklen_t *src_len)
+
+
+## Tester UDP de local vers kimsufi, un truc très simple, sans gstreamer
+https://www.cs.rutgers.edu/~pxk/417/notes/sockets/udp.html
+et
+https://www.binarytides.com/programming-udp-sockets-c-linux/
+
+--> le code compilé en local marche sur kimsufi, YES!!!
+
+udp_server.c --> gcc -o server udp_server.c -> lancer sur kimsufi , va recevoir recvfrom()
+udp_client.c --> gcc -o client udp_client.c -> lancer en local , va sendto()
+
+tu peux aussi envoyer avec socat:
+
+echo "hello" | socat - udp-sendto:5.135.183.126:8888
+
+
+## Kimsufi comme 'relai' pour de l'UDP
+
+ce pourrait pas être un truc simplissime comme du 'port forwarding' (netcat/socat...)?
+
+google: 'socat UDP'
+http://mattryall.net/blog/2011/09/udp-port-forwarding-with-socat
+OK lui fait:
+socat UDP4-RECVFROM:161,fork UDP4-SENDTO:localhost:10161
+
+
+#gstreamer (udpsink) -> socat en UDP:
+
+1)en local
+	socat UDP4-RECVFROM:9001,fork -  #pour voir le port ouvert: netstat -a | grep 9001 ou netstat -au ou netstat -aul
+	gst-launch-1.0 -v audiotestsrc num-buffers=100 ! udpsink port=9001 #jimagine quil faut que localhost soit configuré
+	
+	--> je vois arriver la data en STDOUT (car part 2 de la ligne de commande socat = '-')
+
+2)de gstreamer en local -> socat sur kimsufi
+	gst-launch-1.0 -v audiotestsrc num-buffers=100 ! udpsink port=9001 host="5.135.183.126"
+
+
+Maintenant il faut: comment faire tourner socat même si il n'y a personne pour listener à la sortie? comment avoir une sortie 'intermittente' (le client sera pas toujours là)?
+

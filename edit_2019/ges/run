@@ -1,0 +1,37 @@
+#!/usr/bin/bash
+
+#gst-launch-1.0 filesrc location=DJI_0179.MOV ! qtdemux ! vaapidecodebin ! vaapipostproc sharpen=-0.2  \
+#! video/x-raw,height=1080 ! vaapih264enc ! qtmux ! filesink location=1_264.mp4
+
+#+test-clip black duration=2 set-width 1920 set-height 1080 \
+#+test-clip black duration=2 set-width 1920 set-height 1080 \
+
+
+ges-launch-1.0 \
++test-clip black duration=2 set-width 1920 set-height 1080 set-mute 1 \
++clip 166.mp4 inpoint=10 duration=9.5 start=1 \
++clip 172.mp4 inpoint=16 duration=10.25 \
++clip 171.mp4 inpoint=3 duration=10.5 \
++clip 174.mp4 inpoint=0 duration=11 \
++clip 159.mp4 inpoint=8 duration=20.5 \
++clip 181.mp4 inpoint=9 duration=20.5 \
++clip 170.mp4 inpoint=3 duration=20.5 \
++clip audio.mp3 inpoint=0 duration=120 start=0 layer=1 \
+-o out.mp4 -f "video/quicktime,variant=iso:video/x-h264:audio/mpeg,mpegversion=4"
+
+
+
+#
+#+clip DJI_0166.MOV inpoint=8 duration=18 \
+
+# \
+#+clip 002.mp4 inpoint=26 duration=5 \
+
+#
+#+clip 171.mp4 inpoint=43 duration=11 \
+#+clip 173.mp4 inpoint=160 duration=20 \
+#+clip 174.mp4 inpoint=0 duration=10 \
+#
+#+clip 171.mp4 inpoint=70 duration=30 \
+
+#

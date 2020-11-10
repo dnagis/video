@@ -1,0 +1,187 @@
+###GROS bump du 24 01 20
+
+ges-launch-1.0 marche sur les clips dji en rendering
+
+ges-launch-1.0 +clip DJI_0179.MOV inpoint=2 duration=4 +clip DJI_0184.MOV inpoint=2 duration=4 -o out.mp4 -f "video/quicktime:video/x-h264"
+
+
+
+
+
+###Second Run pendant déménagement vers Vaucluse, bilan fait avant que je découvre que les +clips peuvent être du .MOV si je fais du render (j'essayai sur des h264/mp4 convertis en 1080 de height et ça marchait pas).
+Avec du raw dans du mp4 ges fonctionne à peu près, mais les fichiers ont une taille monstrueuse.
+Le but est de poser la question sur la mailing list mais qu'elle soit nickel (la question)
+
+En render (en preview c'est pas primordial, et je préfère que la question soit claire).
+Pouvoir prendre en argument au moins deux clips h264/mp4 et render vers output h264/mp4, avec du inpoint et du duration.
+
+
+1) A partir des .MOV dji, ligne de commande qui permet d'obtenir des h264/mp4 plus légers:
+gst-launch-1.0 filesrc location=DJI_0179.MOV ! qtdemux ! vaapidecodebin ! vaapipostproc ! video/x-raw,height=1080 ! vaapih264enc ! qtmux ! filesink location=1_264.mp4
+gst-launch-1.0 filesrc location=DJI_0184.MOV ! qtdemux ! vaapidecodebin ! vaapipostproc ! video/x-raw,height=1080 ! vaapih264enc ! qtmux ! filesink location=2_264.mp4
+
+2) idem mais création de raw/mp4 (contrôle positif)
+gst-launch-1.0 filesrc location=DJI_0179.MOV ! qtdemux ! vaapidecodebin ! vaapipostproc ! video/x-raw,height=1080 ! qtmux ! filesink location=1_raw.mp4
+gst-launch-1.0 filesrc location=DJI_0184.MOV ! qtdemux ! vaapidecodebin ! vaapipostproc ! video/x-raw,height=1080 ! qtmux ! filesink location=2_raw.mp4
+
+3) Donner la ligne de commande ges que je veux voir fonctionner un jour, avec donc du render pas du preview
+
+ges-launch-1.0 +clip 1_264.mp4 inpoint=2 duration=4 +clip 2_264.mp4 inpoint=2 duration=4 -o out.mp4 -f "video/quicktime:video/x-h264"
+ou
+ges-launch-1.0 +clip 1_264.mp4 inpoint=2 duration=4 +clip 2_264.mp4 inpoint=2 duration=4 -o out.mp4 -f "video/quicktime:video/x-raw"
+--> commence par un peu de black, premier clip visible, et le deuxième clip est blacked out. La vidéo fait bien 8 secondes
+
+
+ges-launch-1.0 +clip 1_raw.mp4 inpoint=2 duration=4 +clip 2_raw.mp4 inpoint=2 duration=4 -o out.mp4 -f "video/quicktime:video/x-h264"
+--> fonctionnement attendu
+
+4) Avoir un minimum de debug pour pouvoir justifier si je mets "vaapi" ou "hardware acceleration" dans la question
+
+le decodage vaapi c'est vaapih264dec 
+
+GST_DEBUG_FILE=/root/debug_ges GST_DEBUG_NO_COLOR=1 GST_DEBUG=2 ges-launch-1.0 \
++clip 1_264.mp4 inpoint=2 duration=4 +clip 2_264.mp4 inpoint=2 duration=4 -o out.mp4 -f "video/quicktime:video/x-h264"
+
+--> ben mince, c'est vide avec vaapih264dec:9 ou vaapih264dec:*
+
+--> avec GST_DEBUG=2 ou 3 j'ai qq chose
+
+0:00:01.466665473  6770 0x7f14d406ee30 WARN         videoaggregator gstvideoaggregator.c:430:gst_video_aggregator_convert_pad_prepare_frame:<gessmartmixer0-compositor> Could not map input buffer
+0:00:01.470582970  6770 0x7f14d406ee30 ERROR       vaapivideomemory gstvaapivideomemory.c:254:map_vaapi_memory: failed to make image current
+0:00:01.470620021  6770 0x7f14d406ee30 ERROR       vaapivideomemory gstvaapivideomemory.c:254:map_vaapi_memory: failed to make image current
+je cherche google: "gstreamer ges editing gstvaapivideomemory failed to make image current"
+
+est ce que j'ai cette erreur quand ça fonctionne? (i.e. quand les clips sont du raw/mp4) --> non
+
+
+
+
+
+
+
+
+
+
+
+###First Run à Mazamet: 
+
+réglages vaapipostproc -> gst-inspect vaapipostproc et la syntaxe c'est: ! vaapipostproc force-aspect-ratio=true format=3 width=1080 hue=10 !
+
+gst-launch-1.0 filesrc location=DJI_0174.MOV ! qtdemux ! vaapidecodebin ! vaapipostproc \
+! video/x-raw,format=I420,width=1080 ! vaapih264enc ! qtmux ! filesink location=1.mp4
+
+but: avoir ça qui marche:
+ges-launch-1.0 -v ximagesink +clip 1.mp4 inpoint=2 duration=2 +clip 2.mp4 inpoint=2 duration=2
+
+
+actuellement: le premier passe, pas les suivants
+
+1) -> le graphe
+GST_DEBUG_DUMP_DOT_DIR=/root/mesdots/ ges-launch-1.0 -v ximagesink +clip 1.mp4 inpoint=2 duration=2 +clip 2.mp4 inpoint=2 duration=2
+
+me sort:
+
+0.00.00.103359330-gst-discoverer-target-state.dot
+0.00.00.140684631-gst-discoverer-target-state.dot
+0.00.00.153378250-ges-launch.NULL_READY.dot
+0.00.00.275243488-video_nlecomposition0-new-stack__0:00:00.000000000--0:00:02.000000000.dot ***
+0.00.00.275344868-audio_nlecomposition1-new-stack__0:00:00.000000000--0:00:04.000000000.dot
+0.00.00.315376300-ges-launch.READY_PAUSED.dot
+0.00.00.323334905-ges-launch.PAUSED_PLAYING.dot
+0.00.00.432677819-video_nlecomposition0-new-stack__0:00:02.000000000--0:00:04.000000000.dot ***
+0.00.02.275153074-video_nlecomposition0-new-stack__0:00:04.000000000--0:00:04.000000001.dot
+0.00.03.348364571-audio_nlecomposition1-new-stack__0:00:04.000000000--0:00:04.000000001.dot
+
+
+le but c'est surtout d'avoir les elements pour le debug
+
+vaapidecodebin
+vaapi-queue
+
+la liste des catégories pour debugger?
+le debug ges avec fichier? les erreurs? 
+
+GST_DEBUG=1 --> Error
+
+GST_DEBUG_FILE=/root/debug GST_DEBUG_NO_COLOR=1 GST_DEBUG=2 ges-launch-1.0 -v ximagesink +clip 1.mp4 inpoint=2 duration=2 +clip 2.mp4 inpoint=2 duration=2
+GST_DEBUG_FILE=/root/debug GST_DEBUG_NO_COLOR=1 GST_DEBUG=vaapi:5 ges-launch-1.0 -v ximagesink +clip 1.mp4 inpoint=2 duration=2 +clip 2.mp4 inpoint=2 duration=2
+
+ges-asset ges-asset.c:1056:ges_asset_request: Tried to create an Asset for type GESUriClip but no ->init method #c'est un WARN, et idem avec .ogg
+
+####default sink, vaapisink, écran noir + bloquage sur du h264/mp4
+Sur du theora/ogg ges-launch-1.0 -v vaapisink +clip 168.ogg fonctionne
+
+GST_DEBUG_FILE=/root/debug GST_DEBUG_NO_COLOR=1 GST_DEBUG=*:4 ges-launch-1.0 +clip DJI_0158.MOV
+
+GST_PIPELINE gstparse.c:337:gst_parse_launch_full: parsing pipeline description 'bin.( videotestsrc pattern=2 name=src ! videorate ! capsfilter name=gapfilter caps=video/x-raw )'
+GST_ELEMENT_FACTORY --> toutes les créations d'éléments sont labellisées comme ça
+default gstvaapipluginutil.c:359:gst_vaapi_find_gl_context:<vaapipostproc0> No valid GL display found --> j'ai pareil avec une pipeline qui fonctionne?
+
+log debug:
+ges-launch-1.0 --gst-debug=3 +clip 168.mp4 
+ou mieux
+GST_DEBUG_FILE=/root/debug GST_DEBUG_NO_COLOR=1 GST_DEBUG=*:3 ges-launch-1.0 +clip 168.mp4 
+
+
+0:00:00.155549173  4693 0x7f098403f940 WARN         videoaggregator gstvideoaggregator.c:430:gst_video_aggregator_convert_pad_prepare_frame:<gessmartmixer0-compositor> Could not map input buffer
+0:00:00.157012888  4693 0x7f098403f940 ERROR       vaapivideomemory gstvaapivideomemory.c:254:map_vaapi_memory: failed to make image current
+0:00:00.157020044  4693 0x7f098403f940 ERROR       vaapivideomemory gstvaapivideomemory.c:254:map_vaapi_memory: failed to make image current
+0:00:00.157022645  4693 0x7f098403f940 ERROR                default video-frame.c:170:gst_video_frame_map_id: failed to map buffer
+
+
+##Clips mp4 multiples
+
+deux h264/mp4 de 20s:
+ges-launch-1.0 -v xvimagesink +clip 174.mp4 +clip 168.mp4
+la duration est correcte (somme), mais le deuxième donne un écran noir
+Si j'intervertis premier<->deuxième -> pareil
+Si je mets deux fois le même fichier l'un après l'autre -> la deuxième instance donne un écran noir
+Si les deux sont du theora dans du ogg -> ges-launch-1.0 +clip 168.ogg +clip 174.ogg -> fonctionne
+
+
+
+ges-launch-1.0 -v xvimagesink +clip 168.mp4 inpoint=2 duration=2 layer=0 set-alpha 0.9 +clip 174.mp4 inpoint=2 duration=2 layer=1
+--> fonctionne! je vois les deux fondus l'un dans l'autre! Donc vaapi arrive bien à en ouvrir deux en même temps!
+
+
+
+
+ges-launch-1.0 -v xvimagesink +clip 168.mp4 start=0 inpoint=2 duration=2 layer=0 set-alpha 0.9 +clip 174.mp4 start=2 inpoint=2 duration=2 layer=1
+-->les start ne sont pas pris en compte 
+
+
+ges-launch-1.0 --gst-debug=3 -v xvimagesink +clip 168.mp4 inpoint=0 duration=2 +clip 174.mp4 inpoint=0 duration=2
+-> des erreurs vaapi
+
+0:00:00.167690916  4538 0x7f3624070a30 ERROR       vaapivideomemory gstvaapivideomemory.c:254:map_vaapi_memory: failed to make image current
+0:00:00.167739556  4538 0x7f3624070a30 ERROR       vaapivideomemory gstvaapivideomemory.c:254:map_vaapi_memory: failed to make image current
+0:00:00.167766278  4538 0x7f3624070a30 ERROR                default video-frame.c:170:gst_video_frame_map_id: failed to map buffer
+
+
+qqes lignes laissées comme ça
+ges-launch-1.0 -v ximagesink +clip 168.mp4 layer=0 set-alpha 0.9 +clip 174.mp4 layer=1
+ges-launch-1.0 -v ximagesink +clip 168.mp4 inpoint=2 duration=2 layer=0 set-alpha 0.9 +clip 174.mp4 inpoint=2 duration=2 layer=1
+ges-launch-1.0 -v ximagesink +clip 2.mp4 inpoint=2 duration=2 layer=1 set-alpha 0.9 +clip 1.mp4 inpoint=2 duration=2
+ges-launch-1.0 -v ximagesink +clip 2.mp4 inpoint=2 duration=2 start=0 +clip 1.mp4 inpoint=2 duration=2 start=2
+
+
+
+GST_DEBUG_FILE=/root/debug GST_DEBUG_NO_COLOR=1 GST_DEBUG=*:3 ges-launch-1.0 -v xvimagesink +clip 174.mp4 +clip 168.mp4
+
+0:00:28.007533794  4754 0x7f8240071630 WARN         videoaggregator gstvideoaggregator.c:430:gst_video_aggregator_convert_pad_prepare_frame:<gessmartmixer0-compositor> Could not map input buffer
+0:00:28.051936474  4754 0x7f8240071630 ERROR       vaapivideomemory gstvaapivideomemory.c:254:map_vaapi_memory: failed to make image current
+0:00:28.051954949  4754 0x7f8240071630 ERROR       vaapivideomemory gstvaapivideomemory.c:254:map_vaapi_memory: failed to make image current
+0:00:28.051959249  4754 0x7f8240071630 ERROR                default video-frame.c:170:gst_video_frame_map_id: failed to map buffer
+
+
+##Bilan des erreurs pour faire le mail
+en mode preview (le default)
+ouverture d'un seul mp4 avec vaapisink: écran noir blocage, debug log montre erreurs videoaggregator/vaapivideomemory. 
+ouverture d'un seul mp4 avec xvimagesink: marche (pas fait de debug)
+ouverture de deux clips successifs en mp4 avec xvimagesink (+clip 174.mp4 +clip 168.mp4) -> seul le premier marche. 
+	-> debug/log -> erreurs videoaggregator/vaapivideomemory
+
+
+
+
+

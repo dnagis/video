@@ -1,0 +1,35 @@
+#/usr/bin/sh
+
+
+
+DIR_WORK=/initrd/mnt/dev_save/packages/videos_samples/edit/
+
+
+for FILE in `ls $DIR_WORK*.MOV`
+do
+
+BASE=`basename $FILE .MOV`
+FILE_OUT=`echo ${BASE:5}`
+
+echo $FILE_OUT.mp4 #$DIR_WORK$FILE_OUT.mp4
+
+if [ ! -e $DIR_WORK$FILE_OUT.mp4 ] #si la conversion a deja eu lieu pas la peine
+then
+
+
+#du raw dans du mp4
+gst-launch-1.0 filesrc location=$FILE ! qtdemux ! vaapidecodebin ! vaapipostproc ! video/x-raw,height=1080 ! qtmux ! filesink location=$DIR_WORK$FILE_OUT.mp4
+#du h264 dans du mp4
+#gst-launch-1.0 filesrc location=$FILE ! qtdemux ! vaapidecodebin ! vaapipostproc ! video/x-raw,height=270 ! vaapih264enc ! qtmux ! filesink location=$DIR_WORK$FILE_OUT.mp4
+#gst-launch-1.0 filesrc location=$FILE ! qtdemux ! vaapidecodebin ! vaapipostproc width=320 ! timeoverlay font-desc="35" ! videoconvert ! theoraenc quality=28 ! oggmux ! filesink location=$DIR_WORK$FILE_OUT.ogg
+#ffmpeg -hwaccel vaapi -hwaccel_output_format vaapi -i $DIR_MOV$FILE -vf scale_vaapi=1920:1080  -c:v h264_vaapi -b:v 4000k $DIR_WORK$FILE_OUT.mp4
+
+fi
+
+done
+
+##Ecrire la liste des fichiers dans un fichier .js
+#files=($DIR_MOV*.MOV)
+#echo 'src_array=[' > /root/src_files.js
+#printf '"%s",\n' "${files[@]}" >> /root/src_files.js
+#echo ']' >> /root/src_files.js

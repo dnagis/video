@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+	
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script src="/root/src_files.js"></script>
+
+<style>	
+.maClasse {
+	object-fit: fill;
+	height: 200px;
+}
+
+#divInfo {
+  position: fixed;
+  padding: 12px;
+  background-color: white;
+  box-shadow: 5px 10px 8px #888888;
+  top: 40px; right: 40px;
+  z-index: 1000;
+  opacity: 0.9;
+  border-radius: 25px;
+  font-size: 15px;
+}
+</style>
+
+	
+<body>
+	
+<div id="divInfo">Chargement des vidéos...</div>
+
+<p id="demo"></p>
+
+
+
+<script>
+	
+//var src_array = ["/root/work/0157.mp4","/root/work/0158.mp4","/root/work/0159.mp4","/root/work/0160.mp4","/root/work/0166.mp4"];
+	
+var i = 0;	
+	
+const demo = document.getElementById('demo');
+
+
+function ma_fn(evt){
+	console.log("hello->" + evt.target.duration);
+	}
+
+
+
+//ajout d'un élément créé à la volée, le nouvel élément se place après un élément.
+
+
+  /*
+  Des elements simples. i est là pour distinguer les éléments (ils sont identiques sinon)
+  i += 1;	
+  console.log("clic i=" + i);
+  var new_elmt = document.createElement("p");
+  new_elmt.innerHTML = "du texte!" + i; */
+src_array.forEach(function(item){
+  var new_elmt = document.createElement("video");
+  new_elmt.src = item;
+  new_elmt.width = 320;
+  new_elmt.currentTime = 1; //positionne le cursor, comme ça l'image va bien
+  //new_elmt.duration = 5;
+  new_elmt.setAttribute("id", "mavdo"); //si tu veux régler un attribute qui a pas de valeur comme controls (existe ou pas) en arg2 tu mets ""
+  //new_elmt.on("durationchange",ma_fn);
+  new_elmt.addEventListener("durationchange", ma_fn);
+  new_elmt.className = 'maClasse';	
+  $("#demo").after(new_elmt);
+  console.log(new_elmt.duration);
+});
+
+//Pour tous les éléments video on assigne la fonction mouseMoveFn à l'event mousemove
+function mouseMoveFn(e) { 
+    var x = e.pageX - this.offsetLeft; 
+    e.target.currentTime = Math.round((x/e.target.offsetWidth)*e.target.duration);
+    var file = e.target.src.split('/').pop();
+    $("#divInfo").html(file + "<br>" + e.target.currentTime + "s / " + Math.round(e.target.duration) + "s");
+}
+document.querySelectorAll("video").forEach(elem => elem.addEventListener("mousemove", mouseMoveFn))	
+
+</script>
+
+</body>
+</html>
+
+

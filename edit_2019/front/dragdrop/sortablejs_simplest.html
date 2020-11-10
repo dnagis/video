@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>Page Title</title>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.10.1/Sortable.min.js"></script>
+
+</head>
+
+<body>
+
+<ul id="items">
+	<li>item 1</li>
+	<li>item 2</li>
+	<li>item 3</li>
+</ul>
+
+<button type="button" onclick='getListe()'>lance!</button>
+
+<script>
+//tiré de: https://github.com/SortableJS/Sortable -> récup source: en bas	
+var el = document.getElementById('items');
+
+
+new Sortable(el, {
+	animation: 150,
+});
+
+//ajouter un elmt à un sortable secondairement, ça ne pose pas de problème, intégration sans update nécessaire, le nouvel element est comme les autres
+var newline = document.createElement("li");
+var node = document.createTextNode("item 4");
+newline.appendChild(node);
+el.appendChild(newline);
+
+
+function getListe(){
+	var listElements = $("#items").children();
+	console.log(listElements);
+}
+
+</script>
+
+</body>
+</html>

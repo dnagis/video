@@ -1,0 +1,65 @@
+Basé sur:
+https://gstreamer.freedesktop.org/documentation/tutorials/basic/toolkit-integration.html?gi-language=c
+dont tu trouves la source dans le fichier basic-tutorial-5.c de ce repo: https://github.com/GStreamer/gst-docs/
+
+#un exemple simple de dynamic pipeline
+https://gist.github.com/yashi/276365488873665d81a3f1230afa2d6f
+
+premier run: gstgtk.c 
+
+Build:
+export PKG_CONFIG_PATH=/usr/X11R7/lib/pkgconfig:/usr/X11R7/share/pkgconfig/:/usr/share/pkgconfig/
+gcc gstgtk.c -o gstgtk `pkg-config --cflags --libs gstreamer-video-1.0 gtk+-3.0 gstreamer-1.0`
+gcc basic2.c -o basic2 `pkg-config --cflags --libs gstreamer-1.0`
+gcc time.c -o time `pkg-config --cflags --libs gstreamer-1.0`
+gcc `pkg-config --cflags gtk+-3.0` -o hello hellogtk.c `pkg-config --libs gtk+-3.0`
+
+Travail sur un fichier converti comme ça:
+gst-launch-1.0 filesrc location=DJI_0174.MOV ! qtdemux ! vaapidecodebin ! vaapipostproc ! video/x-raw,height=640 ! vaapih264enc ! qtmux ! filesink location=174.mp4
+
+
+##basic2.c (car tuto 2 gstreamer)
+création de la pipeline moi même (donc pas playbin, car je veux y insérer timeoverlay) en m'inspirant des tutos n°2 et n°3 de gstreamer
+
+le schéma pour commencer: gst-launch-1.0 filesrc location=174.mp4 ! decodebin ! autovideosink
+
+1) création des éléments avec gst_element_factory_make() pour rappel, l'arg2 c'est le nom (tous les éléments doivent avoir un nom initial).
+2) gst_bin_add_many -> premier argument = GST_BIN (data.pipeline) puis les éléments, terminer par NULL
+3) faire le link entre les éléments qui ont des pads always donc linkables:
+	filesrc et decodebin. 
+par contre decodebin n'a pas de pad src initialement. Tuto "dynamic pipelines". Il faut donc faire une callback appelée sur le signal "pad-added":
+4) on met un détecteur de signal "pad-added" sur le decodebin
+	g_signal_connect (data.decode, "pad-added", G_CALLBACK (pad_added_handler), &data);
+5) on crée la callback qui sera lancée lorsque le pad sera added, où le link se fera:
+	gst_pad_link
+
+GST_DEBUG=*:4 ./basic2
+
+
+##time.c
+-basic2.c auquel j'ajoute timeoverlay. + ajuster ses propriétés.
+	gst-inspect timeoverlay me dit que ses pads sont toujours availables.
+	
+	je le mets entre decodebin et sink
+
+##gstgtk.c
+	gst-launch-1.0 filesrc location=174.mp4 ! decodebin ! timeoverlay ! videoconvert ! xvimagesink
+
+
+###ToDo
+
+-réglage plus fin que à la seconde, c'est possible??? --> slider_cb 
+
+
+-le sink s'incorpore pas dans la fenêtre.
+Avec handler.c (un simple videotestsrc ! autovideosink), je comprends que le pb c'est la ligne: 
+gst_video_overlay_set_window_handle (GST_VIDEO_OVERLAY (data->sink), window_handle);
+sur data->playbin (comme dans le tuto) pas de pb. Sur du sink par contre ça ne va marcher que sur du xvimagesink. Sur du vaapisink marche pas (pas de log_error)
+sur du autovideosink erreur:
+(handle:826): GLib-GObject-WARNING **: 17:21:26.492: invalid cast from 'GstAutoVideoSink' to 'GstVideoOverlay'
+(handle:826): CRITICAL **: 17:21:26.492: gst_video_overlay_set_window_handle: assertion 'GST_IS_VIDEO_OVERLAY (overlay)' failed
+
+donc-> data.xvimagesink marche
+
+après pb c'est que gst-launch-1.0 filesrc location=174.mp4 ! decodebin ! videoconvert ! xvimagesink marche, mais sans videoconvert marche pas.
+

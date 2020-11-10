@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.10.1/Sortable.min.js"></script>
+<style>
+.cuts {
+	object-fit: fill;
+	height: 100px;
+}	
+	
+p {
+	position: absolute;
+	right: 20px;	
+	top: 0px;	
+}
+
+#timeline {
+	position: absolute;
+	bottom: 20px;	
+}
+
+button {
+	position: absolute;
+	bottom: 20px;
+	right: 20px;
+}
+</style>
+</head>	
+
+<body>
+
+<div>
+<video><source src="/root/output1.mp4" type="video/mp4"></video>
+<video><source src="/root/output2.mp4" type="video/mp4"></video>
+<video><source src="/root/output1.mp4" type="video/mp4"></video>
+<video><source src="/root/output2.mp4" type="video/mp4"></video>
+</div>
+
+	
+<p id="select"></p>
+<hr>
+<div id='timeline'></div>
+<button type="button" onclick='getListe()'>launch</button>
+
+<script>
+var clic_cut = {src:null, pos:null}; //variable remplie à chaque onClick()
+
+
+//On assigne à tous les elements type "video" des fonctions event
+document.querySelectorAll("video").forEach(elem => elem.addEventListener("click", clickFunction))
+document.querySelectorAll("video").forEach(elem => elem.addEventListener("mousemove", mouseMoveFn))
+
+
+function mouseMoveFn(e) { 
+    var x = e.pageX - this.offsetLeft; 
+    e.target.currentTime = Math.round((x/e.target.offsetWidth)*e.target.duration);
+}
+
+function clickFunction(e) {
+	
+	if (e.target.currentSrc === clic_cut.src && e.target.currentTime > clic_cut.pos) {
+		//c'est le 2ème clic sur le même élément (src) à une position ultérieure 
+		//on crée un nouveau segment grâce aux 3 infos: src, pos de clic_cut, et currentTime
+		var new_elmt = document.createElement("video");
+		new_elmt.src = clic_cut.src;
+		new_elmt.currentTime = clic_cut.pos; //il nous faut le début de la sélection
+		//new_elmt.setAttribute("id", "mavdo"); //bof: faudrait plutôt la duration.
+		new_elmt.width = (e.target.currentTime - clic_cut.pos) * 10;
+		new_elmt.className = 'cuts';
+		timeline.appendChild(new_elmt);		
+		//console.log("taille elmt="+new_elmt.width); 
+		
+		//on réinitialise clic_cut car on vient de créer un segment
+		clic_cut.pos = null; 
+		clic_cut.src = null;
+		} else {	
+		//c'est un premier clic donc un début de sélection
+		clic_cut.pos = e.target.currentTime;
+		clic_cut.src = e.target.currentSrc;
+		}
+		
+	$(" #select ").text(clic_cut.src + " @ " + clic_cut.pos);
+	}
+	
+new Sortable(timeline, {
+	animation: 150,
+	removeOnSpill: true //vire quand tu drop à l'ext
+});
+
+function getListe(){
+	var listElements = $("#timeline").children();
+	
+	for (let item of listElements) {
+			console.log(item.src + " " + item.currentTime + " " + item.width/10);
+		}
+	
+
+	//forEach not a function
+	//listElements.forEach(item => console.log(item.src + " " + item.currentTime + " " + item.width/10));
+	//console.log(listElements[0].src + " " + listElements[0].currentTime + " " + listElements[0].width/10 );
+}
+
+</script>
+
+</body>
+</html>

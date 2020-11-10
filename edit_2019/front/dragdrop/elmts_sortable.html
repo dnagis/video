@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>Page Title</title>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.10.1/Sortable.min.js"></script>
+
+<style>
+span {
+  width: 30px;
+}
+
+</style>
+
+</head>
+<body>
+
+<p onclick='add_span()'>essai click moi</p>
+<div id='mondiv'></div>
+
+
+
+<script>
+//ajouter dans le <div> des <span> avec des couleurs différentes 
+//les spans vont sur la même ligne (span est un element type inline, pas block)
+
+var mondiv = document.getElementById("mondiv");
+
+function add_span(){
+	var monelmt = document.createElement("span");
+	var node = document.createTextNode("Texte");
+	monelmt.appendChild(node);
+	monelmt.style.background = '#'+Math.floor(Math.random()*16777215).toString(16); //https://www.w3schools.com/js/js_htmldom_css.asp
+	mondiv.appendChild(monelmt);	
+}
+
+
+
+new Sortable(mondiv, {
+	animation: 150,
+	removeOnSpill: true //vire quand tu drop à l'ext
+});
+
+</script>
+
+</body>
+</html>

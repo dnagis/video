@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<style>
+p {
+position: absolute;
+right: 20px;	
+top: 0px;	
+}
+</style>
+</head>	
+
+<body>
+
+<div>
+<video><source src="/root/output1.mp4" type="video/mp4"></video>
+<video><source src="/root/output2.mp4" type="video/mp4"></video>
+</div>
+<div>
+<video><source src="/root/output1.mp4" type="video/mp4"></video>
+<video><source src="/root/output2.mp4" type="video/mp4"></video>
+</div>
+
+	
+<p id="select"></p>
+
+<script>
+var clic_cut = {src:null, pos:null}; //variable remplie à chaque onClick()
+
+
+//On assigne à tous les elements type "video" des fonctions event
+document.querySelectorAll("video").forEach(elem => elem.addEventListener("click", clickFunction))
+document.querySelectorAll("video").forEach(elem => elem.addEventListener("mousemove", mouseMoveFn))
+
+
+function mouseMoveFn(e) { 
+    var x = e.pageX - this.offsetLeft; 
+    e.target.currentTime = Math.round((x/e.target.offsetWidth)*e.target.duration);
+}
+
+function clickFunction(e) {
+	
+	if (e.target.currentSrc === clic_cut.src && e.target.currentTime > clic_cut.pos) {
+		//c'est le 2ème clic sur le même élément (src) à une position ultérieure 
+		//c'est ici qu'on va créer un nouveau segment grâce aux 3 infos: src, pos de clic_cut, et currentTime
+		console.log("yes"); //pour debugger
+		//on réinitialise clic_cut car on vient de créer un segment
+		clic_cut.pos = null; 
+		clic_cut.src = null;
+		} else {	
+		clic_cut.pos = e.target.currentTime;
+		clic_cut.src = e.target.currentSrc;
+		}
+		
+	$(" #select ").text(clic_cut.src + " @ " + clic_cut.pos);
+	}
+
+</script>
+
+</body>
+</html>

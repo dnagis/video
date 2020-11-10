@@ -1,0 +1,82 @@
+######Pitivi : le build de l'été 2019, je sors pitivi de morphotox parce que ça me bloate le fichier gst et que je crois que je bosserai plus
+	sur ges à l'avenir que sur pitivi
+ tip Cell fin août 19 pour reprendre:
+	avec certains fichiers, la visualisation marche très mal. Et dans tous les cas vaapi pas très utilisé. Prévoir une grosse session méditative de gstreamer en python3 pour reproduire ce qui se passe. Il faut que je comprenne
+	la fabrication de la pipeline, où elle est montée, pour la débugger. Gros travail de spéléo dans gstreamer via python. Le coeur du problème est ci dessous à "dissection pitivi". 
+
+PITIVI_IMPORT_FOLDER=/initrd/mnt/dev_save/packages/videos_samples/RancBanes pitivi
+https://developer.pitivi.org
+https://lazka.github.io/pgi-docs/Gst-1.0/mapping.html #correspondance C<->Python
+https://download.gnome.org/sources/pitivi/0.99/pitivi-0.99.tar.xz
+
+meson builddir --prefix=/usr/X11R7/ --libdir=/usr/X11R7/lib -Ddisable-help=true
+
+##au build erreur def static redefinition pycairo:
+je commente dans pitivi/coptimizations/renderer.c --> //static Pycairo_CAPI_t *Pycairo_CAPI;
+
+/usr/bin/pitivi est un script python3 qui appelle le code python dans /usr/X11R7/lib/pitivi/python/pitivi/...
+
+avec pitivi 0.999 à l'install: File "/usr/bin/itstool", line 25, in <module>    import libxml2
+--> résolu en passant l'interpréteur à python2 en haut de itstool
+
+pour pouvoir créer un projet il faut des plugins de gst-base: ogg, theora, et vorbis, sinon tu as un projet NoneType et rien ne se passe
+
+import de fichiers: default dir (pour ne pas chercher à chaque fois le dir) filechooser medialibrary.py
+PITIVI_IMPORT_FOLDER=/initrd/mnt/dev_save/packages/videos_samples/RancBanes
+
+###log/debug: https://developer.pitivi.org/Bug_reporting.html?gi-language=undefined#debug-logs
+PITIVI_DEBUG=3 pitivi
+PITIVI_DEBUG=pipeline:6 pitivi #log sélectif mais attention, par exemple pour viewer.py ça marche pas:
+PITIVI_DEBUG=viewercontainer:6 pitivi #peut être parce que "class ViewerContainer(Gtk.Box, Loggable)"???
+/root/.cache/pitivi/scenarios
+
+proxy formats error au démarrage --> proxy.py --> prores-opus-in-matroska.gep,jpeg-opus-in-matroska.gep (gep="gstreamer encoding profile")
+/initrd/mnt/dev_save/packages/pitivi-0.99/data/gstpresets/prores-opus-in-matroska.gep,jpeg-opus-in-matroska.gep
+--> en installant les plugins gstreamer opus et jpeg ya plus d'erreur et il me propose de transcoder à l'import. Le proxy est à côté des vidéos.
+
+
+
+
+#######Dissection PiTiVi
+
+###down-sizer mes videos --> l'import/trimming va super vite avec des fichiers transcodés... mieux qu'avec les proxy files...
+###j'ai eu un sacré bol avec ces paramètres, parce qu'avec d'autres résolutions ça marche carrément moins bien!!!
+gst-launch-1.0 filesrc location=8.mp4 ! qtdemux ! vaapidecodebin ! vaapipostproc ! video/x-raw,format=I420,width=640,height=480 ! vaapih264enc ! avimux ! filesink location=test.avi
+
+
+
+###Viewer issues -> Ecran Noir / %CPU 
+1) Quand je play un fichier dans pitivi ça bouffe du cpu alors qu'avec gst-play environ 2% --< "comprendre la pipeline"
+2) Parfois écran noir -> un fichier drone DJI redimensionné avec les commandes ci dessous: écran noir! mais quand je sors le widget avec le bouton undock (detach the viewer...) il apparait (parfois). 
+	(cf juste au dessus) .... ! vaapidecodebin ! vaapipostproc ! video/x-raw,format=I420,width=1920,height=1080 ! vaapih264enc ! ...
+	ffmpeg -hwaccel vaapi -hwaccel_output_format vaapi -i 2.mp4 -vf scale_vaapi=1920:1080 -c:v h264_vaapi -b:v 4000k output.mp4
+	super chelou: tu cliques sur la fin du clip sur la timeline, tu maintiens appuyé, tu vas plus loin sans lâcher: une image apparait dans le viewer!! pareil si tu redimensionnes dans le viewer!
+	****ouhhhh, petite trouvaille:**** timeline/previewers/_SetupPipeline (dans la classe "videopreviewer") --> ah mais merde c'est pour créer des thumbnails. mais bon utiliser le principe?? les mots clés???
+
+pitivi/viewer/viewer.py #preuvre -> _createUI -> le texte des tooltips, c'est le fonctionnement ici, pas l'établissement de la pipeline avec un sink
+pitivi/utils/pipeline.py
+envoie vers un widget gtk: gtksink (dans le log PITIVI_DEBUG=pipeline:6 je vois pipeline.py ligne 111: "Using gtksink")
+gst-launch-1.0 filesrc location=test.avi ! decodebin ! videoconvert ! gtksink
+PITIVI_DEBUG=pipeline:6 pitivi
+gst-launch-1.0 -v playbin uri=file:///root/test.avi #utilise très peu de cpu: donc c'est pas playbin qui est responsable, ou alors mal configuré avec des attributs après???
+gst-launch-1.0 -v playbin uri=file:///root/test.avi video-sink=gtksink #utilise 2% de CPU, ****même si je resize la fenêtre!!!***
+GST_DEBUG=4 pitivi
+
+j'ai vu mais j'ai pas noté comment, du vaapipostproc pour resizer la video dans pitivi... hypothèse: c'est ça qui consomme du cpu. Et pourtant si je resize une fenêtre gtksink ça bouffe pas plus...
+viewer.py dit que default size = 320x240. si j'ai une video de cette size j'ai combien de cpu?
+j'utilise les fichiers dot pour voir la pipeline
+
+jeu du soir bonsoir: pourquoi est ce que ça ça bouffe 20% de cpu cette pipeline: gst-launch-1.0 filesrc location=8.mp4 ! qtdemux ! vaapidecodebin ! videoconvert ! gtksink
+	#
+	gst-launch-1.0 filesrc location=8.mp4 ! qtdemux ! vaapidecodebin ! vaapisink #moins de 2% de cpu
+
+##GES Gstreamer Editing Services... Le coeur de PiTiVi
+	http://mathieuduponchelle.github.io/coding/2013/06/08/Fun-with-videomixer.html
+	https://gstreamer.freedesktop.org/data/doc/gstreamer/head/gstreamer-editing-services/html/ges-architecture.html
+	les exemples dans gstreamer-editing-services-1.16.0/examples/c
+	https://gstreamer.freedesktop.org/documentation/tools/ges-launch.html?gi-language=c
+	http://gstreamer-devel.966125.n4.nabble.com/ges-launch-1-0-command-line-td4690013.html
+
+ges-launch-1.0 +clip /root/test.avi --> ecran noir avec bloquage: car le sink par défaut est vaapisink et ça marche pas avec ges-launch-1.0 --> -v gtksink ou -v ximagesink
+ges-launch-1.0 -a fakesink -v ximagesink +clip /root/test.avi #quand tu utilises alsa pour autre chose faut un audio sink 
+ges-launch-1.0 +clip test.ogg inpoint=60 duration=10 +clip test.ogg inpoint=120 duration=10 -o output.via.ges-launch.ogv #si décodage vaapi -> seul le 1er décodage marche

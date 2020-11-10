@@ -1,0 +1,9 @@
+# Essais des différents projets, howto...
+untar mes tarballs: nodejs ffmpeg ...
+Dans le dir où tu vas travailler (++++):
+npm install @hapi/hapi
+npm install -g nodemon
+
+https://www.npmjs.com/package/ffmpeg
+	npm install ffmpeg; les exemples du readme ouvrir fichier, lire ses infos, extraires des frames en jpg marchent
+	donc permet de piloter ffmpeg depuis nodejs. Créer des fichiers, convertir... OK

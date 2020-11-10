@@ -1,0 +1,344 @@
+######Grandes Lignes######
+Install: untar des tarballs de l'été 2019 avant d'unpacker gstreamer (et bien attendre que l'untar ait terminé+++)
+	glib_gtk_vvnx.tar.xz  (sinon undefined symbol au runtime: g_object_new_with_properties)
+	python3_vvnx.tar.xz (pour le build: bloque au make GES.gir)
+	
+ges-launch-1.0 help --> une aide plus sympa que --help
+
+infos sur les fichiers: 
+gst-discoverer-1.0 -v DJI_0174.MOV -> 3840/2160
+
+
+#####ToDo
+-titles -> la font? centrer? sur fond noir qui fade et defade ce serait sympa
+-les filtres GL. Pour couleurs. dans les effets. (gst-inspect je crois). pourquoi ils marchent pas?
+
+
+#####Convert
+
+#Décodage h264 modifs taille et du raw dans le mp4 (attention à la taille du raw). Etait utile avant que je découvre que ges-launch sur les .MOV de dji marchait.
+gst-launch-1.0 filesrc location=DJI_0174.MOV ! qtdemux ! vaapidecodebin ! vaapipostproc ! video/x-raw,height=1080 ! qtmux ! filesink location=174.mp4
+
+#Décodage h264 et réencodage en theora en choisissant qualité theora
+gst-launch-1.0 filesrc location=DJI_0174.MOV ! qtdemux ! vaapidecodebin ! vaapipostproc height=1080 ! videoconvert ! theoraenc quality=28 ! oggmux ! filesink location=174.ogg
+#theoraenc quality -> Integer. Range: 0 - 63 Default: 48 #gst-inspect-1.0 theoraenc
+
+#Décodage h264 et réencodage h264 avec au milieu modifs format et size
+gst-launch-1.0 filesrc location=DJI_0174.MOV ! qtdemux ! vaapidecodebin ! vaapipostproc ! video/x-raw,height=1080 ! vaapih264enc ! qtmux ! filesink location=174.mp4
+--> mais: ges-launch marche mal avec ça
+
+
+#Batch:
+		FILE_IN=/root/DJI_0174.MOV
+		
+		base=`basename $FILE_IN .MOV`
+		FILE_OUT=`echo ${base:5}`
+		
+		gst-launch-1.0 filesrc location=$FILE_IN ! qtdemux ! vaapidecodebin \
+			! vaapipostproc width=1080 ! videoconvert ! theoraenc quality=28 ! oggmux ! filesink location=$FILE_OUT.ogg
+
+gst-launch-1.0 filesrc location=$FILE ! qtdemux ! vaapidecodebin \
+	! vaapipostproc force-aspect-ratio=true format=3 width=1080 hue=10 \
+	! vaapih264enc ! qtmux ! filesink location=test.mp4
+	
+###Runtime 
+ges-launch-1.0 +test-clip smpte duration=5
+la liste des patterns (comme "smpte") -> https://gstreamer.freedesktop.org/documentation/gst-editing-services/ges-enums.html?gi-language=c#GESVideoTestPattern
+
+ges-launch-1.0 +clip 174.ogg
+ges-launch-1.0 -v xvimagesink +clip 174.mp4 #En Preview (defaut) si vaapisink -> h264 plante (écran noir): astuce mettre du raw dedans
+
+ges-launch-1.0 +clip 174.ogg inpoint=2 duration=2 #duration devrait devenir optionel (ira jusqu'à la fin du fichier) dans une prochaine version
+
+
+ges-launch-1.0 +clip 1.mp4 inpoint=2 duration=4 +clip 2.mp4 inpoint=2 duration=4
+
+ges-launch-1.0 +clip 1.mp4 inpoint=2 duration=4 +clip 2.mp4 inpoint=2 duration=4 -o out.mp4 -f "video/quicktime:video/x-raw"
+ges-launch-1.0 +clip 1.mp4 inpoint=2 duration=4 +clip 2.mp4 inpoint=2 duration=4 -o out.mp4 -f "video/quicktime:video/x-h264"
+
+ges-launch-1.0 -a fakesink +test-clip black duration=2 set-width 1920 set-height 1080\
+ +clip 174.mp4 duration=6 start=1\
+ +test-clip black duration=4 start=6 set-width 1920 set-height 1080\
+ +clip 172.mp4 inpoint=22 duration=9 start=9 \
+ -o out.mp4 -f "video/quicktime:video/x-h264"
+
+#Effects
+ges-launch-1.0 +clip 174.ogg inpoint=2 duration=2 +effect "agingtv" set-scratch-lines 20 #les properties dans gst-inspect-1.0 agingtv
+ges-launch-1.0 +clip 174.ogg inpoint=2 duration=2 +effect "fisheye" 
+
+ges-launch-1.0 +clip 174.mp4 +effect videorate set-rate 7 #syntaxe "bin-description"
+ges-launch-1.0 +clip 174.mp4 +effect videobalance set-saturation 1.5
+
+
+#Framerate FPS rate videorate (accélérer / slow down)
+ges-launch-1.0 +clip 174.mp4 +effect videorate set-rate 7
+gst-launch-1.0 filesrc location=174.mp4 num-buffers=100 ! qtdemux !  videorate rate=2 ! videoconvert ! qtmux ! filesink location=out.mp4
+
+avec videotestsrc 1 buffer = 1 frame quelle que soit la résolution:
+gst-launch-1.0 videotestsrc pattern=ball num-buffers=500 ! "video/x-raw,format=NV12,width=640,height=480,framerate=30/1" ! autovideosink
+-->  dure 16.666895827 donc à 30 FPS: 30x16.666895827 = 500 le compte est bon
+avec filesrc malheureusement même sur du raw j'ai pas la correspondance
+
+modifier le rate en restant à 30FPS: astuce = videorate avec rate=
+gst-launch-1.0 filesrc location=174.mp4 num-buffers=100 ! qtdemux !  videorate rate=2 ! videoconvert ! qtmux ! filesink location=out.mp4
+
+lecture:
+http://jojva.blogspot.com/2013/07/on-how-videorate-works-and-how-rate-was.html
+https://stackoverflow.com/questions/1334975/how-can-i-speed-up-a-video-by-dropping-frames #juste pour les mots clés en anglais
+
+
+#Audio -> mettre start=0 pour l'audio
+
+	Preview
+ges-launch-1.0 +clip 1.mp4 inpoint=2 duration=4 +clip 2.mp4 inpoint=2 duration=4 +clip SOMA-0701.mp3 inpoint=2 duration=8 start=0
+
+	Render
+ges-launch-1.0 +clip 174.mp4 duration=4 +clip SOMA-1801.mp3 inpoint=2 duration=4 start=0 -o out.mp4 -f "video/quicktime,variant=iso:video/x-h264:audio/mpeg,mpegversion=4"
+
+autre exemple format: syntaxe:  -f "video/quicktime,variant=iso:video/x-h264:audio/mpeg,mpegversion=1,layer=3" 
+voir https://bbs.archlinux.org/viewtopic.php?id=237490
+
+#test-clip
++test-clip black duration=2 set-width 1920 set-height 1080 set-mute 1 #voir ges-test-clip.c -> property mute
+hélas cohabite mal avec l'audio, faut surement dire qui a la priorité... (layer???)
+
+
+
+#transition: astuce: "Transitions are automatically added when clips overlap"
+ges-launch-1.0 +test-clip red duration=5 +test-clip blue start=2 duration=5
+ges-launch-1.0 +clip 174.mp4 duration=5 +clip 158.mp4 start=4 duration=5
+marche moyen en preview (saute). en render mieux
+
+je demande à la mailing list pour le transition type mais pas possible de contrôler en ligne de commande. 
+crossfade est une default value pour la video: je suppose que c'est dans ges-transition-clip.c
+value = GES_VIDEO_STANDARD_TRANSITION_TYPE_CROSSFADE;
+ et que ça doit être modifiable, voir ges-enums.h. Du coup rebuilder avec cette default value là si tu veux vraiment ça...
+
+	
+#Crossfade transition: Fade to Black et inverse
+	test-clip: réglage taille :
+	ges-launch-1.0 -a fakesink +test-clip black duration=5 set-width 1920 set-height 1080
+	ges-launch-1.0 -a fakesink +test-clip black duration=5 set-width 1920 set-height 1080 +clip 174.mp4 duration=5 start=3
+	-> en preview sur du raw 1920x1080/mp4 saute à la fin de la transition. 
+	-xvimagesink améliore pas
+	-en render marche ***OUF***
+	ges-launch-1.0 +test-clip black duration=2 set-width 1920 set-height 1080 +clip 174.mp4 inpoint=2 duration=4 start=1 -o out.mp4 -f "video/quicktime:video/x-h264"
+	le crossfade entre 2 clips? en render? -> marche moyen: glitches...
+	
+
+	
+	
+#Build de la totalité de GES
+export PKG_CONFIG_PATH=/usr/X11R7/lib/pkgconfig:/usr/X11R7/share/pkgconfig/:/usr/share/pkgconfig/
+./configure --prefix=/usr/X11R7/ --enable-introspection=yes --enable-gobject-cast-checks=yes --enable-glib-asserts=yes 
+DESTDIR-compliant
+
+#Build dans ges/exemples: 
+export PKG_CONFIG_PATH=/usr/X11R7/lib/pkgconfig
+gcc vvnx3.c -o vvnx3 `pkg-config --cflags --libs gst-editing-services-1.0`
+et pour gstreamer (gstreamer-1.16.0/tests/examples/)
+gcc helloworld.c -o hello `pkg-config --cflags --libs gstreamer-1.0`
+
+#navseek et timeoverlay
+gst-launch-1.0 filesrc location=1.mp4 ! decodebin ! videoconvert ! timeoverlay ! navseek ! autovideosink	
+
+ges-launch-1.0 -v ximagesink +clip output.avi ->OK
+
+ges-launch-1.0 -v ximagesink +clip output.avi inpoint=1 -> ****Attention***** dans version actuelle, malgré le tuto en ligne: marche pas sans duration
+
+
+###+title: la syntaxe (astuce: il fallait duration) ges/ges-title-clip.c
+ges-launch-1.0 +title "hello" layer=0 duration=3 +clip 174.ogg layer=1 duration=5
+ges-launch-1.0 +title "hello" duration=3 +clip 174.ogg duration=5
+
+ges-launch-1.0 +title "hello" layer=0 duration=3
+	set-color 566854855569 #pas encore compris comment avoir la bonne couleur... guint32? 
+	set-background 566854855569
+	set-font-desc "serif 24" #https://developer.gnome.org/pango/stable/pango-Fonts.html#pango-font-description-from-string
+	fonts: serif verdana times courier
+	#alignments: ges/ges-enums.h -> GESTextHAlign et GESTextVAlign
+	set-halignment 0 # (0-left 1-center 2-right 4-position 5-absolute)
+	set-halignment 4 set-xpos 0.7 #pour set la xpos il faut halignment position
+	set-valignment 4 # (0-baseline 1-bottom 2-top 3-position 4-center 5-absolute)
+	
+#title animation fade in fade out	
+ges-launch-1.0 -a fakesink +test-clip black duration=3 +title "hello" duration=6 start=2 set-background 0 +test-clip black duration=3 start=7
+	
+
+###precious links
+liste gstreamer devel https://lists.freedesktop.org/mailman/listinfo/gstreamer-devel
+http://gstreamer-devel.966125.n4.nabble.com/ges-launch-1-0-command-line-td4690013.html -> ils ont un truc +test-clip d=5
+
+
+
+
+
+###ges/exemples/
+
+builder directement dans ges/exemples sans utiliser gnu make:
+(inspiré de: https://gstreamer.freedesktop.org/documentation/tutorials/basic/hello-world.html)
+export PKG_CONFIG_PATH=/usr/X11R7/lib/pkgconfig
+gcc test1.c -o test1_vvnx `pkg-config --cflags --libs gst-editing-services-1.0`
+
+test4.c remanié ('vvnx1") avec output video marche avec:
+gchar *container = (gchar *) "application/ogg";
+gchar *audio = (gchar *) "video/x-theora";
+
+transition.c 
+./transition /root/1.avi 0 5 /root/2.avi 0 5 -d 1 -t crossfade
+./transition /root/1.avi 9 6 /root/2.avi 5 3 -d 0 #comme ça pas de transition qui ne marche pas anyway
+pb de sink mais ne plante pas 
+
+set du sink moi même dans transition: 
+	make transition pour builder
+	à make_timeline():
+	GstElement * mon_sink;
+	mon_sink = gst_element_factory_make ("ximagesink", "ximagesink0"); 
+    ges_pipeline_preview_set_video_sink(pipeline, mon_sink);
+    
+le inpoint marche sur le premier des deux, ensuite écran noir pour le deuxième. --> probablement pb de vaapi qui marche pour un seul des concurrent threads 
+	
+GESClip est un GESTimelineElement (donc set ses propriétés de timeline elmt...) 
+
+
+
+
+
+##DEBUG
+exemple: pour débugger ges/ges-command-line-formatter.c -> 
+GST_DEBUG ("vvnx on est dans ges dans _cleanup_fields");
+GST_DEBUG_FILE=/root/debug GST_DEBUG_NO_COLOR=1 GST_DEBUG=ges:2 ges-launch-1.0 +clip SOMA-2501.mp3 inpoint=853 duration=20
+
+GST_DEBUG=ges:5 ./vvnx1 file:///root/out.ogg /root/1.avi
+
+les elements gessrc et gesdemux -> gst-inspect-1.0 gessrc
+	
+grep -r GST_DEBUG_CATEGORY_INIT ges/	-> gescontainer gestree gestimeline gespipeline ges-asset
+GST_DEBUG=gestimeline:9 ./vvnx1 file:///root/out.ogg /root/1.avi
+
+Error --> Profile <GstEncodingContainerProfile@0x7f1a540054c0> could no be set
+
+je cherche des exemples de profiles (container, format...)	
+https://github.com/GStreamer/gst-plugins-base/blob/master/gst-libs/gst/pbutils/encoding-profile.c
+	
+
+##vidéo saute sur le XPS13 -> choppy: (particulièrement visible sur une video de drone).
+quand je la regarde sur le tel ça saute pas. Buffer des players de mon ordi je suppose? car la pipeline directement
+reliée à la source = lecture depuis le HDD?
+Sur le NUC j'ai pas le problème.
+
+
+##dissection tools/ges-launcher.c
+ges-launch-1.0 +clip DJI_0174.MOV
+ges-launch-1.0 +clip 174.ogg
+
+#vvnx2.c
+
+--> mon hypothèse c'est que la transformation de la command line est @ _create_timeline() dans ges-launcher.c
+boils down to: ces 2 lignes:
+
+project = ges_project_new (serialized_timeline); //gchar *sanitized_timeline = " +clip 174.ogg"; //il ***FAUT*** un leading space 
+self->priv->timeline = GES_TIMELINE (ges_asset_extract (GES_ASSET (project), &error));
+
+
+Maintenant: comment est créée la timeline?
+#ges-launcher.c / vvnx2.c
+timeline = GES_TIMELINE (ges_asset_extract (GES_ASSET (project), &error));
+#ges-project.c
+project = GES_PROJECT (ges_asset_request (GES_TYPE_TIMELINE, id, NULL));
+#ges-asset.c
+
+#ges-timeline.c
+GST_DEBUG_FILE=/root/debug_ogg GST_DEBUG_NO_COLOR=1 GST_DEBUG=gestimeline:9 ./vvnx2
+
+j'ai pas un espoir massif de voir une différence de timeline entre " +clip fichier.ogg" et " +clip fichier.mp4"
+je pars sur un fichier perso façon ges/exemples/ pour du gesuriclip dans l'idée que la différence est peut être pas dépendante de la timeline mais
+plus bas niveau. 
+
+#vvnx3.c
+simplissime: une timeline avec une seule layer et une seule track video
+effectivement je retrouve le même comportement: bloquage au preview d'un fichier .ogg alors qu'un .mov marche.
+le mécanisme une fois que timeline, pipeline, layer, track mis en place:
+
+src = ges_uri_clip_new (uri);
+g_object_set (src, "start", 0, "in-point", inpoint * GST_SECOND, "duration", duration * GST_SECOND, "mute", mute, NULL);
+ges_layer_add_clip (ma_layer, GES_CLIP (src));
+
+puis lancement de la pipeline avec:
+gst_element_set_state (GST_ELEMENT (pipeline), GST_STATE_PLAYING);
+
+voir les dotfiles pour voir les éléments:
+GST_DEBUG_DUMP_DOT_DIR=/root/mesdots/ ./vvnx3 174.ogg
+
+#Journée difficile sommeil réduit avec flips nocturnes majeurs: j'y vais mollo+++
+des dots files sur une pipeline simplissime pour apprendre comment ça marche:
+
+GST_DEBUG_DUMP_DOT_DIR=/root/mesdots/hello_world gst-launch-1.0 filesrc location=174.mp4 ! decodebin ! vaapisink
+
+0.00.00.017907756-gst-launch.NULL_READY.dot
+0.00.00.034830719-gst-launch.READY_PAUSED.dot
+0.00.00.036233182-gst-launch.PAUSED_PLAYING.dot
+0.00.24.060365277-gst-launch.PLAYING_PAUSED.dot
+0.00.24.061595808-gst-launch.PAUSED_READY.dot
+
+-> à la fin des noms des dots ce sont les états (null paused playing etc...). Decodebin intègre un vaapidecodebin.
+
+GST_DEBUG_DUMP_DOT_DIR=/root/mesdots/mp4 ./vvnx3 174.mp4
+
+0.00.00.049773835-gst-discoverer-target-state.dot
+0.00.00.114930773-video_nlecomposition0-new-stack__0:00:00.000000000--0:00:04.000000000.dot
+
+level		type			nom							parent
+
+1			NleComposition	video_nlecomposition0		gesvideotrack0
+2			GstBin			current-bin					
+3			NleSource
+3			NleOperation
+...
+dans la NleSource
+4			GstBin			videosrcbin
+5			GstUriDecodeBin	uridecodebin0
+6			GstDecodeBin	decodebin3
+
+
+dans le decodebin il y a typefind > qtdemux > multiqueue > h264parse > capsfilter
+
+
+GST_DEBUG_DUMP_DOT_DIR=/root/mesdots/ogg ./vvnx3 174.ogg
+
+0.00.00.023039915-gst-discoverer-target-state.dot
+0.00.00.076710607-video_nlecomposition0-new-stack__0:00:00.000000000--0:00:04.000000000.dot
+0.00.02.031307869-video_nlecomposition0-new-stack__0:00:04.000000000--0:00:04.000000001.dot
+
+--> Pour visualisation -Tx11 est ce qui marche le mieux (bouton souris du milieu)
+
+
+GST_DEBUG_DUMP_DOT_DIR=/root/mesdots/decodebin/ gst-launch-1.0 uridecodebin uri=file:///root/174.mp4 ! videoconvert ! autovideosink
+gst-launch-1.0 filesrc location=/root/174.mp4 ! decodebin ! videoconvert ! autovideosink --> marche 
+gst-launch-1.0 filesrc location=/root/174.mp4 ! decodebin2 ! videoconvert ! autovideosink WARNING: erroneous pipeline: no element "decodebin2"
+gst-launch-1.0 filesrc location=/root/174.mp4 ! decodebin3 ! videoconvert ! autovideosink --> marche
+
+donc c'est pas decodebin en soit qui pose un pb
+
+je trouve ça chelou que le nom du GstDecodeBin soit decodebin3
+
+
+GST_DEBUG=vaapidecodebin:9 ./vvnx3 174.mp4 -> rien
+GST_DEBUG_FILE=/root/debug_vaapi GST_DEBUG_NO_COLOR=1 GST_DEBUG=vaapi:9 ./vvnx3 174.mp4
+
+#Debug howto ges-track.c et nlecomposition:
+ges/ges-track.c
+GST_DEBUG_FILE=/root/debug_ges_ogg GST_DEBUG_NO_COLOR=1 GST_DEBUG=ges:9 ./vvnx3 174.ogg
+GST_DEBUG_FILE=/root/debug_ges_mp4 GST_DEBUG_NO_COLOR=1 GST_DEBUG=ges:9 ./vvnx3 174.mp4
+plugins/nle/nlecomposition.c
+GST_DEBUG_FILE=/root/debug_nle_ogg GST_DEBUG_NO_COLOR=1 GST_DEBUG=nlecomposition:4 ./vvnx3 174.ogg
+GST_DEBUG_FILE=/root/debug_nle_mp4 GST_DEBUG_NO_COLOR=1 GST_DEBUG=nlecomposition:4 ./vvnx3 174.mp4
+
+##GROS Bump 040120 
+ges-launch-1.0 -v xvimagesink +clip 174.mp4 ou DJI_0174.mp4 #fonctionne (oubli, fatigue, déprime ???)
+
+
+
+
+
+
