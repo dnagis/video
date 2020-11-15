@@ -1,14 +1,18 @@
-
-
 /**
+ * 
+ * Premiers essais de communication low-level v4l
+ * 
+ * https://www.kernel.org/doc/html/latest/userspace-api/media/index.html
+ * 
  * https://medium.com/@athul929/capture-an-image-using-v4l2-api-5b6022d79e1d
  * https://www.linuxtv.org/downloads/v4l-dvb-apis-old/capture-example.html
+ * https://www.kernel.org/doc/html/latest/userspace-api/media/v4l/capture.c.html
  * 
  * */
 
 #include <stdio.h> 
 #include <fcntl.h> 
-#include <unistd.h> // for close
+#include <unistd.h> // for close(fd)
 #include <errno.h> 
 #include <sys/ioctl.h>
 #include <linux/videodev2.h>
@@ -17,13 +21,19 @@
 
 extern int errno; 
 
+/**
+ * 
+ * Pour avoir les infos via v4l-utils: v4l2-ctl --all
+ * 
+ * 
+ **/
 int query_caps(int fd) {
 	struct v4l2_capability cap;
 	if (-1 == ioctl(fd, VIDIOC_QUERYCAP, &cap)) {
 		perror("VIDIOC_QUERYCAP");
 		return 1;
 	}
-	printf("caps=0x%08x\n",cap.capabilities); //0x84a00001
+	printf("caps=0x%08x\n",cap.capabilities); //0x84a00001 pour la Creative (Live! Cam Chat HD VF0790: Live!)
 	return 0;
 
 }
@@ -35,7 +45,7 @@ int set_format(int fd) {
     format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     format.fmt.pix.width = 640;
     format.fmt.pix.height = 360;
-    //format.fmt.pix.pixelformat = V4L2_PIX_FMT_YUYV; //définition dans linux/videodev2.h
+    format.fmt.pix.pixelformat = V4L2_PIX_FMT_YUYV; //define des pixelformats dans linux/videodev2.h
     //format.fmt.pix.pixelformat = V4L2_PIX_FMT_H264; //juste pour tester
     format.fmt.pix.field = V4L2_FIELD_NONE;
     int res = ioctl(fd, VIDIOC_S_FMT, &format);
@@ -58,8 +68,8 @@ int main()
 		printf("Error Number % d au open fd\n", errno); 		
 	} 
 	
-	//set_format(fd);
-	query_caps(fd);
+	set_format(fd);
+	//query_caps(fd);
 
 	
 	
