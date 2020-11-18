@@ -4,6 +4,13 @@
  * 
  * kernel doc: user space API > Media > Part I: v4l API > 10. Video Capture Example
  * 
+ * Output possible vers un fichier:
+ * capture -o > out.raw
+ * 
+ * Puis lecture gst:
+ * 
+ * gst-launch-1.0 filesrc location=out.raw ! rawvideoparse width=640 height=360 format=yuy2 ! vaapisink
+ * 
  * 
  * V4L2 video capture example
  *
@@ -76,6 +83,7 @@ static void process_image(const void *p, int size)
                 fwrite(p, size, 1, stdout);
 
         fflush(stderr);
+        //fprintf(stderr, "Dans process_image, size=%i\n", size); //460800 = 360 (height) * 1280 (bytesperline)
         fprintf(stderr, ".");
         fflush(stdout);
 }
@@ -441,6 +449,7 @@ static void init_device(void)
 
         switch (io) {
         case IO_METHOD_READ:
+                //on ne passe pas ici
                 if (!(cap.capabilities & V4L2_CAP_READWRITE)) {
                         fprintf(stderr, "%s does not support read i/o\\n",
                                  dev_name);
@@ -450,6 +459,7 @@ static void init_device(void)
 
         case IO_METHOD_MMAP:
         case IO_METHOD_USERPTR:
+                //on passe ici                
                 if (!(cap.capabilities & V4L2_CAP_STREAMING)) {
                         fprintf(stderr, "%s does not support streaming i/o\\n",
                                  dev_name);
@@ -467,6 +477,7 @@ static void init_device(void)
         cropcap.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 
         if (0 == xioctl(fd, VIDIOC_CROPCAP, &cropcap)) {
+                //fprintf(stderr, "cropcap 0 \\n"); on passe ici
                 crop.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
                 crop.c = cropcap.defrect; /* reset to default */
 
@@ -482,13 +493,14 @@ static void init_device(void)
                 }
         } else {
                 /* Errors ignored. */
-        }
+         }
 
 
         CLEAR(fmt);
 
         fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
         if (force_format) {
+                //fprintf(stderr, "force format + \n"); //on ne passe pas ici
                 fmt.fmt.pix.width       = 640;
                 fmt.fmt.pix.height      = 480;
                 fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_YUYV;
@@ -499,11 +511,13 @@ static void init_device(void)
 
                 /* Note VIDIOC_S_FMT may change width and height. */
         } else {
+				//fprintf(stderr, "force format - \n");
                 /* Preserve original settings as set by v4l2-ctl for example */
                 if (-1 == xioctl(fd, VIDIOC_G_FMT, &fmt))
                         errno_exit("VIDIOC_G_FMT");
         }
 
+		fprintf(stderr, "width=%i height=%i bpline=%i\n", fmt.fmt.pix.width, fmt.fmt.pix.height, fmt.fmt.pix.bytesperline); //w=640 h=360 bpl=1280, idem v4l2-ctl --all
         /* Buggy driver paranoia. */
         min = fmt.fmt.pix.width * 2;
         if (fmt.fmt.pix.bytesperline < min)
@@ -517,7 +531,7 @@ static void init_device(void)
                 init_read(fmt.fmt.pix.sizeimage);
                 break;
 
-        case IO_METHOD_MMAP:
+        case IO_METHOD_MMAP: //le gagnant
                 init_mmap();
                 break;
 
@@ -658,6 +672,6 @@ int main(int argc, char **argv)
         stop_capturing();
         uninit_device();
         close_device();
-        fprintf(stderr, "\\n");
+        fprintf(stderr, "\n");
         return 0;
 }

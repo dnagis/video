@@ -69,7 +69,7 @@ int main()
 	} 
 	
 	set_format(fd);
-	//query_caps(fd);
+	query_caps(fd);
 
 	
 	
