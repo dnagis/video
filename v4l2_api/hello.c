@@ -1,12 +1,18 @@
 /**
  * 
- * Premiers essais de communication low-level v4l
+ * Premiers essais de communication low-level v4l, je ne suis pas allé jusqu'au bout
+ * parce qu'entre temps je suis tombé sur https://www.kernel.org/doc/html/latest/userspace-api/media/v4l/capture.c.html
  * 
- * https://www.kernel.org/doc/html/latest/userspace-api/media/index.html
+ * Mais ça a été mon premier appel d'une IOCTL
  * 
+ * Basé sur:
  * https://medium.com/@athul929/capture-an-image-using-v4l2-api-5b6022d79e1d
+ * 
+ * 
+ * 
+ * 
  * https://www.linuxtv.org/downloads/v4l-dvb-apis-old/capture-example.html
- * https://www.kernel.org/doc/html/latest/userspace-api/media/v4l/capture.c.html
+ * 
  * 
  * */
 
