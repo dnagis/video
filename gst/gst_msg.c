@@ -2,7 +2,11 @@
  * 
  * Récupérer des valeurs de quantification d'image dans un bus message
  * 
- * Basic tutorial 1: Hello world! mais pour la gestion des messages: la partie "Parse message" de Basic tutorial 3: Dynamic pipelines
+ * Basé sur: 
+ * Basic tutorial 1: Hello world! 
+ * mais pour la gestion des messages: la partie "Parse message" de Basic tutorial 3: Dynamic pipelines
+ * 
+ * https://gstreamer.freedesktop.org/documentation/tutorials/basic/index.html
  * 
  * gcc gst_msg.c -o gst_msg `pkg-config --cflags --libs gstreamer-video-1.0 gtk+-3.0 gstreamer-1.0`
  * 
