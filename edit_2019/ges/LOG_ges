@@ -1,7 +1,7 @@
 ######Grandes Lignes######
-Install: untar des tarballs de l'été 2019 avant d'unpacker gstreamer (et bien attendre que l'untar ait terminé+++)
-	glib_gtk_vvnx.tar.xz  (sinon undefined symbol au runtime: g_object_new_with_properties)
-	python3_vvnx.tar.xz (pour le build: bloque au make GES.gir)
+2020: attention xvimagesink (le sink par défaut) plante: donc:
+
+ges-launch-1.0 -v ximagesink +test-clip smpte duration=5
 	
 ges-launch-1.0 help --> une aide plus sympa que --help
 
