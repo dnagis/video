@@ -1,0 +1,18 @@
+# v4l low level en C, mmap (streaming IO)
+
+## Doc
+https://www.kernel.org/doc/html/latest/userspace-api/media/index.html
+https://www.linuxtv.org/downloads/v4l-dvb-apis-old/capture-example.html
+https://lwn.net/Articles/240667/ #Video4Linux2 part 6b: Streaming I/O
+
+
+## hello.c
+
+1st shot, j'étais parti sur l'exemple dans https://medium.com/@athul929/capture-an-image-using-v4l2-api-5b6022d79e1d
+mais pas assez détaillé, j'ai laissé tomber. M'a permi de faire une IOCTL...
+
+
+
+## kernel.c
+
+= https://www.kernel.org/doc/html/latest/userspace-api/media/v4l/capture.c.html

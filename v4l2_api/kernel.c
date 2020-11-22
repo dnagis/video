@@ -11,13 +11,13 @@
  * 
  * gst-launch-1.0 filesrc location=out.raw ! rawvideoparse width=640 height=360 format=yuy2 ! vaapisink
  * 
+ * Le crux actuel fin novembre 2020: init_mmap()
+ * so far...
+ * connaitre par coeur les définitions de la struct buffer, et du pointeur buffers.
+ * comprendre ça dans init_mmap()
+ * buffers = calloc(req.count, sizeof(*buffers)); // donc maitriser malloc()
+ * comprendre ce que fait mmap()
  * 
- * V4L2 video capture example
- *
- *  This program can be used and distributed without restrictions.
- *
- *      This program is provided with the V4L2 API
- * see https://linuxtv.org/docs.php for more information
  */
 
 #include <stdio.h>
