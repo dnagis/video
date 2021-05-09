@@ -1,4 +1,4 @@
-# Video et mostly gstreamer. Travail 2019 edit récupéré.
+# Video et mostly gstreamer.
 
 # gst
 	code gstreamer
