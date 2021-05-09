@@ -1,58 +1,36 @@
 ######Grandes Lignes######
-2020: attention xvimagesink (le sink par défaut) plante: donc:
+2021: attention xvimagesink (le sink par défaut) plante: donc:
 
 ges-launch-1.0 -v ximagesink +test-clip smpte duration=5
 	
 ges-launch-1.0 help --> une aide plus sympa que --help
 
-infos sur les fichiers: 
-gst-discoverer-1.0 -v DJI_0174.MOV -> 3840/2160
 
 
-#####ToDo
--titles -> la font? centrer? sur fond noir qui fade et defade ce serait sympa
--les filtres GL. Pour couleurs. dans les effets. (gst-inspect je crois). pourquoi ils marchent pas?
 
 
-#####Convert
-
-#Décodage h264 modifs taille et du raw dans le mp4 (attention à la taille du raw). Etait utile avant que je découvre que ges-launch sur les .MOV de dji marchait.
-gst-launch-1.0 filesrc location=DJI_0174.MOV ! qtdemux ! vaapidecodebin ! vaapipostproc ! video/x-raw,height=1080 ! qtmux ! filesink location=174.mp4
-
-#Décodage h264 et réencodage en theora en choisissant qualité theora
-gst-launch-1.0 filesrc location=DJI_0174.MOV ! qtdemux ! vaapidecodebin ! vaapipostproc height=1080 ! videoconvert ! theoraenc quality=28 ! oggmux ! filesink location=174.ogg
-#theoraenc quality -> Integer. Range: 0 - 63 Default: 48 #gst-inspect-1.0 theoraenc
-
-#Décodage h264 et réencodage h264 avec au milieu modifs format et size
-gst-launch-1.0 filesrc location=DJI_0174.MOV ! qtdemux ! vaapidecodebin ! vaapipostproc ! video/x-raw,height=1080 ! vaapih264enc ! qtmux ! filesink location=174.mp4
---> mais: ges-launch marche mal avec ça
 
 
-#Batch:
-		FILE_IN=/root/DJI_0174.MOV
-		
-		base=`basename $FILE_IN .MOV`
-		FILE_OUT=`echo ${base:5}`
-		
-		gst-launch-1.0 filesrc location=$FILE_IN ! qtdemux ! vaapidecodebin \
-			! vaapipostproc width=1080 ! videoconvert ! theoraenc quality=28 ! oggmux ! filesink location=$FILE_OUT.ogg
-
-gst-launch-1.0 filesrc location=$FILE ! qtdemux ! vaapidecodebin \
-	! vaapipostproc force-aspect-ratio=true format=3 width=1080 hue=10 \
-	! vaapih264enc ! qtmux ! filesink location=test.mp4
 	
 ###Runtime 
 ges-launch-1.0 +test-clip smpte duration=5
 la liste des patterns (comme "smpte") -> https://gstreamer.freedesktop.org/documentation/gst-editing-services/ges-enums.html?gi-language=c#GESVideoTestPattern
 
-ges-launch-1.0 +clip 174.ogg
-ges-launch-1.0 -v xvimagesink +clip 174.mp4 #En Preview (defaut) si vaapisink -> h264 plante (écran noir): astuce mettre du raw dedans
+#DJI
+ges-launch-1.0 -v xvimagesink +clip 174.mp4 ou DJI_0174.mp4 #fonctionne (j'ai cru longtemps que ça ne marchait pas)
 
+#RPiCam
+ges-launch-1.0 +clip in.mp4 inpoint=60 duration=15 -o output.mp4 -f "video/quicktime:video/x-h264"
+
+#Crop (l'effet videocrop en fait c'est un element gstreamer, donc pour voir les properties: gst-inspect et prepend set-)
+ges-launch-1.0 -v ximagesink +clip samedi.mp4 inpoint=1809 duration=15 +effect "videocrop" set-right 300 set-left 100
+
+
+
+
+
+#exemples en vrac
 ges-launch-1.0 +clip 174.ogg inpoint=2 duration=2 #duration devrait devenir optionel (ira jusqu'à la fin du fichier) dans une prochaine version
-
-
-ges-launch-1.0 +clip 1.mp4 inpoint=2 duration=4 +clip 2.mp4 inpoint=2 duration=4
-
 ges-launch-1.0 +clip 1.mp4 inpoint=2 duration=4 +clip 2.mp4 inpoint=2 duration=4 -o out.mp4 -f "video/quicktime:video/x-raw"
 ges-launch-1.0 +clip 1.mp4 inpoint=2 duration=4 +clip 2.mp4 inpoint=2 duration=4 -o out.mp4 -f "video/quicktime:video/x-h264"
 
@@ -63,7 +41,7 @@ ges-launch-1.0 -a fakesink +test-clip black duration=2 set-width 1920 set-height
  -o out.mp4 -f "video/quicktime:video/x-h264"
 
 #Effects
-ges-launch-1.0 +clip 174.ogg inpoint=2 duration=2 +effect "agingtv" set-scratch-lines 20 #les properties dans gst-inspect-1.0 agingtv
+ges-launch-1.0 +clip 174.ogg inpoint=2 duration=2 +effect "agingtv" set-scratch-lines 20 #les properties dans gst-inspect-1.0 agingtv (il faut ajouter "set-" devant)
 ges-launch-1.0 +clip 174.ogg inpoint=2 duration=2 +effect "fisheye" 
 
 ges-launch-1.0 +clip 174.mp4 +effect videorate set-rate 7 #syntaxe "bin-description"
@@ -82,7 +60,7 @@ avec filesrc malheureusement même sur du raw j'ai pas la correspondance
 modifier le rate en restant à 30FPS: astuce = videorate avec rate=
 gst-launch-1.0 filesrc location=174.mp4 num-buffers=100 ! qtdemux !  videorate rate=2 ! videoconvert ! qtmux ! filesink location=out.mp4
 
-lecture:
+lecture framerate:
 http://jojva.blogspot.com/2013/07/on-how-videorate-works-and-how-rate-was.html
 https://stackoverflow.com/questions/1334975/how-can-i-speed-up-a-video-by-dropping-frames #juste pour les mots clés en anglais
 
@@ -128,10 +106,7 @@ value = GES_VIDEO_STANDARD_TRANSITION_TYPE_CROSSFADE;
 
 	
 	
-#Build de la totalité de GES
-export PKG_CONFIG_PATH=/usr/X11R7/lib/pkgconfig:/usr/X11R7/share/pkgconfig/:/usr/share/pkgconfig/
-./configure --prefix=/usr/X11R7/ --enable-introspection=yes --enable-gobject-cast-checks=yes --enable-glib-asserts=yes 
-DESTDIR-compliant
+
 
 #Build dans ges/exemples: 
 export PKG_CONFIG_PATH=/usr/X11R7/lib/pkgconfig
@@ -334,10 +309,47 @@ plugins/nle/nlecomposition.c
 GST_DEBUG_FILE=/root/debug_nle_ogg GST_DEBUG_NO_COLOR=1 GST_DEBUG=nlecomposition:4 ./vvnx3 174.ogg
 GST_DEBUG_FILE=/root/debug_nle_mp4 GST_DEBUG_NO_COLOR=1 GST_DEBUG=nlecomposition:4 ./vvnx3 174.mp4
 
-##GROS Bump 040120 
-ges-launch-1.0 -v xvimagesink +clip 174.mp4 ou DJI_0174.mp4 #fonctionne (oubli, fatigue, déprime ???)
 
 
+
+#####Convert/Préparation fichiers
+
+###Tel
+
+#Telephone Android Moto Z recup fichiers
+adb shell ls /sdcard/DCIM/Camera/VID_20210509* | tr -d '\r' | xargs -n1 adb pull
+
+#que video (audio: missing plugins)
+gst-launch-1.0 filesrc location=in.mp4 ! qtdemux ! video/x-h264 ! qtmux ! filesink location=video.mp4
+
+#rotation
+gst-launch-1.0 filesrc location=video.mp4 ! qtdemux ! vaapidecodebin ! vaapipostproc video-direction=1 ! vaapih264enc ! h264parse ! mp4mux ! filesink location=out.mp4
+
+###DJI
+#Décodage h264 modifs taille et du raw dans le mp4 (attention à la taille du raw). Etait utile avant que je découvre que ges-launch sur les .MOV de dji marchait.
+gst-launch-1.0 filesrc location=DJI_0174.MOV ! qtdemux ! vaapidecodebin ! vaapipostproc ! video/x-raw,height=1080 ! qtmux ! filesink location=174.mp4
+
+#Décodage h264 et réencodage en theora en choisissant qualité theora
+gst-launch-1.0 filesrc location=DJI_0174.MOV ! qtdemux ! vaapidecodebin ! vaapipostproc height=1080 ! videoconvert ! theoraenc quality=28 ! oggmux ! filesink location=174.ogg
+#theoraenc quality -> Integer. Range: 0 - 63 Default: 48 #gst-inspect-1.0 theoraenc
+
+#Décodage h264 et réencodage h264 avec au milieu modifs format et size
+gst-launch-1.0 filesrc location=DJI_0174.MOV ! qtdemux ! vaapidecodebin ! vaapipostproc ! video/x-raw,height=1080 ! vaapih264enc ! qtmux ! filesink location=174.mp4
+--> mais: ges-launch marche mal avec ça
+
+
+#Batch:
+		FILE_IN=/root/DJI_0174.MOV
+		
+		base=`basename $FILE_IN .MOV`
+		FILE_OUT=`echo ${base:5}`
+		
+		gst-launch-1.0 filesrc location=$FILE_IN ! qtdemux ! vaapidecodebin \
+			! vaapipostproc width=1080 ! videoconvert ! theoraenc quality=28 ! oggmux ! filesink location=$FILE_OUT.ogg
+
+gst-launch-1.0 filesrc location=$FILE ! qtdemux ! vaapidecodebin \
+	! vaapipostproc force-aspect-ratio=true format=3 width=1080 hue=10 \
+	! vaapih264enc ! qtmux ! filesink location=test.mp4
 
 
 
