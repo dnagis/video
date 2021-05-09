@@ -1,4 +1,4 @@
-## videoEdit 2019
+## videoEdit
 
 débuté à Embrun le 28/11/19
 
