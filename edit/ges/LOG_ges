@@ -1,6 +1,5 @@
-######Grandes Lignes######
-2021: attention xvimagesink (le sink par défaut) plante: donc:
-
+###Sticky
+attention xvimagesink (le sink par défaut ges-launch) plante: donc:
 ges-launch-1.0 -v ximagesink +test-clip smpte duration=5
 	
 ges-launch-1.0 help --> une aide plus sympa que --help
@@ -8,19 +7,35 @@ ges-launch-1.0 help --> une aide plus sympa que --help
 
 
 
+###Telephone Android:
+#Recup fichiers via adb
+adb shell ls /sdcard/DCIM/Camera/VID_20210509* | tr -d '\r' | xargs -n1 adb pull
 
+#Résolution et ges-launch-1.0:
+Le Moto Z3 play génère des mp4:
+1) qui ont de l'audio qui fait planter ges -> caps filter video/x-h264
+2) en 1920x1080 (réglable???) et manque de bol c'est une résolution qui ne marche pas avec ges-launch, alors que 1280x720 marche, 3840x2160 (DJI) marche aussi
 
-
-	
-###Runtime 
-ges-launch-1.0 +test-clip smpte duration=5
-la liste des patterns (comme "smpte") -> https://gstreamer.freedesktop.org/documentation/gst-editing-services/ges-enums.html?gi-language=c#GESVideoTestPattern
+donc conversion + restriction video only:
+gst-launch-1.0 filesrc location=in.mp4 ! qtdemux ! video/x-h264 ! vaapidecodebin ! videoscale ! video/x-raw,width=1280,height=720 ! \
+vaapih264enc ! h264parse ! mp4mux ! filesink location=out.mp4
 
 #DJI
 ges-launch-1.0 -v xvimagesink +clip 174.mp4 ou DJI_0174.mp4 #fonctionne (j'ai cru longtemps que ça ne marchait pas)
 
 #RPiCam
-ges-launch-1.0 +clip in.mp4 inpoint=60 duration=15 -o output.mp4 -f "video/quicktime:video/x-h264"
+ges-launch-1.0 +clip in.mp4 inpoint=60 duration=15 -o out.mp4 -f "video/quicktime:video/x-h264"
+
+
+
+
+
+
+
+
+#Rotation
+gst-launch-1.0 filesrc location=video.mp4 ! qtdemux ! vaapidecodebin ! vaapipostproc video-direction=1 ! vaapih264enc ! h264parse ! mp4mux ! filesink location=out.mp4
+
 
 #Crop (l'effet videocrop en fait c'est un element gstreamer, donc pour voir les properties: gst-inspect et prepend set-)
 ges-launch-1.0 -v ximagesink +clip samedi.mp4 inpoint=1809 duration=15 +effect "videocrop" set-right 300 set-left 100
@@ -29,7 +44,10 @@ ges-launch-1.0 -v ximagesink +clip samedi.mp4 inpoint=1809 duration=15 +effect "
 
 
 
-#exemples en vrac
+
+#lignes en vrac (à ranger???)
+ges-launch-1.0 +test-clip smpte duration=5
+	la liste des patterns (comme "smpte") -> https://gstreamer.freedesktop.org/documentation/gst-editing-services/ges-enums.html?gi-language=c#GESVideoTestPattern
 ges-launch-1.0 +clip 174.ogg inpoint=2 duration=2 #duration devrait devenir optionel (ira jusqu'à la fin du fichier) dans une prochaine version
 ges-launch-1.0 +clip 1.mp4 inpoint=2 duration=4 +clip 2.mp4 inpoint=2 duration=4 -o out.mp4 -f "video/quicktime:video/x-raw"
 ges-launch-1.0 +clip 1.mp4 inpoint=2 duration=4 +clip 2.mp4 inpoint=2 duration=4 -o out.mp4 -f "video/quicktime:video/x-h264"
@@ -46,6 +64,8 @@ ges-launch-1.0 +clip 174.ogg inpoint=2 duration=2 +effect "fisheye"
 
 ges-launch-1.0 +clip 174.mp4 +effect videorate set-rate 7 #syntaxe "bin-description"
 ges-launch-1.0 +clip 174.mp4 +effect videobalance set-saturation 1.5
+
+
 
 
 #Framerate FPS rate videorate (accélérer / slow down)
@@ -312,18 +332,7 @@ GST_DEBUG_FILE=/root/debug_nle_mp4 GST_DEBUG_NO_COLOR=1 GST_DEBUG=nlecomposition
 
 
 
-#####Convert/Préparation fichiers
 
-###Tel
-
-#Telephone Android Moto Z recup fichiers
-adb shell ls /sdcard/DCIM/Camera/VID_20210509* | tr -d '\r' | xargs -n1 adb pull
-
-#que video (audio: missing plugins)
-gst-launch-1.0 filesrc location=in.mp4 ! qtdemux ! video/x-h264 ! qtmux ! filesink location=video.mp4
-
-#rotation
-gst-launch-1.0 filesrc location=video.mp4 ! qtdemux ! vaapidecodebin ! vaapipostproc video-direction=1 ! vaapih264enc ! h264parse ! mp4mux ! filesink location=out.mp4
 
 ###DJI
 #Décodage h264 modifs taille et du raw dans le mp4 (attention à la taille du raw). Etait utile avant que je découvre que ges-launch sur les .MOV de dji marchait.
