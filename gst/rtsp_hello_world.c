@@ -1,5 +1,6 @@
 /** 
  * un des exemples les plus simples dans le package gst-rtsp-server (examples/test-readme.c)
+ * voir mtox/gt à la section Network / RTSP pour plus de détails
  * 
  * Compilation (une fois le package installé) en dehors de meson avec:
  * 
