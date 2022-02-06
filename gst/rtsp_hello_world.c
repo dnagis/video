@@ -10,6 +10,10 @@
  * export PATH PKG_CONFIG_LIBDIR PKG_CONFIG_SYSROOT_DIR
  * arm-linux-gnueabihf-gcc rtsp_hello_world.c -o rtsp_hello_world `pkg-config --cflags --libs gstreamer-1.0 gstreamer-rtsp-server-1.0`
  * 
+ * lecture en local:
+ * gst-launch-1.0 rtspsrc location=rtsp://127.0.0.1:8554/test ! fakesink
+ * gst-launch-1.0 rtspsrc location=rtsp://127.0.0.1:8554/test latency=100 ! queue ! rtph264depay ! h264parse ! vaapih264dec ! videoconvert ! videoscale ! ximagesink
+ * 
  */
 
 #include <gst/gst.h>
@@ -40,7 +44,12 @@ main (int argc, char *argv[])
    * any launch line works as long as it contains elements named pay%d. Each
    * element with pay%d names will be a stream */
   factory = gst_rtsp_media_factory_new ();
-  gst_rtsp_media_factory_set_launch (factory, "( videotestsrc is-live=1 ! v4l2h264enc ! video/x-h264,level=(string)3 ! rtph264pay name=pay0 pt=96 )");
+  
+  //NUC
+  gst_rtsp_media_factory_set_launch (factory, "( videotestsrc is-live=1 ! vaapih264enc ! rtph264pay name=pay0 pt=96 )");
+  
+  //RPi
+  //gst_rtsp_media_factory_set_launch (factory, "( videotestsrc is-live=1 ! v4l2h264enc ! video/x-h264,level=(string)3 ! rtph264pay name=pay0 pt=96 )");
 
   gst_rtsp_media_factory_set_shared (factory, TRUE);
 
