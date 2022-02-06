@@ -1,8 +1,14 @@
-/* 
+/** 
  * gstreamer-rtsp-server/exemples/test-launch
  * 
  * gcc test-launch.c -o test-launch `pkg-config --cflags --libs gstreamer-1.0 gstreamer-rtsp-server-1.0`
  * ./test-launch "( videotestsrc is-live=1 ! vaapih264enc ! rtph264pay name=pay0 pt=96 )"
+ * 
+ * X-compil:
+ * export PATH PKG_CONFIG_LIBDIR PKG_CONFIG_SYSROOT_DIR
+ * arm-linux-gnueabihf-gcc test-launch.c -o test-launch `pkg-config --cflags --libs gstreamer-1.0 gstreamer-rtsp-server-1.0`
+ * 
+ * gst-launch-1.0 rtspsrc location=rtsp://192.168.49.1:8554/test latency=100 ! queue ! rtph264depay ! h264parse ! vaapih264dec ! videoconvert ! videoscale ! ximagesink
  * 
  * 
  */
