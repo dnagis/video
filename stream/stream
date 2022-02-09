@@ -1,16 +1,43 @@
-###Stream: Tip Cell, rationale
+####2022
+
+
+##rtsp sur le pi (test-launch). rtspsrc + filesink sur le pi, et imagesink sur le NUC
+
+#test d'une pipeline videotestsrc -> fakesink juste pour vérifier fonctionnement (non plantage)
+gst-launch-1.0 videotestsrc ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! fakesink
+
+#la pipeline servie en rtsp sur le RPi
+./test-launch "( videotestsrc ! v4l2h264enc ! video/x-h264,level=(string)3 ! rtph264pay name=pay0 pt=96 )"
+
+#lire le stream en imagesink sur une autre machine
+gst-launch-1.0 rtspsrc location=rtsp://192.168.49.1:8554/test latency=100 ! queue ! rtph264depay ! h264parse ! vaapih264dec ! videoconvert ! videoscale ! ximagesink
+
+#le stream en filesink
+gst-launch-1.0 -e rtspsrc location=rtsp://127.0.0.1:8554/test ! rtph264depay ! h264parse ! mp4mux ! filesink location=file.mp4
+gst-launch-1.0 -e rtspsrc location=rtsp://192.168.49.1:8554/test ! rtph264depay ! h264parse ! mp4mux ! filesink location=file.mp4
+
+
+#rpicamsrc servir en rtsp
+./test-launch "( rpicamsrc ! rtph264pay name=pay0 pt=96 )"
+
+
+
+
+
+
+
+
+
+
+####2020 (Le Thor avant covid je crois)
 
 RTP est basé sur UDP, on commence par le plus simple: UDP
 Gstreamer udpsink -> vers kimsufi
 kimsufi redistribue l'UDP vers un/des clients éventuels
 
-
-
 #Déjà fait:
 hello world UDP en local, puis sendto() depuis un ordi vers kimsufi qui recvfrom(). C socket programming - style
 Du C compilé localement et qui tourne sur kimsufi -> possible
-
-
 
 ###First Shot
 
