@@ -1,7 +1,7 @@
 ####2022
 
 
-##rtsp sur le pi (test-launch). rtspsrc + filesink sur le pi, et imagesink sur le NUC
+####rtsp sur le pi (via test-launch). rtspsrc + filesink sur le pi, et imagesink sur le NUC
 
 #test d'une pipeline videotestsrc -> fakesink juste pour vérifier fonctionnement (non plantage)
 gst-launch-1.0 videotestsrc ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! fakesink
@@ -9,16 +9,21 @@ gst-launch-1.0 videotestsrc ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! fak
 #la pipeline servie en rtsp sur le RPi
 ./test-launch "( videotestsrc ! v4l2h264enc ! video/x-h264,level=(string)3 ! rtph264pay name=pay0 pt=96 )"
 
-#lire le stream en imagesink sur une autre machine
-gst-launch-1.0 rtspsrc location=rtsp://192.168.49.1:8554/test latency=100 ! queue ! rtph264depay ! h264parse ! vaapih264dec ! videoconvert ! videoscale ! ximagesink
 
-#le stream en filesink
-gst-launch-1.0 -e rtspsrc location=rtsp://127.0.0.1:8554/test ! rtph264depay ! h264parse ! mp4mux ! filesink location=file.mp4
-gst-launch-1.0 -e rtspsrc location=rtsp://192.168.49.1:8554/test ! rtph264depay ! h264parse ! mp4mux ! filesink location=file.mp4
+
 
 
 #rpicamsrc servir en rtsp
 ./test-launch "( rpicamsrc ! rtph264pay name=pay0 pt=96 )"
+./test-launch "( rpicamsrc vflip=true hflip=true ! video/x-h264,width=640,height=480 ! rtph264pay name=pay0 pt=96 )"
+./test-launch "( rpicamsrc vflip=true hflip=true ! video/x-h264,width=1280,height=720 ! rtph264pay name=pay0 pt=96 )"
+
+#lire le stream en imagesink sur une autre machine
+gst-launch-1.0 rtspsrc location=rtsp://192.168.49.1:8554/test latency=100 ! queue ! rtph264depay ! h264parse ! vaapih264dec ! videoconvert ! videoscale ! vaapisink
+
+#rtspsrc --> filesink
+gst-launch-1.0 -e rtspsrc location=rtsp://127.0.0.1:8554/test ! rtph264depay ! h264parse ! mp4mux ! filesink location=file.mp4
+gst-launch-1.0 -e rtspsrc location=rtsp://192.168.49.1:8554/test ! rtph264depay ! h264parse ! mp4mux ! filesink location=file.mp4
 
 
 
