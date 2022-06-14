@@ -7,6 +7,12 @@ ges-launch-1.0 help --> une aide plus sympa que --help
 
 
 
+###RPiCam
+ges-launch-1.0 +clip in.mp4 inpoint=60 duration=15 -o out.mp4 -f "video/quicktime:video/x-h264"
+
+
+
+
 ###Telephone Android:
 #Recup fichiers via adb
 adb shell ls /sdcard/DCIM/Camera/VID_20210509* | tr -d '\r' | xargs -n1 adb pull
@@ -20,11 +26,12 @@ donc conversion + restriction video only:
 gst-launch-1.0 filesrc location=in.mp4 ! qtdemux ! video/x-h264 ! vaapidecodebin ! videoscale ! video/x-raw,width=1280,height=720 ! \
 vaapih264enc ! h264parse ! mp4mux ! filesink location=out.mp4
 
-#DJI
+
+
+
+###DJI
 ges-launch-1.0 -v xvimagesink +clip 174.mp4 ou DJI_0174.mp4 #fonctionne (j'ai cru longtemps que ça ne marchait pas)
 
-#RPiCam
-ges-launch-1.0 +clip in.mp4 inpoint=60 duration=15 -o out.mp4 -f "video/quicktime:video/x-h264"
 
 
 
