@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python
 
 #openCV: Hello world ouverture de video, affichage frames 
 #https://docs.opencv.org/4.x/dd/d43/tutorial_py_video_display.html
@@ -7,8 +7,8 @@
 import cv2 as cv
 
 
-
-cap = cv.VideoCapture('lunel_1.mp4')
+SAMPLE='/initrd/mnt/dev_save/packages/video_samples/capture/walkVauvert.mp4'
+cap = cv.VideoCapture(SAMPLE)
 
 #calcul du temps (ms) à attendre entre chaque affichage de frame (cv.waitKey)
 #Reference de tous les CAP_PROP_*: https://docs.opencv.org/4.x/d4/d15/group__videoio__flags__base.html#gaeb8dd9c89c10a5c63c139bf7c4f5704d
@@ -34,9 +34,11 @@ while cap.isOpened():
     cv.putText(frame, pos_frames, (15, 15), cv.FONT_HERSHEY_SIMPLEX, 0.5 , (0,0,0))
     ## [display_frame_number]
     
-
-    
-    cv.imshow('frame', frame)
+    cv.namedWindow('ma_window', cv.WINDOW_AUTOSIZE)
+    cv.imshow('ma_window', frame)
+    cv.moveWindow("ma_window", 100, 100)
+    cv.setWindowProperty("ma_window", cv.WND_PROP_TOPMOST, 1)
+    	
     if cv.waitKey(wait_time) == ord('q'):
         break
         
