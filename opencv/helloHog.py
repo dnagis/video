@@ -22,11 +22,15 @@ while cap.isOpened():
         print("Can't receive frame (stream end?). Exiting ...")
         break
         
-    pos_frames=str(cap.get(cv.CAP_PROP_POS_FRAMES))
+    pos_frames=int(cap.get(cv.CAP_PROP_POS_FRAMES))
+    time=int(cap.get(cv.CAP_PROP_POS_MSEC)) 
     	
-    print(pos_frames)
+    
+    
+    #https://stackoverflow.com/questions/54400034/what-does-cv2s-detectmultiscale-method-return
+    #dit que ce qui est retourné c'est une liste de rectangles
     found, _w = hog.detectMultiScale(frame, winStride=(8,8), padding=(32,32), scale=1.05)
-    print('%d found' % (len(found)))
+    print('frame: ', pos_frames, ' time: ', time ,' rectangles n=', len(found), ' contenu:', str(found))
         
         
 cap.release()
