@@ -1,14 +1,15 @@
 #!/usr/bin/python
 
 #openCV: Hello world ouverture de video, affichage frames 
+#./helloVideo.py /root/out.mp4
 #https://docs.opencv.org/4.x/dd/d43/tutorial_py_video_display.html
 
-
+import sys
 import cv2 as cv
 
 
-SAMPLE='/initrd/mnt/dev_save/packages/video_samples/capture/walkVauvert.mp4'
-cap = cv.VideoCapture(SAMPLE)
+
+cap = cv.VideoCapture(sys.argv[1])
 
 #calcul du temps (ms) à attendre entre chaque affichage de frame (cv.waitKey)
 #Reference de tous les CAP_PROP_*: https://docs.opencv.org/4.x/d4/d15/group__videoio__flags__base.html#gaeb8dd9c89c10a5c63c139bf7c4f5704d

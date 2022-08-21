@@ -2,11 +2,13 @@
 
 #HOG detection sur chaque frame samples/python/peopledetect.py
 
+
+import sys
 import cv2 as cv
 
 
-SAMPLE='/initrd/mnt/dev_save/packages/video_samples/capture/walkVauvert.mp4'
-cap = cv.VideoCapture(SAMPLE)
+
+cap = cv.VideoCapture(sys.argv[1])
 
 
 hog = cv.HOGDescriptor()
