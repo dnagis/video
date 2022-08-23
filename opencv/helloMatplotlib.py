@@ -8,7 +8,7 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 
-#data.txt
+#data.txt: chaque row est du type: "53 98" sans les "", et avec un nombre d'espaces indéfini
 data = np.loadtxt('data.txt')
 x = data[:, 0]
 y = data[:, 1]
