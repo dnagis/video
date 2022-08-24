@@ -3,6 +3,9 @@
 #Matplotlib hello world
 #Install: Il faut un GUI backend: aufs qt5; pip install pyqt5
 
+#matplotlib-3.5.3-cp38-cp38-manylinux_2_5_x86_64.manylinux1_x86_64.whl
+#deps: packaging kiwisolver cycler fonttools Pillow pyparsing python-dateutil six
+
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
