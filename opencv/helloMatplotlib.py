@@ -1,11 +1,9 @@
 #!/usr/bin/python
 
 #Matplotlib hello world
-#Install: Il faut un GUI backend: aufs qt5; pip install pyqt5
+#Install: Il faut un GUI backend: aufs qt5; pip install pyqt5 (3 pkgs: pyqt5 PyQt5-Qt5 PyQt5-sip)
 
-#matplotlib-3.5.3-cp38-cp38-manylinux_2_5_x86_64.manylinux1_x86_64.whl
-#deps: packaging kiwisolver cycler fonttools Pillow pyparsing python-dateutil six
-
+#matplotlib: 7 ou 8 deps
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
