@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-#HOG detection sur chaque frame samples/python/peopledetect.py
+#HOG detection sur chaque frame basé sur samples/python/peopledetect.py
 
 
 import sys
