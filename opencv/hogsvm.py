@@ -40,7 +40,7 @@ def hog(img):
 ## [hog]
 
 #digits.png: PNG image data, 2000 x 1000, 8-bit grayscale, non-interlaced
-#digits.png contient 50 row de digits ([0-9]x5)
+#digits.png affichage montre 50 row de digits ([0-9]x5)
 img = cv.imread(cv.samples.findFile('digits.png'),0)
 if img is None:
     raise Exception("we need the digits.png image from samples/data here !")
@@ -48,19 +48,33 @@ if img is None:
 
 cells = [np.hsplit(row,100) for row in np.vsplit(img,50)]
 
-print("taille de cells:", len(cells)) #50
-print("taille de cells[0]:", len(cells[0])) #100
-print("taille de cells[0][0]:", len(cells[0][0])) #20
-print(cells[49][99])
+print("len(cells):", len(cells)) #taille de la première dimension de l'array : 50
+print("np.ndim(cells):", np.ndim(cells)) #AttributeError: 'list' object has no attribute 'ndim' 
+#print("taille de cells[0]:", len(cells[0])) #100
+#print("taille de cells[0][0]:", len(cells[0][0])) #20
+#print(cells[0][0])
+#print(cells[0][0][0])
+#print(cells[0][0][0][0])
+#print(cells[0][0][0][0][0]) #Error
 
 # First half is trainData, remaining is testData
 #i[:50] --> "slicing"
 train_cells = [ i[:50] for i in cells ] #50 premiers à priori (0->50)
 test_cells = [ i[50:] for i in cells] #50 derniers à priori (50->99)
 
+#print("train_cells[0][0]:",train_cells[0][0])
+#print("taille de train_cells:",len(train_cells)) #50
+#print("taille de train_cells[0]:",len(train_cells[0])) #50
+#donc train_cells contient 2500 cells
+#print("train_cells[0][0]:",train_cells[0][0])
+
 ######     Now training      ########################
 
 deskewed = [list(map(deskew,row)) for row in train_cells]
+print("taille de deskewed:",len(deskewed)) #50
+print(train_cells[0][0])
+print(deskewed[0][0])
+
 hogdata = [list(map(hog,row)) for row in deskewed]
 trainData = np.float32(hogdata).reshape(-1,64)
 responses = np.repeat(np.arange(10),250)[:,np.newaxis]
