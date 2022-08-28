@@ -49,27 +49,30 @@ if img is None:
 cells = [np.hsplit(row,100) for row in np.vsplit(img,50)]
 
 #img: 2000(L)x1000(h) i.e. un array de 1000 fois 2000 pixels (np.ndim(img): 2, len(img)=1000, len(img[0])=2000)
-# np.vsplit(img,50) le divise en 50 bandes horizontales qui sont des arrays de 20x2000.
+# np.vsplit(img,50) le divise en 50 bandes horizontales (row) qui sont des arrays de 20x2000.
+#puis np.hsplit(row,100) divise chaque row en 100 digits
 
-print("np.ndim(cells):", np.ndim(cells)) #4 
-print("len(cells):", len(cells)) #50
-print("taille de cells[0]:", len(cells[0])) #100
-print("taille de cells[0][0]:", len(cells[0][0])) #20
-print("taille de cells[0][0][0]:", len(cells[0][0][0])) #20
-print("premier pixel:", cells[0][0][0][0]) #affiche un seul pixel, print(cells[0][0][0][0][0]) #Error
-print(cells[0][0]) #affiche un digit: 20x20 pixels
+#print("np.ndim(cells):", np.ndim(cells)) #4 
+#print("len(cells):", len(cells)) #50
+#print("taille de cells[0]:", len(cells[0])) #100
+#print("taille de cells[0][0]:", len(cells[0][0])) #20
+#print("taille de cells[0][0][0]:", len(cells[0][0][0])) #20
+#print("premier pixel:", cells[0][0][0][0]) #affiche un seul pixel, print(cells[0][0][0][0][0]) #Error
+#print(cells[0][0]) #affiche un digit: 20x20 pixels
 
 
 # First half is trainData, remaining is testData
 #i[:50] --> "slicing"
-train_cells = [ i[:50] for i in cells ] #50 premiers à priori (0->50)
-test_cells = [ i[50:] for i in cells] #50 derniers à priori (50->99)
+#train_cells c'est la moitié gauche de digits.png, test_cells c'est la moitié droite
+train_cells = [ i[:50] for i in cells ] #50 premiers (0->50)
+test_cells = [ i[50:] for i in cells] #50 derniers (50->99)
 
-#print("train_cells[0][0]:",train_cells[0][0])
-#print("taille de train_cells:",len(train_cells)) #50
-#print("taille de train_cells[0]:",len(train_cells[0])) #50
+print("train_cells[0][0]:",train_cells[0][0])
+print("taille de train_cells:",len(train_cells)) #50
+print("taille de train_cells[0]:",len(train_cells[0])) #50
 #donc train_cells contient 2500 cells
-#print("train_cells[0][0]:",train_cells[0][0])
+print("train_cells[0][0]:",train_cells[0][0])
+print("test_cells[0][49]:",test_cells[0][48])
 
 ######     Now training      ########################
 
