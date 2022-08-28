@@ -40,7 +40,7 @@ def hog(img):
 ## [hog]
 
 #digits.png: PNG image data, 2000 x 1000, 8-bit grayscale, non-interlaced
-#digits.png affichage montre 50 row de digits ([0-9]x5)
+#digits.png affichage graphique montre 50 row de digits ([0-9]x5)
 img = cv.imread(cv.samples.findFile('digits.png'),0)
 if img is None:
     raise Exception("we need the digits.png image from samples/data here !")
@@ -48,14 +48,17 @@ if img is None:
 
 cells = [np.hsplit(row,100) for row in np.vsplit(img,50)]
 
-print("len(cells):", len(cells)) #taille de la première dimension de l'array : 50
-print("np.ndim(cells):", np.ndim(cells)) #AttributeError: 'list' object has no attribute 'ndim' 
-#print("taille de cells[0]:", len(cells[0])) #100
-#print("taille de cells[0][0]:", len(cells[0][0])) #20
-#print(cells[0][0])
-#print(cells[0][0][0])
-#print(cells[0][0][0][0])
-#print(cells[0][0][0][0][0]) #Error
+#img: 2000(L)x1000(h) i.e. un array de 1000 fois 2000 pixels (np.ndim(img): 2, len(img)=1000, len(img[0])=2000)
+# np.vsplit(img,50) le divise en 50 bandes horizontales qui sont des arrays de 20x2000.
+
+print("np.ndim(cells):", np.ndim(cells)) #4 
+print("len(cells):", len(cells)) #50
+print("taille de cells[0]:", len(cells[0])) #100
+print("taille de cells[0][0]:", len(cells[0][0])) #20
+print("taille de cells[0][0][0]:", len(cells[0][0][0])) #20
+print("premier pixel:", cells[0][0][0][0]) #affiche un seul pixel, print(cells[0][0][0][0][0]) #Error
+print(cells[0][0]) #affiche un digit: 20x20 pixels
+
 
 # First half is trainData, remaining is testData
 #i[:50] --> "slicing"
@@ -71,9 +74,9 @@ test_cells = [ i[50:] for i in cells] #50 derniers à priori (50->99)
 ######     Now training      ########################
 
 deskewed = [list(map(deskew,row)) for row in train_cells]
-print("taille de deskewed:",len(deskewed)) #50
-print(train_cells[0][0])
-print(deskewed[0][0])
+#print("taille de deskewed:",len(deskewed)) #50
+#print(train_cells[0][0])
+#print(deskewed[0][0])
 
 hogdata = [list(map(hog,row)) for row in deskewed]
 trainData = np.float32(hogdata).reshape(-1,64)
