@@ -31,9 +31,12 @@ while cap.isOpened():
     #https://stackoverflow.com/questions/54400034/what-does-cv2s-detectmultiscale-method-return
     #dit que ce qui est retourné c'est une liste de rectangles
     found, _w = hog.detectMultiScale(frame, winStride=(8,8), padding=(32,32), scale=1.05)
-    print('frame: ', pos_frames, ' time: ', time ,' rectangles n=', len(found), ' contenu:', str(found))
+    
+    
+    detect = 1 if len(found) > 0 else 0
+    print('frame: ', pos_frames, ' time: ', time ,' rectangles n=', len(found), ' detect:', detect)
         
-    file_object.write(str(time) + ' ' + str(len(found)) + '\n')
+    file_object.write('time: ' + str(time) + ' n found: ' + str(len(found)) + ' detect:' + str(detect) + '\n')
         
         
 cap.release()
