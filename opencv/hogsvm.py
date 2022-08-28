@@ -67,19 +67,19 @@ cells = [np.hsplit(row,100) for row in np.vsplit(img,50)]
 train_cells = [ i[:50] for i in cells ] #50 premiers (0->50)
 test_cells = [ i[50:] for i in cells] #50 derniers (50->99)
 
-print("train_cells[0][0]:",train_cells[0][0])
-print("taille de train_cells:",len(train_cells)) #50
-print("taille de train_cells[0]:",len(train_cells[0])) #50
+#print("train_cells[0][0]:",train_cells[0][0])
+#print("taille de train_cells:",len(train_cells)) #50
+#print("taille de train_cells[0]:",len(train_cells[0])) #50
 #donc train_cells contient 2500 cells
-print("train_cells[0][0]:",train_cells[0][0])
-print("test_cells[0][49]:",test_cells[0][48])
+#print("train_cells[0][0]:",train_cells[0][0])
+#print("test_cells[0][49]:",test_cells[0][48])
 
 ######     Now training      ########################
 
 deskewed = [list(map(deskew,row)) for row in train_cells]
-#print("taille de deskewed:",len(deskewed)) #50
+print("taille de deskewed:",len(deskewed)) #50
 #print(train_cells[0][0])
-#print(deskewed[0][0])
+print(deskewed[0][0])
 
 hogdata = [list(map(hog,row)) for row in deskewed]
 trainData = np.float32(hogdata).reshape(-1,64)
