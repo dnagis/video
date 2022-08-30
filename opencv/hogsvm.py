@@ -3,6 +3,7 @@
 
 #Training par HOG
 #copie commentée de samples/python/tutorial_code/ml/py_svm_opencv/hogsvm.py
+#---> pour essayer de ***comprendre*** (pas d'objectif bien défini)
 #export OPENCV_SAMPLES_DATA_PATH=/initrd/mnt/dev_save/packages/opencv-4.6.0/
 #/initrd/mnt/dev_save/packages/opencv-4.6.0/samples/data/digits.png #2000x1000 8bits grayscale
 
@@ -85,7 +86,7 @@ hogdata = [list(map(hog,row)) for row in deskewed]
 trainData = np.float32(hogdata).reshape(-1,64)
 responses = np.repeat(np.arange(10),250)[:,np.newaxis]
 
-svm = cv.ml.SVM_create()
+svm = cv.ml.SVM_create() #ref: https://docs.opencv.org/4.x/d1/d2d/classcv_1_1ml_1_1SVM.html#details dans "Member Function Documentation"
 svm.setKernel(cv.ml.SVM_LINEAR)
 svm.setType(cv.ml.SVM_C_SVC)
 svm.setC(2.67)
