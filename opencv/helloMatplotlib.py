@@ -1,10 +1,17 @@
 #!/usr/bin/python
 
 #Matplotlib hello world
-#Install: Il faut un GUI backend: qt5: aufs qt5; pip install pyqt5 (3 pkgs: pyqt5 PyQt5-Qt5 PyQt5-sip)
 #pip install matplotlib: 7 ou 8 deps
 
-import matplotlib as mpl
+#backend: Affichage nécéssite un GUI backend: qt5: aufs qt5; pip install pyqt5 (3 pkgs: pyqt5 PyQt5-Qt5 PyQt5-sip)
+#liste des backends: You can pretend to put a wrong backend argument, then it will return you a ValueError with the list of valid matplotlib backends, like this:
+#import matplotlib
+#matplotlib.use('WRONG_ARG')
+#Agg = Anti Grain Geometry c++ library
+#FAQ: https://matplotlib.org/2.0.2/faq/usage_faq.html
+import matplotlib; matplotlib.use('Qt5Agg')
+
+
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -24,7 +31,7 @@ y = data[:, 1]
 #plt.plot(x, y,'bs')
 
 
-#
+
 #https://matplotlib.org/stable/plot_types/stats/eventplot.html#sphx-glr-plot-types-stats-eventplot-py
 #https://matplotlib.org/stable/plot_types/basic/bar.html#sphx-glr-plot-types-basic-bar-py
 fig, ax = plt.subplots()
