@@ -2,8 +2,7 @@
 
 #Matplotlib hello world
 #Install: Il faut un GUI backend: aufs qt5; pip install pyqt5 (3 pkgs: pyqt5 PyQt5-Qt5 PyQt5-sip)
-
-#matplotlib: 7 ou 8 deps
+#pip matplotlib: 7 ou 8 deps
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt

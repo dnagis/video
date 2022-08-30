@@ -36,7 +36,8 @@ while cap.isOpened():
     detect = 1 if len(found) > 0 else 0
     print('frame: ', pos_frames, ' time: ', time ,' rectangles n=', len(found), ' detect:', detect)
         
-    file_object.write('time: ' + str(time) + ' n found: ' + str(len(found)) + ' detect:' + str(detect) + '\n')
+    #file_object.write('time: ' + str(time) + ' n found: ' + str(len(found)) + ' detect:' + str(detect) + '\n')
+    file_object.write(str(time) + ' ' + str(detect) + '\n')
         
         
 cap.release()
