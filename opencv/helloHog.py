@@ -1,6 +1,9 @@
 #!/usr/bin/python
 
 #HOG detection sur chaque frame basé sur samples/python/peopledetect.py
+#Plot: 
+#gnuplot 5.4 patchlevel 4 (gnuplot-5.4.4.tar.gz)
+#gnuplot -e "plot 'detect.txt' with impulses lw 1; pause -1"
 
 
 import sys
