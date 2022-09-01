@@ -78,9 +78,9 @@ test_cells = [ i[50:] for i in cells] #50 derniers (50->99)
 ######     Now training      ########################
 
 deskewed = [list(map(deskew,row)) for row in train_cells]
-print("taille de deskewed:",len(deskewed)) #50
+#print("taille de deskewed:",len(deskewed)) #50
 #print(train_cells[0][0])
-print(deskewed[0][0])
+#print(deskewed[0][0])
 
 hogdata = [list(map(hog,row)) for row in deskewed]
 trainData = np.float32(hogdata).reshape(-1,64)
@@ -92,7 +92,8 @@ svm.setType(cv.ml.SVM_C_SVC)
 svm.setC(2.67)
 svm.setGamma(5.383)
 
-svm.train(trainData, cv.ml.ROW_SAMPLE, responses)
+#train(): cv::ml::SVM Class Reference --> Public member functions inherited from cv::ml::StatModel 
+svm.train(trainData, cv.ml.ROW_SAMPLE, responses) #cv.ml.ROW_SAMPLE: enum cv::ml::SampleTypes
 svm.save('svm_data.dat')
 
 ######     Now testing      ########################
