@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 
-#Training par HOG
+#Training par HOG de reconnaissance de handwritten digits
 #copie commentée de samples/python/tutorial_code/ml/py_svm_opencv/hogsvm.py
 #---> pour essayer de ***comprendre*** (pas d'objectif bien défini)
 #export OPENCV_SAMPLES_DATA_PATH=/initrd/mnt/dev_save/packages/opencv-4.6.0/
@@ -41,7 +41,7 @@ def hog(img):
 ## [hog]
 
 #digits.png: PNG image data, 2000 x 1000, 8-bit grayscale, non-interlaced
-#digits.png affichage graphique montre 50 row de digits ([0-9]x5)
+#digits.png affichage graphique montre 50 row de handwritten digits ([0-9]x5)
 img = cv.imread(cv.samples.findFile('digits.png'),0)
 if img is None:
     raise Exception("we need the digits.png image from samples/data here !")
@@ -86,15 +86,28 @@ hogdata = [list(map(hog,row)) for row in deskewed]
 trainData = np.float32(hogdata).reshape(-1,64)
 responses = np.repeat(np.arange(10),250)[:,np.newaxis]
 
-svm = cv.ml.SVM_create() #ref: https://docs.opencv.org/4.x/d1/d2d/classcv_1_1ml_1_1SVM.html#details dans "Member Function Documentation"
+svm = cv.ml.SVM_create() #ref: https://docs.opencv.org/4.x/d1/d2d/classcv_1_1ml_1_1SVM.html dans "Member Function Documentation"
 svm.setKernel(cv.ml.SVM_LINEAR)
 svm.setType(cv.ml.SVM_C_SVC)
 svm.setC(2.67)
 svm.setGamma(5.383)
 
+#Inheritance diagram de cv::ml::SVM est on top de https://docs.opencv.org/4.x/d1/d2d/classcv_1_1ml_1_1SVM.html
+
 #train(): cv::ml::SVM Class Reference --> Public member functions inherited from cv::ml::StatModel 
 svm.train(trainData, cv.ml.ROW_SAMPLE, responses) #cv.ml.ROW_SAMPLE: enum cv::ml::SampleTypes
+#save(): je suppose que c'est hérité de cv::Algorithm car il n'y a que là que je voie cette fonction. https://docs.opencv.org/4.x/d3/d46/classcv_1_1Algorithm.html
+#Saves the algorithm to a file. In order to make this method work, the derived class must implement Algorithm::write(FileStorage& fs).
 svm.save('svm_data.dat')
+#cv::ml::SVM a une fonction load()
+#Si je tente de grepper cette fonction dans les samples: greppe grep -r 'load(' .
+#./digits_video.py:    model = cv.ml.SVM_load(classifier_fn)
+#./letter_recog.py:        model.load(fn)
+#./digits.py:        self.model = cv.ml.SVM_load(fn)
+#./tutorial_code/core/mat_operations/mat_operations.py:def load():
+#./tutorial_code/objectDetection/cascade_classifier/objectDetection.py:if not eyes_cascade.load(cv.samples.findFile(eyes_cascade_name)):
+#Déjà ça a l'air de s'appeler un model
+
 
 ######     Now testing      ########################
 
