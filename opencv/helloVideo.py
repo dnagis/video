@@ -13,8 +13,9 @@ cap = cv.VideoCapture(sys.argv[1])
 
 #calcul du temps (ms) à attendre entre chaque affichage de frame (cv.waitKey)
 #Reference de tous les CAP_PROP_*: https://docs.opencv.org/4.x/d4/d15/group__videoio__flags__base.html#gaeb8dd9c89c10a5c63c139bf7c4f5704d
-fps=cap.get(cv.CAP_PROP_FPS) 
-wait_time=round(1000/fps)
+#visiblement marche pas à chaque coup
+#fps=cap.get(cv.CAP_PROP_FPS) 
+#wait_time=round(1000/fps)
 
 
 while cap.isOpened():
@@ -40,7 +41,7 @@ while cap.isOpened():
     cv.moveWindow("ma_window", 100, 100)
     cv.setWindowProperty("ma_window", cv.WND_PROP_TOPMOST, 1)
     	
-    if cv.waitKey(wait_time) == ord('q'):
+    if cv.waitKey(33) == ord('q'):
         break
         
         
