@@ -6,12 +6,14 @@
 import cv2 as cv
 import sys
 
+FILE = 'stuff.jpg'
 
-img = cv.imread(cv.samples.findFile('digits.png'))
+img = cv.imread(cv.samples.findFile(FILE))
 
 if img is None:
     sys.exit("Could not read the image.")
-
+    
+    
 cv.imshow("Display window", img)
 k = cv.waitKey(0)
 
