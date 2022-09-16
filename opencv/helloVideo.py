@@ -17,6 +17,14 @@ cap = cv.VideoCapture(sys.argv[1])
 #fps=cap.get(cv.CAP_PROP_FPS) 
 #wait_time=round(1000/fps)
 
+#problème de compatibilité gstreamer opencv:
+#[ WARN:0@0.047] global /initrd/mnt/dev_save/packages/opencv-4.6.0/modules/videoio/src/cap_gstreamer.cpp (1374) open OpenCV | GStreamer warning: unable to query duration of stream
+#[ WARN:0@0.047] global /initrd/mnt/dev_save/packages/opencv-4.6.0/modules/videoio/src/cap_gstreamer.cpp (1405) open OpenCV | GStreamer warning: Cannot query video position: status=1, value=16, duration=-1
+
+print("fps = " + str(cap.get(cv.CAP_PROP_FPS)) )
+print("total frames = " + str(cap.get(cv.CAP_PROP_FRAME_COUNT)) ) #-1, pb compatibilité gstreamer je suppose
+
+cap.set(cv.CAP_PROP_POS_FRAMES, 3000) #ne marche pas
 
 while cap.isOpened():
     ret, frame = cap.read()

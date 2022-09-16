@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-#Lecture video avec affichage frame par frame (mon_repo: helloVideo.py)
+#Lecture video avec affichage frame par frame (cf mon_repo: opencv/helloVideo.py)
 #HOGDescriptor_getDefaultPeopleDetector detectMultiScale sur chaque frame
 #draw rectangles sur les frames
 
