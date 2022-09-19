@@ -98,6 +98,10 @@ trainData = np.float32(hogdata).reshape(-1,64)
 #donc responses est un array de 250 [0] suivi de 250 [1] etc ...
 responses = np.repeat(np.arange(10),250)[:,np.newaxis]
 
+#Avec ça j'ai en réponse le même taux de succès. Le modèle dit que les digits que je vois comme des 0 sont des9,
+#Et au test il teste si ce que je vois comme des 0 sont des 9
+#responses = np.repeat(np.flip(np.arange(10),0),250)[:,np.newaxis]
+
 
 
 svm = cv.ml.SVM_create() #ref: https://docs.opencv.org/4.x/d1/d2d/classcv_1_1ml_1_1SVM.html dans "Member Function Documentation"
