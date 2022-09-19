@@ -6,7 +6,7 @@
 import cv2 as cv
 import sys
 
-FILE = 'stuff.jpg'
+FILE = 'digits.png'
 
 img = cv.imread(cv.samples.findFile(FILE))
 
