@@ -73,7 +73,7 @@ test_cells = [ i[50:] for i in cells] #50 derniers (50->99)
 #print("taille de train_cells[0]:",len(train_cells[0])) #50
 #donc train_cells contient 2500 cells
 #print("train_cells[0][0]:",train_cells[0][0])
-#print("test_cells[0][49]:",test_cells[0][48])
+#print("test_cells[0][0]:",test_cells[0][0])
 
 ######     Now training      ########################
 
@@ -82,9 +82,23 @@ deskewed = [list(map(deskew,row)) for row in train_cells]
 #print(train_cells[0][0])
 #print(deskewed[0][0])
 
+
+
+
 hogdata = [list(map(hog,row)) for row in deskewed]
+
+
+
 trainData = np.float32(hogdata).reshape(-1,64)
+
+#Responses: 
+#np.arange(10) --> array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+#np.repeat(np.arange(10),3) --> array([0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 7, 8, 8, 8, 9, 9, 9])
+#[:,np.newaxis] --> transforme array([0, 0, 1, 1, 2, 2, 3, 3, ... en array([[0],[0],[1],[1],[2],[2],[3],[3],...
+#donc responses est un array de 250 [0] suivi de 250 [1] etc ...
 responses = np.repeat(np.arange(10),250)[:,np.newaxis]
+
+
 
 svm = cv.ml.SVM_create() #ref: https://docs.opencv.org/4.x/d1/d2d/classcv_1_1ml_1_1SVM.html dans "Member Function Documentation"
 svm.setKernel(cv.ml.SVM_LINEAR)
@@ -95,6 +109,8 @@ svm.setGamma(5.383)
 #Inheritance diagram de cv::ml::SVM est on top de https://docs.opencv.org/4.x/d1/d2d/classcv_1_1ml_1_1SVM.html
 
 #train(): cv::ml::SVM Class Reference --> Public member functions inherited from cv::ml::StatModel 
+#exemple de train(): https://docs.opencv.org/3.4/d1/d73/tutorial_introduction_to_svm.html
+#--> svm->train(trainingDataMat, ROW_SAMPLE, labelsMat);
 svm.train(trainData, cv.ml.ROW_SAMPLE, responses) #cv.ml.ROW_SAMPLE: enum cv::ml::SampleTypes
 #save(): je suppose que c'est hérité de cv::Algorithm car il n'y a que là que je voie cette fonction. https://docs.opencv.org/4.x/d3/d46/classcv_1_1Algorithm.html
 #Saves the algorithm to a file. In order to make this method work, the derived class must implement Algorithm::write(FileStorage& fs).
