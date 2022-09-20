@@ -148,6 +148,11 @@ svm.save('svm_data.dat')
 deskewed = [list(map(deskew,row)) for row in test_cells]
 hogdata = [list(map(hog,row)) for row in deskewed]
 testData = np.float32(hogdata).reshape(-1,bin_n*4)
+
+#Si je flip la data je passe d'un taux de succès de 93% à 17.56%
+#flipedData = np.flip(testData, 1)
+#result = svm.predict(flipedData)[1]
+
 result = svm.predict(testData)[1]
 
 #######   Check Accuracy   ########################
