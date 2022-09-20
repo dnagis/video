@@ -46,26 +46,36 @@ img = cv.imread(cv.samples.findFile('digits.png'),0)
 if img is None:
     raise Exception("we need the digits.png image from samples/data here !")
 
+#img: 2000(L)x1000(h) i.e. un array de 1000 fois 2000 pixels (np.ndim(img): 2, len(img)=1000, len(img[0])=2000)
+#print("np.shape(img):", np.shape(img)) # --> (1000, 2000) --> shape(): nombre d elements dans chaque dimension de la plus haute à la plus basse. Donc 1000 rox de 2000 px
 
 cells = [np.hsplit(row,100) for row in np.vsplit(img,50)]
 
-#img: 2000(L)x1000(h) i.e. un array de 1000 fois 2000 pixels (np.ndim(img): 2, len(img)=1000, len(img[0])=2000)
-# np.vsplit(img,50) le divise en 50 bandes horizontales (row) qui sont des arrays de 20x2000.
+# np.vsplit(img,50) divise img en 50 bandes horizontales (rows) qui sont des arrays de 20x2000.
 #puis np.hsplit(row,100) divise chaque row en 100 digits
 
-#print("np.ndim(cells):", np.ndim(cells)) #4 
+#print("np.ndim(cells):", np.ndim(cells)) # --> 4 dimensions
+#print("np.shape(cells):", np.shape(cells)) # --> (50, 100, 20, 20) shape(): nombre d elements dans chaque dimension de la plus haute à la plus basse 
 #print("len(cells):", len(cells)) #50
 #print("taille de cells[0]:", len(cells[0])) #100
 #print("taille de cells[0][0]:", len(cells[0][0])) #20
 #print("taille de cells[0][0][0]:", len(cells[0][0][0])) #20
-#print("premier pixel:", cells[0][0][0][0]) #affiche un seul pixel, print(cells[0][0][0][0][0]) #Error
-#print(cells[0][0]) #affiche un digit: 20x20 pixels
+#print("premier pixel:", cells[0][0][0][0]) #affiche un seul pixel, si j'essaie au delà: print(cells[0][0][0][0][0]) #Error
+#print(cells[0][0]) #affiche un digit façon "ascii art": 20x20 pixels
 
 
-# First half is trainData, remaining is testData
+
+
+
+
+#"First half is trainData, remaining is testData"
 #i[:50] --> "slicing"
 #train_cells c'est la moitié gauche de digits.png, test_cells c'est la moitié droite
+
 train_cells = [ i[:50] for i in cells ] #50 premiers (0->50)
+#print("np.shape(train_cells):", np.shape(train_cells)) #(50, 50, 20, 20)
+#il doit y avoir 50 iterations = iteration sur la première dimension (les rows). i[:50] retrieve les 50 premiers elements de chaque iteration
+
 test_cells = [ i[50:] for i in cells] #50 derniers (50->99)
 
 #print("train_cells[0][0]:",train_cells[0][0])
