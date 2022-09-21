@@ -149,11 +149,30 @@ deskewed = [list(map(deskew,row)) for row in test_cells]
 hogdata = [list(map(hog,row)) for row in deskewed]
 testData = np.float32(hogdata).reshape(-1,bin_n*4)
 
+#print("np.shape(testData):", np.shape(testData)) # (2500, 64)
+
+#j'essaie sur seulement quelques éléments de testData
+#vvnxData = testData[1000:1002]
+#print("np.shape(vvnxData):", np.shape(vvnxData))# (1, 64)
+
+
+
+
 #Si je flip la data je passe d'un taux de succès de 93% à 17.56%
 #flipedData = np.flip(testData, 1)
 #result = svm.predict(flipedData)[1]
 
 result = svm.predict(testData)[1]
+
+#resultvvnx = svm.predict(vvnxData)[1]
+
+#print("np.shape(resultvvnx):", np.shape(resultvvnx)) #(1, 1) 
+#print("resultvvnx:", resultvvnx)
+
+
+
+
+
 
 #######   Check Accuracy   ########################
 mask = result==responses
