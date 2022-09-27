@@ -6,9 +6,10 @@
 import cv2 as cv
 import sys
 
-FILE = 'digits.png'
+#FILE = 'digits.png'
+#img = cv.imread(cv.samples.findFile(FILE))
 
-img = cv.imread(cv.samples.findFile(FILE))
+img = cv.imread(sys.argv[1])
 
 if img is None:
     sys.exit("Could not read the image.")
