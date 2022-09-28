@@ -34,6 +34,7 @@ while cap.isOpened():
         break
 
     found, _w = hog.detectMultiScale(frame, winStride=(8,8), padding=(32,32), scale=1.05)
+    #found, _w = hog.detect(frame, winStride=(8,8), padding=(32,32))
     draw_detections(frame, found)
 
 
