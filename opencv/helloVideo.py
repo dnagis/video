@@ -39,9 +39,11 @@ while cap.isOpened():
     ## [display_frame_number (trouvé dans tutorial_code/.../bg_sub.py)]
     #get the frame number and write it on the current frame
     pos_frames=str(int(cap.get(cv.CAP_PROP_POS_FRAMES)))
+    pos_time=str(int(cap.get(cv.CAP_PROP_POS_MSEC))/1000)
     #print("CAP_PROP_POS_MSEC=", int(cap.get(cv.CAP_PROP_POS_MSEC)))       
-    cv.rectangle(frame, (10, 2), (100,20), (255,255,255), -1)
+    cv.rectangle(frame, (10, 2), (150,20), (255,255,255), -1)
     cv.putText(frame, pos_frames, (15, 15), cv.FONT_HERSHEY_SIMPLEX, 0.5 , (0,0,0))
+    cv.putText(frame, pos_time, (75, 15), cv.FONT_HERSHEY_SIMPLEX, 0.5 , (0,0,0))
     ## [display_frame_number]
     
     cv.namedWindow('ma_window', cv.WINDOW_AUTOSIZE)
