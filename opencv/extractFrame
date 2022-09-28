@@ -1,0 +1,11 @@
+#!/usr/bin/bash
+
+
+VIDFILE=$1
+INPOINT=$2
+
+echo extraction dans $VIDFILE d\'une frame au temps = $INPOINT
+
+ges-launch-1.0 +clip $VIDFILE inpoint=$INPOINT duration=1 -o tmp.mp4 -f "video/quicktime:video/x-h264"
+gst-launch-1.0 filesrc location=tmp.mp4 ! qtdemux ! vaapih264dec ! videorate ! videoconvert ! video/x-raw,format=NV12,framerate=1/10 ! vaapijpegenc ! multifilesink location=frame.jpg
+rm tmp.mp4
