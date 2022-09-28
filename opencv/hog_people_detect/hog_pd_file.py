@@ -1,9 +1,14 @@
 #!/usr/bin/python
 
 #HOG detection sur chaque frame basé sur samples/python/peopledetect.py
-#Plot: 
+
+
+#Plot les results: 
 #gnuplot 5.4 patchlevel 4 (gnuplot-5.4.4.tar.gz)
 #gnuplot -e "plot 'detect.txt' with impulses lw 1; pause -1"
+#
+#gnuplot output to file
+#gnuplot -e "set terminal pngcairo; plot 'detect.txt' with impulses lw 1;" > output.png
 
 
 import sys
