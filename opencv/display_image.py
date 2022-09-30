@@ -15,7 +15,7 @@ if img is None:
     sys.exit("Could not read the image.")
     
 #dessiner un rect de 64x128 (pour HOG)    
-cv.rectangle(img, (40,40), (104,168), (0, 0, 255), 2) 
+#cv.rectangle(img, (40,40), (104,168), (0, 0, 255), 2) 
    
 cv.imshow("Display window", img)
 
