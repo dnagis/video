@@ -12,14 +12,18 @@ import numpy as np
 #https://www.geeksforgeeks.org/import-text-files-into-numpy-arrays/  
 data = np.loadtxt("detect.txt", usecols=1, dtype=int)
 
-print(data)
+#print(data)
 
-print("np.shape(data):", np.shape(data)) #np.shape(data): (1838,)
+print("np.shape(data): ", np.shape(data)) #np.shape(data): (1838,)
+print("taille de data: ", data.size)
 
 
-i=1 #step
-s_sub=5
-sub = data[i: i+ s_sub]
-print(sub)
+s_sub=30 #taille de chaque segment à analyser
+
+
+for i in range(0, data.size-s_sub):
+	sub = data[i: i+ s_sub]
+	print(sub)
+	print(np.nonzero(sub))
 
 
