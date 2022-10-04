@@ -88,7 +88,7 @@ test_cells = [ i[50:] for i in cells] #50 derniers (50->99)
 ######     Now training      ########################
 
 deskewed = [list(map(deskew,row)) for row in train_cells]
-#print("np.shape(deskewed):", np.shape(deskewed)) #shape() donne la taille de chaque dimension, ici: (50, 50, 20, 20)
+#print("np.shape(deskewed):", np.shape(deskewed)) #(50, 50, 20, 20)
 #print("taille de deskewed:",len(deskewed)) #50
 #print(train_cells[0][0])
 #print(deskewed[0][0])
@@ -96,24 +96,29 @@ deskewed = [list(map(deskew,row)) for row in train_cells]
 
 
 hogdata = [list(map(hog,row)) for row in deskewed]
-#print("np.shape(hogdata):", np.shape(hogdata)) #shape() donne la taille de chaque dimension, ici: (50, 50, 64)
+#print("np.shape(hogdata):", np.shape(hogdata)) #(50, 50, 64)
 
 
 trainData = np.float32(hogdata).reshape(-1,64)
-#print("np.shape(trainData):", np.shape(trainData)) #shape() donne la taille de chaque dimension, ici: (2500, 64)
+#print("np.shape(trainData):", np.shape(trainData)) #(2500, 64)
 #.reshape(-1,64) --> "Flattening an array" (convertir un array de n dimensions en un array de moindre n dimensions). Ici on converti du (50, 50, 64) en (2500, 64)
 #trainData est un array de 2500 x 64 (2500 digits de gauche. 50 rows de 50 digits). Chaque array de 64 est un Histogramme HOG de 64 bits d'un digit
 
 
 
-#Responses: 
+
+responses = np.repeat(np.arange(10),250)[:,np.newaxis]
+#print("np.shape(responses):", np.shape(responses)) #(2500, 1)
 #np.arange(10) --> array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
 #np.repeat(np.arange(10),3) --> array([0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 7, 8, 8, 8, 9, 9, 9])
 #[:,np.newaxis] --> transforme array([0, 0, 1, 1, 2, 2, 3, 3, ... en array([[0],[0],[1],[1],[2],[2],[3],[3],...
 #donc responses est un array de 250 [0] suivi de 250 [1] etc ...
-responses = np.repeat(np.arange(10),250)[:,np.newaxis]
 
-#Avec np.flip j'ai en réponse le même taux de succès. Logique: il a été trained d'une certaine manière, il évalue de la même manière
+
+
+
+
+#Si je flippe responses a	vec np.flip j'ai en réponse le même taux de succès. Logique: il a été trained d'une certaine manière, il évalue de la même manière
 #responses = np.repeat(np.flip(np.arange(10),0),250)[:,np.newaxis]
 
 
@@ -130,9 +135,13 @@ svm.setGamma(5.383)
 #exemple de train(): https://docs.opencv.org/3.4/d1/d73/tutorial_introduction_to_svm.html
 #--> svm->train(trainingDataMat, ROW_SAMPLE, labelsMat);
 svm.train(trainData, cv.ml.ROW_SAMPLE, responses) #cv.ml.ROW_SAMPLE: enum cv::ml::SampleTypes
+
+
+
+
+svm.save('svm_data.dat')
 #save(): je suppose que c'est hérité de cv::Algorithm car il n'y a que là que je voie cette fonction. https://docs.opencv.org/4.x/d3/d46/classcv_1_1Algorithm.html
 #Saves the algorithm to a file. In order to make this method work, the derived class must implement Algorithm::write(FileStorage& fs).
-svm.save('svm_data.dat')
 #cv::ml::SVM a une fonction load()
 #Si je tente de grepper cette fonction dans les samples: greppe grep -r 'load(' .
 #./digits_video.py:    model = cv.ml.SVM_load(classifier_fn)
