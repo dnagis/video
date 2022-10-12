@@ -1,6 +1,6 @@
-#https://learnopencv.com/deep-learning-with-opencvs-dnn-module-a-definitive-guide/
-
 #!/usr/bin/python
+
+#https://learnopencv.com/deep-learning-with-opencvs-dnn-module-a-definitive-guide/
 
 import cv2
 import numpy as np
