@@ -1,6 +1,8 @@
 #!/usr/bin/python
 
+#ObjectDetection neural network TensorFlow model: ssd_mobilenet_v2_coco_2018_03_29
 #https://learnopencv.com/deep-learning-with-opencvs-dnn-module-a-definitive-guide/
+
 
 import cv2
 import numpy as np
@@ -13,10 +15,15 @@ with open('/initrd/mnt/dev_save/packages/opencv-4.6.0/samples/data/dnn/object_de
 COLORS = np.random.uniform(0, 255, size=(len(class_names), 3))
 
 # load the DNN model
+# http://download.tensorflow.org/models/object_detection/ssd_mobilenet_v2_coco_2018_03_29.tar.gz (180Mo, lien trouvé en dérivant une URL trouvée 
+#	dans le tuto openCV "Conversion of TensorFlow Detection Models and Launch with OpenCV Python" en adaptant ssd_mobilenet_v1 à ce qui est dans la page learnopencv)
+# 	Le tarball contient frozen_inference_graph.pb et pipeline.config
+# Pour obtenir le .pbtxt: script dans les sources opencv: samples/dnn/tf_text_graph_ssd.py
+# --> python tf_text_graph_ssd.py --input=frozen_inference_graph.pb --config=pipeline.config --output=ssd_mobilenet_v2_coco_2018_03_29.pbtxt
 model = cv2.dnn.readNet(model='frozen_inference_graph.pb', config='ssd_mobilenet_v2_coco_2018_03_29.pbtxt',framework='TensorFlow')
 
 # read the image from disk
-image = cv2.imread('image.jpg')
+image = cv2.imread('image.jpg') #vehicle-traffic-object-detection-test-image.jpg (asiat persons & bikes)
 image_height, image_width, _ = image.shape
 # create blob from image
 blob = cv2.dnn.blobFromImage(image=image, size=(300, 300), mean=(104, 117, 123), swapRB=True)
