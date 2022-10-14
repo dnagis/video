@@ -28,11 +28,7 @@ net.setPreferableBackend(cv.dnn.DNN_BACKEND_OPENCV)
 
 # determine the output layer
 ln = net.getLayerNames()
-print(len(ln), ln) #A bien len=254
-
-unconn = net.getUnconnectedOutLayers() #ne plante pas
-print(unconn) #[200 227 254]
-#quit()
+#print(len(ln), ln) #len=254
 
 
 #Plante
@@ -106,14 +102,9 @@ def trackbar(x):
 
 cv.namedWindow('window')
 cv.createTrackbar('confidence', 'window', 50, 100, trackbar)
-load_image(PATH+'images/horse.jpg')
-#load_image('images/traffic.jpg')
-#load_image('images/zoo.jpg')
-#load_image('images/kitchen.jpg')
-#load_image('images/airport.jpg')
-#load_image('images/tennis.jpg')
-#load_image('images/wine.jpg')
-#load_image('images/bicycle.jpg')
+#load_image(PATH+'images/horse.jpg')
+load_image(PATH+'images/vehicle-traffic-object-detection-test-image.jpg')
+
 
 cv.destroyAllWindows()
 
