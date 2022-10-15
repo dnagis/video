@@ -103,7 +103,9 @@ def trackbar(x):
 cv.namedWindow('window')
 cv.createTrackbar('confidence', 'window', 50, 100, trackbar)
 #load_image(PATH+'images/horse.jpg')
-load_image(PATH+'images/vehicle-traffic-object-detection-test-image.jpg')
+FILE='vehicle-traffic-object-detection-test-image.jpg'
+FILE='8917903107_c9e6d7b3a2_z.jpg'
+load_image(PATH+'images/'+FILE)
 
 
 cv.destroyAllWindows()
