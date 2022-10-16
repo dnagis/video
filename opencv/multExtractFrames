@@ -1,0 +1,17 @@
+#!/usr/bin/bash
+
+#nmultExtractFrames capture.mp4 52,48,98
+VIDFILE=$1
+TIMES=$2
+
+
+IFS=',' read -r -a array_of_times <<< $TIMES
+
+for ONE_TIME in "${array_of_times[@]}"
+do
+    FILENAME_OUT="${VIDFILE%%.*}_${ONE_TIME}.jpg"
+    echo "extraction dans $VIDFILE d\'une frame au temps = ${ONE_TIME} destFile=$FILENAME_OUT"
+    ges-launch-1.0 +clip $VIDFILE inpoint=$ONE_TIME duration=1 -o tmp.mp4 -f "video/quicktime:video/x-h264"
+	gst-launch-1.0 filesrc location=tmp.mp4 ! qtdemux ! vaapih264dec ! videorate ! videoconvert ! video/x-raw,format=NV12,framerate=1/10 ! vaapijpegenc ! multifilesink location=$FILENAME_OUT
+	rm tmp.mp4
+done
