@@ -7,14 +7,15 @@
 import cv2 as cv
 import numpy as np
 import time
+import sys
 
 WHITE = (255, 255, 255)
 img = None
 img0 = None
 outputs = None
 
-#PATH prepended à tous les fichiers
-PATH='/initrd/mnt/dev_save/packages/cv_dnn/detection/yolov3-opencv/'
+#PATH prepended aux fichiers wieght, config, call names...
+PATH='/initrd/mnt/dev_save/packages/cv_dnn_data/detection/yolov3-opencv/'
 
 # Load names of classes and get random colors
 classes = open(PATH+'coco.names').read().strip().split('\n')
@@ -31,10 +32,10 @@ ln = net.getLayerNames()
 #print(len(ln), ln) #len=254
 
 
-#Plante
+#Dans script original plante ici
 #https://stackoverflow.com/questions/55883178/understanding-functions-forward-and-getunconnectedoutlayers
 #https://stackoverflow.com/questions/69834335/loading-yolo-invalid-index-to-scalar-variable
-#ln = [ln[i[0] - 1] for i in net.getUnconnectedOutLayers()] #original, plante
+#ln = [ln[i[0] - 1] for i in net.getUnconnectedOutLayers()] #pristine version
 ln = [ln[i - 1] for i in net.getUnconnectedOutLayers()]
 
 
@@ -102,11 +103,11 @@ def trackbar(x):
 
 cv.namedWindow('window')
 cv.createTrackbar('confidence', 'window', 50, 100, trackbar)
-#load_image(PATH+'images/horse.jpg')
-FILE='vehicle-traffic-object-detection-test-image.jpg'
-FILE='8917903107_c9e6d7b3a2_z.jpg'
-load_image(PATH+'images/'+FILE)
 
+
+IMAGE_FILE = sys.argv[1]
+load_image(IMAGE_FILE)
+#load_image(PATH+'images/'+IMAGE_FILE) #construction de path vers le fichier image
 
 cv.destroyAllWindows()
 
