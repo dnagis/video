@@ -2,7 +2,6 @@
  * Basé sur le tuto 5 de gstreamer: Basic tutorial 5: GUI toolkit integration
  * mais avec une pipeline maison, pour pouvoir ajouter un timeoverlay (voir basic2.c)
  * 
- * export PKG_CONFIG_PATH=/usr/X11R7/lib/pkgconfig
  * gcc gstgtk.c -o gstgtk `pkg-config --cflags --libs gstreamer-video-1.0 gtk+-3.0 gstreamer-1.0`
  * 
  * 

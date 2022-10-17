@@ -1,7 +1,10 @@
 Tutos gstreamer
 
-La doc en html est là:
+Lien vers la doc html online:
 https://gstreamer.freedesktop.org/documentation/tutorials/basic/index.html?gi-language=c
 
-Les fichiers ici:
+Lien vers les fichiers:
 https://github.com/GStreamer/gst-docs/tree/master/examples/tutorials
+
+Un exemple de commande line pour builder:
+gcc hello_world.c -o hello_world `pkg-config --cflags --libs gstreamer-1.0`
