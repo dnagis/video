@@ -2,7 +2,12 @@
  * gcc pipeline.c -o pipeline `pkg-config --cflags --libs gstreamer-1.0`
  * gst-launch-1.0 filesrc location=file.mp4 ! decodebin ! videoconvert ! ximagesink
  * 
+ * Dynamic Pipeline:
+ * https://gstreamer.freedesktop.org/documentation/tutorials/basic/dynamic-pipelines.html?gi-language=c
  * 
+ * link ne marche pas:
+ * https://stackoverflow.com/questions/71563425/elements-could-not-be-linked-which-elements-to-linkgstreamer-c
+ * "You cannot directly link decodebin. You need to connect a pad-added signal and link in the callback at runtime."
  */
 
 
@@ -34,9 +39,17 @@ main (int argc, char *argv[])
     return -1;
   }
 
-  /* Build the pipeline */
+  /*Premier link, de ce qui est linkable à ce niveau
+   * Astuce: gst-inscpect decodebin dit bien que pour ses pads: SRC: Availability: Sometimes
+   * Donc tu ne peux pas linker decodebin avec videoconvert ici à cause de ça (la solution est
+   * probablement "connect a pad-added signal and link in the callback at runtime"
+   * */
+  
+  
+  
   gst_bin_add_many (GST_BIN (pipeline), source, decoder, converter, sink, NULL);
-  if (gst_element_link_many (source, decoder, converter, sink) != TRUE) {
+  //if (gst_element_link_many (converter, sink, NULL) != TRUE) {
+  if (gst_element_link_many (source, decoder, NULL) != TRUE) {
     g_printerr ("Elements could not be linked.\n");
     gst_object_unref (pipeline);
     return -1;
