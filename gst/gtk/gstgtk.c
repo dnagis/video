@@ -1,8 +1,15 @@
 /**
+ * NE MARCHE PAS COMME ATTENDU SUR LE NUC
+ * 
  * Basé sur le tuto 5 de gstreamer: Basic tutorial 5: GUI toolkit integration
  * mais avec une pipeline maison, pour pouvoir ajouter un timeoverlay (voir basic2.c)
  * 
  * gcc gstgtk.c -o gstgtk `pkg-config --cflags --libs gstreamer-video-1.0 gtk+-3.0 gstreamer-1.0`
+ * 
+ * 
+ * gst-launch-1.0 filesrc location=mur_aigmrt_130922.mp4 ! decodebin ! videoconvert ! vaapisink
+ * 
+ * gst-launch-1.0 filesrc location=mur_aigmrt_130922.mp4 ! decodebin ! videoconvert ! timeoverlay ! vaapisink
  * 
  * 
  */
@@ -22,12 +29,12 @@ typedef struct _CustomData
 {
   //GstElement *playbin;          /* Our one and only pipeline */
   
-  //je crée ma pipeline à moi style gst-launch-1.0 filesrc location=174.mp4 ! decodebin ! vaapisink
+
   GstElement *pipeline;
   GstElement *source;
   GstElement *decode;  
   GstElement *convert;
-  GstElement *time;
+//  GstElement *time;
   GstElement *sink;
   
   
@@ -47,13 +54,46 @@ typedef struct _CustomData
 static void
 pad_added_handler (GstElement * src, GstPad * new_pad, CustomData * data)
 {
-  GstPad *sink_pad = gst_element_get_static_pad (data->time, "video_sink"); //voir gst-inspect pour le nom du sink
+  GstPadLinkReturn ret;
+  GstCaps *new_pad_caps = NULL;
+  GstStructure *new_pad_struct = NULL;
+  const gchar *new_pad_type = NULL;
+  
+  GstPad *sink_pad = gst_element_get_static_pad (data->convert, "sink");
 
   g_print ("Received new pad '%s' from '%s':\n", GST_PAD_NAME (new_pad), GST_ELEMENT_NAME (src));
   
-  gst_pad_link (new_pad, sink_pad);
+    /* If our converter is already linked, we have nothing to do here */
+  if (gst_pad_is_linked (sink_pad)) {
+    g_print ("We are already linked. Ignoring.\n");
+    goto exit;
+  }
+  
+  /* Check the new pad's type */
+  new_pad_caps = gst_pad_get_current_caps (new_pad);
+  new_pad_struct = gst_caps_get_structure (new_pad_caps, 0);
+  new_pad_type = gst_structure_get_name (new_pad_struct);
+  
+  /*if (!g_str_has_prefix (new_pad_type, "audio/x-raw")) {
+    g_print ("It has type '%s' which is not raw audio. Ignoring.\n", new_pad_type);
+    goto exit;
+  }*/
 
- 
+  /* Attempt the link */
+  ret = gst_pad_link (new_pad, sink_pad);
+  if (GST_PAD_LINK_FAILED (ret)) {
+    g_print ("Type is '%s' but link failed.\n", new_pad_type);
+  } else {
+    g_print ("Link succeeded (type '%s').\n", new_pad_type);
+  }
+
+ exit:
+  /* Unreference the new pad's caps, if we got them */
+  if (new_pad_caps != NULL)
+    gst_caps_unref (new_pad_caps);
+
+  /* Unreference the sink pad */
+  gst_object_unref (sink_pad);
 }
 
 /* This function is called when the GUI toolkit creates the physical window that will hold the video.
@@ -402,18 +442,20 @@ main (int argc, char *argv[])
 
   /* Create the elements */
   //data.playbin = gst_element_factory_make ("playbin", "playbin");
-//je crée ma pipeline à moi style gst-launch-1.0 filesrc location=174.mp4 ! decodebin ! vaapisink
+
   data.source = gst_element_factory_make ("filesrc", "source");
   data.decode = gst_element_factory_make ("decodebin", "decodebin");
   
   data.convert = gst_element_factory_make ("videoconvert", "convert");
-  data.time = gst_element_factory_make ("timeoverlay", "time");  
+ // data.time = gst_element_factory_make ("timeoverlay", "time");  
+  //data.sink = gst_element_factory_make ("xvimagesink", "sink");
   data.sink = gst_element_factory_make ("xvimagesink", "sink");
   
   data.pipeline = gst_pipeline_new ("ma-pipeline");  
   
   
-  if (!data.pipeline || !data.source || !data.decode || !data.convert || !data.time || !data.sink) {
+  //if (!data.pipeline || !data.source || !data.decode || !data.convert || !data.time || !data.sink) {
+  if (!data.pipeline || !data.source || !data.decode || !data.convert || !data.sink) {
     g_printerr ("Not all elements could be created.\n");
     return -1;
   }
@@ -422,22 +464,23 @@ main (int argc, char *argv[])
 
   /*réglages filesrc et  timeoverlay*/  
   g_object_set (data.source, "location", argv[1], NULL);
-  g_object_set (data.time, "text", basename(argv[1]), NULL);
+  //g_object_set (data.time, "text", basename(argv[1]), NULL);
   
   
   /* Build the pipeline */
-  gst_bin_add_many (GST_BIN (data.pipeline), data.source, data.decode, data.convert, data.time, data.sink, NULL);
+  //gst_bin_add_many (GST_BIN (data.pipeline), data.source, data.decode, data.convert, data.time, data.sink, NULL);
+  gst_bin_add_many (GST_BIN (data.pipeline), data.source, data.decode, data.convert, data.sink, NULL);
   
   // on linke ceux qui ont des pads linkables: source et decode. decode a pas de src au démarrage
-  if (gst_element_link (data.source, data.decode) != TRUE) {
-    g_printerr ("Elements 1 could not be linked.\n");
+  if (!gst_element_link_many (data.source, data.decode, NULL)) {
+    g_printerr ("Source et decode could not be linked.\n");
     gst_object_unref (data.pipeline);
     return -1;
   }
   
   
-  if (gst_element_link_many (data.time, data.convert, data.sink, NULL) != TRUE) {
-    g_printerr ("Elements 2 could not be linked.\n");
+  if (!gst_element_link_many (data.convert, data.sink, NULL)) {
+    g_printerr ("convert & sink could not be linked.\n");
     gst_object_unref (data.pipeline);
     return -1;
   }
