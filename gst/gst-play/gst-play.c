@@ -1327,6 +1327,24 @@ catch_frame_pos_s (gpointer user_data)
 	
 }
 
+static void output_array_frames()
+{
+	int i;
+	
+	gst_print ("on est dans la fonction output_array_frames\n");
+	
+	if (cursor_array_frames > 0)
+	{
+		gst_print ("le tableau array_frames_pos contient %i frames:\n", cursor_array_frames);
+		  for (i = 0; i < cursor_array_frames; ++i)
+		  {
+		    printf("%i.", array_frames_pos[i]);
+		  }
+	
+	}
+	
+}
+
 static void
 print_keyboard_help (void)
 {
@@ -1661,8 +1679,14 @@ main (int argc, char **argv)
 
   g_free (audio_sink);
   g_free (video_sink);
-
+  
+  /* output array*/
+  output_array_frames();
+  
   gst_print ("\n");
   gst_deinit ();
+  
+
+  
   return 0;
 }
