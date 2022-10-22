@@ -1,0 +1,219 @@
+
+###Avoir vaapisink par défaut au lieu de --videosink=vaapisink à chaque fois
+gst-plugins-base-1.10.2/tools/gst-play.c --> builddir/tools/gst-play-1.0
+Se rappeler que l'option videosink modifie la propriété d'une playbin
+dans main() à l'appel de play_new() faire: 
+play = play_new (uris, audio_sink, "vaapisink", gapless, volume, verbose, flags, use_playbin3);
+
+
+###FULLSCREEN dynamically (en appuyant sur une touche)
+	gst-launch-1.0 ... ! vaapisink fullscreen=true marche mais je voudrais l'avoir dynamiquement au runtime en appuyant sur f		
+		Départ sur gst-play -> pkg base -> tools/gst-play.c, voir paragraphe ci dessous pour récup l'élément sink
+		gstreamer-1.10.2/gst/gstutils.c -- gstobject.c -- gstelement.c
+			1 - lancer un gst-play.c -v --> te donne les noms des objects
+			dans gst-play.c >		GstElement * sink = gst_bin_get_by_name (GST_BIN (play->playbin), "vaapisink0");
+									g_print ("vincent le nom de l'objet récupéré est: %s\n", gst_object_get_name(sink));
+			2 - g_object_set (G_OBJECT(sink), "fullscreen", TRUE, NULL); -> seulement dans play_new() avant démarrage (lancer gst-play avec  --videosink vaapisink
+						sinon pas d'accès au sink dans play_new -> autovideosink par défaut
+		
+		
+		****SOLUTION FULLSCREEN THREAD SAFE (UTILISATION DUN EVENT)****		
+		***gst-plugins-base-1.10.2/tools/gst-play.c:
+			dans keyboard_cb()
+				ajouter dans switch (key) 
+					case 'f':
+					fonction_vincent (play);
+					break;
+
+			static void fonction_vincent (GstPlay * play) 
+			{
+			GstElement * sink;
+			gboolean result;
+			GstPad *monPad;
+			GstStructure *structure = gst_structure_new_empty("fonction_vincent");
+			GstEvent *event = gst_event_new_custom(GST_EVENT_CUSTOM_DOWNSTREAM, structure); //gstreamer-X.Y.Z/gst/gstevent.c les différents types d'event pas facile à utiliser: plutôt gst/gstructure.[c,h]
+			//sink = gst_bin_get_by_name (GST_BIN (play->playbin), "vaapisink0"); //tests/check/gst/gstbin.c
+			//on récupère l'élément "BIN" le plus accessible, pour avoir accès à un pad
+			sink = gst_bin_get_by_name (GST_BIN (play->playbin), "vbin"); //trouvé en lançant avec vbin, but = avoir un pad pour gst_pad_send_events
+			//g_print ("vincent gst-play le nom de l'objet récupéré = %s\n", gst_object_get_name(sink));
+			//on récupère le pad: car le send_event ne marche QUE SUR UN PAD
+			monPad = gst_element_get_static_pad (sink,"sink"); 
+			//g_print("vincent gst-play le nom du pad = %s\n", gst_pad_get_name(monPad));
+			//on prépare l'envoi d'un event, il faut une structure (dans le code source, dans les forums sur le net...
+			//on envoie l'event, sur un pad.
+			result = gst_pad_send_event(monPad, event);
+			g_print("vincent gst-play resultat du send = %s\n", result ? "true" : "false");			
+			}
+			
+		***gstreamer-vaapi-1.10.2/gst/vaapi/gstvaapisink.c: dans gst_vaapisink_event():
+			#include DPMS impossible ici il faut #include <X11/extensions/dpms.h> dans va_x11.h (libva)
+			//déclarations			
+			  const GstStructure *structure = gst_event_get_structure(event);
+			  GstVaapiSink *const sink = GST_VAAPISINK_CAST (base_sink); //attention il y est déjà celui là
+			  GstVaapiDisplay *display = GST_VAAPI_PLUGIN_BASE_DISPLAY (sink);
+			  Display *const x11_dpy = gst_vaapi_display_x11_get_display (GST_VAAPI_DISPLAY_X11 (display));
+			  Window x11_win = gst_vaapi_window_x11_get_xid (GST_VAAPI_WINDOW_X11 (sink->window));
+			
+			
+			//je mets ça avant le  switch (GST_EVENT_TYPE...
+				if (!g_strcmp0("fonction_vincent",gst_structure_get_name(structure))) {
+									//g_print ("Vincent vaapisink.c event reçu\n");
+									sink->fullscreen ^=1; //toggle
+									gst_vaapi_window_set_fullscreen (sink->window, sink->fullscreen);
+								
+									display = GST_VAAPI_PLUGIN_BASE_DISPLAY (sink);
+									
+									gst_vaapi_display_lock (display); //évite [xcb] Unknown request in queue multi-threaded client XInitThreads xcb_io.c:179: dequeue_pending_request:`!xcb_xlib_unknown_req_in_deq'
+									if (sink->fullscreen) {
+										//crée un curseur transparent (pas trouvé mieux...XDefineCursor ne peux que modifier l'aspect du curseur)
+										Cursor cursor;
+										Pixmap csr;
+										XColor xcolor;
+										static char csr_bits[] = {0x00};						
+										csr= XCreateBitmapFromData(x11_dpy,x11_win,csr_bits,1,1);
+										cursor= XCreatePixmapCursor(x11_dpy,csr,csr,&xcolor,&xcolor,1,1); 
+										XGrabPointer(x11_dpy,x11_win,False,(KeyPressMask|KeyReleaseMask)&0, GrabModeAsync,GrabModeAsync,None,cursor,CurrentTime);
+										
+										//DPMSSetTimeouts(x11_dpy, 0, 0, 0);
+										DPMSDisable(x11_dpy);
+										XSetScreenSaver(x11_dpy, 0, 0, 0, 0);
+									
+									} else {
+										//fait réapparaitre curseur de base
+										XUngrabPointer(x11_dpy,CurrentTime);
+									  
+										//DPMSSetTimeouts(x11_dpy, 600, 600, 600);
+										DPMSEnable(x11_dpy);
+										XSetScreenSaver(x11_dpy, -1, 0, 0, 0);							  
+									}
+									gst_vaapi_display_unlock (display);
+									
+				}
+					
+		
+		****FULLSCREEN DIRECT DANS LE SINK SOLUTION NON CHOISIE****
+		//au runtime en tapant directement dans gstvaapisink.c dans le case KeyRelease (avant le break;) de gst_vaapisink_x11_handle_events
+		//mais il faut contourner le passage deux fois (une histoire de key repeat dans X je suppose?) contournable mais ajoute du code, c'est pourquoi je suis passé aux events
+		//Il faut déclarer hors de cette fonction: static int last_f_keypress = 0;
+          
+        if (strcmp(key_str, "f") == 0) {
+			  int delay = e.xkey.time - last_f_keypress; // car passe deux fois... je comprends pas pourquoi... (répétition? se gère peut être dans réglages X)
+			  if (delay > 100) {		  
+						  //GST_INFO ("VINCENT keystr=%s fullscreen=%i time=%i last_f_keypress=%i delay=%i", key_str, sink->fullscreen, e.xkey.time, last_f_keypress, delay);
+						  last_f_keypress = e.xkey.time;
+						  sink->fullscreen ^=1; //toggle
+						  gst_vaapi_window_set_fullscreen (sink->window, sink->fullscreen);
+						  if (sink->fullscreen) { //voir ci dessus  } else {  }	  
+		  
+		   
+		nb --> sink->fullscreen = 1; ou TRUE, dans gstvaapisink.c -> gst_vaapisink_init() marche mais seulement au démarrage
+
+		
+####a2dpsink avec gst-play
+
+
+		***Second shot Evian 2018 pour pouvoir faire: gst-play-1.0 --audiosink "sbcenc ! a2dpsink transport=/org/bluez/hci0/dev_1C_48_F9_CB_FA_AD/fd1" fichier.mp3
+		HOWTO: dans gstreamer-1.11.1/gst/gstutils.c dans deux fonctions:
+		1)gst_element_link_pads_full()
+				
+				Déclarer int ret; et à mettre au début avant   "/*get a src pad */ if (srcpadname)..."
+				//Rationale: éviter de passer par /* no name given, get the first available pad */ quand (!srcpadname), parce que 
+				srcpad = srcpads ? GST_PAD_CAST (srcpads->data) : NULL; --> renvoie le premier de la GList et dans le cas de sbcenc c'est le sink
+				
+				ret = g_strcmp0(GST_ELEMENT_NAME(src), "sbcenc0"); //0 si match
+				if(ret == 0)
+				srcpadname = "src";
+		
+		2)gst_parse_bin_from_description_full()
+				/**Récupère un pad type sink qui est pas celui que je veux, ça doit être celui d'a2dpsink...**/
+
+				GstElement *element, *monsbcenc;
+				GstPad *monpad = NULL;
+				...
+				/*** find pads and ghost them if necessary ***/
+				if (ghost_unlinked_pads) {
+					if ((pad = gst_bin_find_unlinked_pad (bin, GST_PAD_SRC))) {
+					gst_element_add_pad (GST_ELEMENT (bin), gst_ghost_pad_new ("src", pad));
+					gst_object_unref (pad);
+					}				
+				if ((pad = gst_bin_find_unlinked_pad (bin, GST_PAD_SINK))) {
+					if ((monsbcenc = gst_bin_get_by_name(bin, "sbcenc0"))) 
+					{
+						monpad = gst_element_get_static_pad (monsbcenc, "sink");
+						if (monpad)
+							gst_element_add_pad (GST_ELEMENT (bin), gst_ghost_pad_new ("sink", monpad));  
+					} else {      
+					gst_element_add_pad (GST_ELEMENT (bin), gst_ghost_pad_new ("sink", pad)); //par défaut dans le code, me ghost un mauvais pad     
+				}
+		
+		--> ces modifs impactent /usr/X11R7/lib/libgstreamer-1.0.so.0.1101.0
+		
+		***Mécanisme:
+		là où ça coince par rapport à "--audiosink "alsasink"": gst-plugins-base-1.11.1/gst/playback/gstplaybin2.c --> autoplug_continue_cb()
+			ret = !gst_caps_is_subset (caps, sinkcaps); --> false quand ça marche (alsa), true avec sbcenc ! a2dp
+			sinkcaps avec a2dp = application/x-rtp, ... encoding-name=(string)SBC... c'est à dire le mauvais pad (src) de sbcenc, qui devrait être linké à a2dpsink
+			--> formation du bin à partir de --audiosink: cheminement:
+				gst-plugins-base-1.11.1/tools/gst-play.c - play_new()
+					gst/gstutils.c	-	gst_parse_bin_from_description()
+										gst_parse_launch_full / ghost_unlinked_pads
+						gst/gstparse.c - gst_parse_launch_full - priv_gst_parse_launch
+							gst/gstutils.c - gst_element_link_pads_full()  --> ce con linke le premier pad de sbcenc ('sink') à a2dpsink, corriger avec srcpadname = "src" if (g_strcmp0(GST_ELEMENT_NAME(src), "sbcenc0")) == 0
+
+
+
+
+	
+		***First shot en 2017: Suivi ce qui est écrit dans les commentaires en haut de gstplaybin2.c -> 
+			création d'un custom sink avec les éléments que tu veux, puis lui ajouter un ghostpad de sink et brancher ça à l'audio sink du playbin
+			Le vrai moteur de gst-play c'est le playbin: dans base/gst/playback/gstplaybin2.c
+			Dans plugins-base/tools/gst-play.c dans play_new(), en remplacement de : ...gst_parse_bin_from_description (audio_sink / g_object_set (play->playbin, "audio-sink", sink, NULL);...
+	
+					
+					//On construit un bin contenant des éléments	
+					a2dpsink_vincent = gst_element_factory_make ("a2dpsink", "a2dpsink0"); //2nd parameters is the name you want to give (je suis pas sûr que ça me serve à qq chose)
+					sbcenc_vincent = gst_element_factory_make ("sbcenc", "sbcenc0");
+					custom_sink_vincent = gst_bin_new ("GstBin_vincent");					
+					gst_bin_add_many (GST_BIN (custom_sink_vincent), sbcenc_vincent, a2dpsink_vincent, NULL);
+					g_object_set (a2dpsink_vincent, "transport", "/org/bluez/hci0/dev_0C_A6_94_A5_6D_CC/fd3", NULL);		
+					pad_vincent = gst_element_get_static_pad (sbcenc_vincent, "sink");	
+					gst_element_add_pad (custom_sink_vincent, gst_ghost_pad_new ("sink", pad_vincent));
+					gst_object_unref (GST_OBJECT (pad_vincent));					
+					g_object_set (play->playbin, "audio-sink", custom_sink_vincent, NULL); //on colle un sink customisé à playbin, on remplace la ligne g_object_set... ci dessous
+					
+####Textoverlay
+	http://gstreamer-devel.966125.n4.nabble.com/textoverlay-and-dynamic-text-to-subtitle-or-not-and-if-so-how-td3034383.html
+	gst-launch-1.0 videotestsrc ! textoverlay text="Hello" ! vaapisink
+	gst-launch-1.0 filesrc location=Wadjda-052745-000-A.mp4 ! decodebin ! videoconvert ! textoverlay text="Hello" ! vaapisink
+	gst-plugins-base-1.11.1/tests/examples/overlay/gtk-videooverlay.c
+			textvincent = gst_element_factory_make ("textoverlay", NULL);
+			gst_bin_add_many (GST_BIN (pipeline), src, sink, textvincent, NULL);
+			gst_element_link_many (src, textvincent, sink, NULL);
+			g_object_set (textvincent, "text", "salut", NULL);
+
+
+		
+##########################################gst-play.c#######################################################
+static void
+fonction_vincent (GstPlay * play) //def dans gst-play.c ligne 67
+{
+	GstElement * sink;
+	gboolean result;
+	
+	sink = gst_bin_get_by_name (GST_BIN (play->playbin), "vaapisink0"); //tests/check/gst/gstbin.c
+	g_print ("vincent salut ma couille %s\n", gst_object_get_name(sink));
+	g_object_get (G_OBJECT(sink), "fullscreen", &result, NULL);
+	g_print ("vincent la valeur de la property avant set: %s\n", result ? "true" : "false");
+	g_object_set (G_OBJECT(sink), "fullscreen", TRUE, NULL);
+	
+	//g_free (result); //putain g_free() fait segfaulter
+}
+
+keyboard_cb() --> ajouter	
+	case 'f':
+      fonction_vincent (play);
+      break;
+##########################################gst-play.c#######################################################      
+      
+      
+
+		
