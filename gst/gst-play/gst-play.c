@@ -4,12 +4,11 @@
  * compil: 
 cd /initrd/mnt/dev_save/packages/gst-plugins-base-1.18.1
 
-ninja -C builddir/
-cp builddir/tools/gst-play-1.0 /usr/bin/
+ninja -C builddir/ && cp builddir/tools/gst-play-1.0 /usr/bin/
 * 
 * 
 vaapisink par défaut
-position des frames en secondes
+position des frames en secondes (key 'f' --> catch_frame_pos_s())
 
  * 
  * 
@@ -36,6 +35,10 @@ position des frames en secondes
 #include <glib/gprintf.h>
 
 #include "gst-play-kb.h"
+
+//vvnx: array de positions de frames
+int array_frames_pos[200];
+int cursor_array_frames = 0;
 
 #define VOLUME_STEPS 20
 
@@ -1309,10 +1312,18 @@ static void
 catch_frame_pos_s (gpointer user_data)
 {
 	GstPlay *play = user_data;
-	gint64 pos = -1;
-    gst_element_query_position (play->playbin, GST_FORMAT_TIME, &pos);
+	gint64 pos64 = -1;
+	int pos;
+	//récupération de la position en secondes
+    gst_element_query_position (play->playbin, GST_FORMAT_TIME, &pos64);
+    //cast de gint64 en int
+	pos = (int)(pos64/1000000000);
+	gst_print ("On logge la position en secondes = %i \n", pos);
+	//Storage dans un array de ints
+	array_frames_pos[cursor_array_frames] = pos;
+	cursor_array_frames++;
 	
-	gst_print ("Hellooo vvnx seconds = %li \n", pos/1000000000);
+	
 	
 }
 
