@@ -2,7 +2,7 @@
 
 #ObjectDetection YOLOv3
 #https://opencv-tutorial.readthedocs.io/en/latest/yolo/yolo.html
-#Tous les fichiers (sauf images) téléchargés à partir de cette page
+#Fichiers weight (237 Mo) et config téléchargés à partir de cette page
 
 import cv2 as cv
 import numpy as np
@@ -14,11 +14,12 @@ img = None
 img0 = None
 outputs = None
 
-#PATH prepended aux fichiers wieght, config, call names...
+#PATH prepended aux fichiers weight, config, class names...
 PATH='/initrd/mnt/dev_save/packages/cv_dnn_data/detection/yolov3-opencv/'
 
 # Load names of classes and get random colors
-classes = open(PATH+'coco.names').read().strip().split('\n')
+#le fichier des noms des classes COCO sont dans les sources openCV dans opencv-4.6.0/samples/data/dnn/
+classes = open(PATH+'object_detection_classes_coco.txt').read().strip().split('\n')
 np.random.seed(42)
 colors = np.random.randint(0, 255, size=(len(classes), 3), dtype='uint8')
 
