@@ -18,8 +18,8 @@ outputs = None
 PATH='/initrd/mnt/dev_save/packages/cv_dnn_data/detection/yolov3-opencv/'
 
 # Load names of classes and get random colors
-#le fichier des noms des classes COCO sont dans les sources openCV dans opencv-4.6.0/samples/data/dnn/
-classes = open(PATH+'object_detection_classes_coco.txt').read().strip().split('\n')
+#J'ai pris le fichier de noms de classes:dans les sources openCV dans opencv-4.6.0/samples/data/dnn/
+classes = open(PATH+'object_detection_classes_yolov3.txt').read().strip().split('\n')
 np.random.seed(42)
 colors = np.random.randint(0, 255, size=(len(classes), 3), dtype='uint8')
 
