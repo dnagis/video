@@ -34,37 +34,36 @@ ln = net.getLayerNames()
 ln = [ln[i - 1] for i in net.getUnconnectedOutLayers()]
 
 IMAGE_FILE = sys.argv[1]
-#load_image(IMAGE_FILE)
-#load_image(PATH+'images/'+IMAGE_FILE) #construction de path vers le fichier image
 
-
-#global img, img0, outputs, ln
 
 img = cv.imread(IMAGE_FILE)
-
 
 blob = cv.dnn.blobFromImage(img, 1/255.0, (416, 416), swapRB=True, crop=False)
 
 net.setInput(blob)
-#t0 = time.time()
+
+#Premier résultat: 3 groupes selon taille
 outputs = net.forward(ln)
-#t = time.time() - t0
 
 
-
-# combine the 3 output groups into 1 (10647, 85)
+# combine ("aplatir") the 3 outputs groups into 1 (10647, 85)
 # large objects (507, 85)
 # medium objects (2028, 85)
 # small objects (8112, 85)
 outputs = np.vstack(outputs)
 
+#print("np.shape(outputs):", np.shape(outputs)) #(10647, 85)
+#print(outputs[0]) #voir un exemple
 
 
-
-#print("np.shape(outputs):", np.shape(outputs)) #shape() donne la taille de chaque dimension, ici: (10647, 85)
-#print(outputs[0])
-
-
+for output in outputs:
+	scores = output[5:] #pour chaque array de len=85, on récupère à partir de l'index 5
+	classID = np.argmax(scores) #des 80 classes (object_detection_classes_yolov3.txt) celle qui a la valeur max
+	confidence = scores[classID] #La confidence est la valeur à l'index de la classID
+	
+	#classID == 0 --> class = "person". 
+	if ((classID==0) and (confidence>0.9)):		
+		print("person CI=", confidence)
 
 
 
