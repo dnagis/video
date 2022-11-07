@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 #ObjectDetection YOLOv3
+#Le premier script que j'ai utilisé - Octobre 22, très proche de l'original:
 #https://opencv-tutorial.readthedocs.io/en/latest/yolo/yolo.html
 #Fichiers weight (237 Mo) et config téléchargés à partir de cette page
 

@@ -1,0 +1,76 @@
+#!/usr/bin/python
+
+#Travail sur output YOLOv3, basé sur HelloYoloV3 dans mon dossier
+
+
+import cv2 as cv
+import numpy as np
+import time
+import sys
+
+WHITE = (255, 255, 255)
+img = None
+img0 = None
+outputs = None
+
+#PATH prepended aux fichiers weight, config, class names...
+PATH='/initrd/mnt/dev_save/packages/cv_dnn_data/detection/yolov3-opencv/'
+
+# Load names of classes and get random colors
+#J'ai pris le fichier de noms de classes:dans les sources openCV dans opencv-4.6.0/samples/data/dnn/
+classes = open(PATH+'object_detection_classes_yolov3.txt').read().strip().split('\n')
+np.random.seed(42)
+colors = np.random.randint(0, 255, size=(len(classes), 3), dtype='uint8')
+
+# Give the configuration and weight files for the model and load the network.
+net = cv.dnn.readNetFromDarknet(PATH+'yolov3.cfg', PATH+'yolov3.weights') #
+net.setPreferableBackend(cv.dnn.DNN_BACKEND_OPENCV)
+# net.setPreferableTarget(cv.dnn.DNN_TARGET_CPU)
+
+# determine the output layer
+ln = net.getLayerNames()
+#print(len(ln), ln) #len=254
+
+ln = [ln[i - 1] for i in net.getUnconnectedOutLayers()]
+
+IMAGE_FILE = sys.argv[1]
+#load_image(IMAGE_FILE)
+#load_image(PATH+'images/'+IMAGE_FILE) #construction de path vers le fichier image
+
+
+#global img, img0, outputs, ln
+
+img = cv.imread(IMAGE_FILE)
+
+
+blob = cv.dnn.blobFromImage(img, 1/255.0, (416, 416), swapRB=True, crop=False)
+
+net.setInput(blob)
+#t0 = time.time()
+outputs = net.forward(ln)
+#t = time.time() - t0
+
+
+
+# combine the 3 output groups into 1 (10647, 85)
+# large objects (507, 85)
+# medium objects (2028, 85)
+# small objects (8112, 85)
+outputs = np.vstack(outputs)
+
+
+
+
+#print("np.shape(outputs):", np.shape(outputs)) #shape() donne la taille de chaque dimension, ici: (10647, 85)
+#print(outputs[0])
+
+
+
+
+
+
+
+
+
+
+
