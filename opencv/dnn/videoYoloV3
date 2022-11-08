@@ -1,0 +1,79 @@
+#!/usr/bin/python
+
+#Passer une vidéo en YoloV3: basé sur simpleYoloV3
+
+
+import cv2 as cv
+import numpy as np
+import sys
+
+WHITE = (255, 255, 255)
+
+
+
+
+#PATH prepended aux fichiers weight, config, class names...
+PATH='/initrd/mnt/dev_save/packages/cv_dnn_data/detection/yolov3-opencv/'
+
+
+classes = open(PATH+'object_detection_classes_yolov3.txt').read().strip().split('\n')
+np.random.seed(42)
+colors = np.random.randint(0, 255, size=(len(classes), 3), dtype='uint8')
+net = cv.dnn.readNetFromDarknet(PATH+'yolov3.cfg', PATH+'yolov3.weights') 
+net.setPreferableBackend(cv.dnn.DNN_BACKEND_OPENCV)
+ln = net.getLayerNames()
+ln = [ln[i - 1] for i in net.getUnconnectedOutLayers()]
+#à partir d'ici, à faire frame par frame
+
+
+
+
+
+cap = cv.VideoCapture(sys.argv[1])
+
+
+while cap.isOpened():
+	ret, frame = cap.read()
+	# if frame is read correctly ret is True
+	if not ret:
+		print("Can't receive frame (stream end?). Exiting ...")
+		break
+		
+	blob = cv.dnn.blobFromImage(frame, 1/255.0, (416, 416), swapRB=True, crop=False)
+	net.setInput(blob)
+	outputs = net.forward(ln)
+	outputs = np.vstack(outputs)
+	for output in outputs:
+		scores = output[5:] #pour chaque array de len=85, on récupère à partir de l'index 5
+		classID = np.argmax(scores) #des 80 classes (object_detection_classes_yolov3.txt) celle qui a la valeur max
+		confidence = scores[classID] #La confidence est la valeur à l'index de la classID
+		
+		#classID == 0 --> class = "person". 
+		if ((classID==0) and (confidence>0.9)):		
+			print("person CI=", confidence)
+	
+	
+	
+	
+	
+		
+	if cv.waitKey(33) == ord('q'):
+		break
+        
+        
+cap.release()
+cv.destroyAllWindows()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
