@@ -108,6 +108,7 @@ cv.createTrackbar('confidence', 'window', 50, 100, trackbar)
 
 
 IMAGE_FILE = sys.argv[1]
+print("fichier:", IMAGE_FILE)
 load_image(IMAGE_FILE)
 #load_image(PATH+'images/'+IMAGE_FILE) #construction de path vers le fichier image
 
