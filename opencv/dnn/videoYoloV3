@@ -9,6 +9,7 @@ import sys
 
 WHITE = (255, 255, 255)
 
+FRAME_SKIPPER = 5 #mécanisme pour ne traiter qu'une partie des frames
 
 
 
@@ -23,23 +24,13 @@ net = cv.dnn.readNetFromDarknet(PATH+'yolov3.cfg', PATH+'yolov3.weights')
 net.setPreferableBackend(cv.dnn.DNN_BACKEND_OPENCV)
 ln = net.getLayerNames()
 ln = [ln[i - 1] for i in net.getUnconnectedOutLayers()]
-#à partir d'ici, à faire frame par frame
 
 
 
 
 
-cap = cv.VideoCapture(sys.argv[1])
-
-
-while cap.isOpened():
-	ret, frame = cap.read()
-	pos_frames=str(int(cap.get(cv.CAP_PROP_POS_FRAMES)))
-	# if frame is read correctly ret is True
-	if not ret:
-		print("Can't receive frame (stream end?). Exiting ...")
-		break
-		
+#Yolov3 detection sur une frame
+def do_yolov3(frame):
 	blob = cv.dnn.blobFromImage(frame, 1/255.0, (416, 416), swapRB=True, crop=False)
 	net.setInput(blob)
 	outputs = net.forward(ln)
@@ -51,12 +42,23 @@ while cap.isOpened():
 		
 		#classID == 0 --> class = "person". 
 		if ((classID==0) and (confidence>0.9)):		
-			print("frame n°=", pos_frames, " person CI=", confidence)
-	
-	
-	
-	
-	
+			print("frame n°=", pos_frames, " person CI=", confidence)	
+
+
+
+cap = cv.VideoCapture(sys.argv[1])
+
+while cap.isOpened():
+	ret, frame = cap.read()
+	pos_frames=int(cap.get(cv.CAP_PROP_POS_FRAMES))
+	# if frame is read correctly ret is True
+	if not ret:
+		print("Can't receive frame (stream end?). Exiting ...")
+		break
+
+	#check divisibility par ce qui est après le "%", permet de skipper des frames
+	if (pos_frames%FRAME_SKIPPER == 0): 
+		do_yolov3(frame)
 		
 	if cv.waitKey(33) == ord('q'):
 		break
