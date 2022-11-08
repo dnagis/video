@@ -34,6 +34,7 @@ cap = cv.VideoCapture(sys.argv[1])
 
 while cap.isOpened():
 	ret, frame = cap.read()
+	pos_frames=str(int(cap.get(cv.CAP_PROP_POS_FRAMES)))
 	# if frame is read correctly ret is True
 	if not ret:
 		print("Can't receive frame (stream end?). Exiting ...")
@@ -50,7 +51,7 @@ while cap.isOpened():
 		
 		#classID == 0 --> class = "person". 
 		if ((classID==0) and (confidence>0.9)):		
-			print("person CI=", confidence)
+			print("frame n°=", pos_frames, " person CI=", confidence)
 	
 	
 	
