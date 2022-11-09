@@ -51,7 +51,9 @@ net.setInput(blob)
 print("Analyse")
 outputs = net.forward(ln)
 
-print("shape de l output: ", np.shape(outputs[0])) #np.shapeoutputs) donne erreur:
+print("type de l output: ", type(outputs)) # <class 'tuple'>
+
+print("shape de l output[0]: ", np.shape(outputs[0])) #np.shapeoutputs) donne erreur:
 #ValueError: could not broadcast input array from shape (12,507,85) into shape (12,)
 #mais np.shape(outputs[0]) donne (12, 507, 85)
 
