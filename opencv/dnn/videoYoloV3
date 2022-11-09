@@ -9,14 +9,18 @@ import sys
 
 WHITE = (255, 255, 255)
 
-FRAME_SKIPPER = 5 #mécanisme pour ne traiter qu'une partie des frames
+FRAME_SKIPPER = 30 #mécanisme pour ne traiter qu'une partie des frames
 
 
 
-#PATH prepended aux fichiers weight, config, class names...
+#PATH de recherche prepended aux fichiers weight, config, class names...
 PATH='/initrd/mnt/dev_save/packages/cv_dnn_data/detection/yolov3-opencv/'
 
+#Fichier des résultats
+file_object = open('detect.txt', 'w')
 
+
+#Préparation Yolo
 classes = open(PATH+'object_detection_classes_yolov3.txt').read().strip().split('\n')
 np.random.seed(42)
 colors = np.random.randint(0, 255, size=(len(classes), 3), dtype='uint8')
@@ -31,6 +35,7 @@ ln = [ln[i - 1] for i in net.getUnconnectedOutLayers()]
 
 #Yolov3 detection sur une frame
 def do_yolov3(frame):
+	detected = 0
 	blob = cv.dnn.blobFromImage(frame, 1/255.0, (416, 416), swapRB=True, crop=False)
 	net.setInput(blob)
 	outputs = net.forward(ln)
@@ -41,8 +46,12 @@ def do_yolov3(frame):
 		confidence = scores[classID] #La confidence est la valeur à l'index de la classID
 		
 		#classID == 0 --> class = "person". 
-		if ((classID==0) and (confidence>0.9)):		
-			print("frame n°=", pos_frames, " person CI=", confidence)	
+		if ((classID==0) and (confidence>0.9)):
+			detected = 1		
+			#print("frame n°=", pos_frames, " person CI=", confidence)	
+	
+	print("frame n°=", pos_frames, "  detected=", detected)
+	file_object.write(str(pos_frames) + ' ' + str(detected) + '\n')
 
 
 
