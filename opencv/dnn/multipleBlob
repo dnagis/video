@@ -1,0 +1,57 @@
+#!/usr/bin/python
+
+#dnn sur un blob multiple créé avec cv.dnn.blobFromImages
+#https://pyimagesearch.com/2017/11/06/deep-learning-opencvs-blobfromimage-works/
+
+import cv2 as cv
+import numpy as np
+import sys
+
+FRAME_SKIPPER = 5 #mécanisme pour ne traiter qu'une partie des frames
+
+images = [] #list of images we'll be passing through the network
+
+
+
+#Lecture video, passage des frames dans la list "images"
+
+cap = cv.VideoCapture(sys.argv[1])
+while cap.isOpened():
+	ret, frame = cap.read()
+	pos_frames=int(cap.get(cv.CAP_PROP_POS_FRAMES))
+	# if frame is read correctly ret is True
+	if not ret:
+		print("Can't receive frame (stream end?). Exiting le while videoCapture ...")
+		break
+
+	#check divisibility par ce qui est après le "%", permet de skipper des frames
+	if (pos_frames%FRAME_SKIPPER == 0): 
+		print("append de la frame n°", pos_frames)
+		images.append(frame)
+        
+cap.release()
+cv.destroyAllWindows()
+
+print("Fin de la création de la liste de frames, taille de la liste: ", len(images))
+
+#Analyse
+
+
+
+#Yolo, préparation
+PATH='/initrd/mnt/dev_save/packages/cv_dnn_data/detection/yolov3-opencv/'
+classes = open(PATH+'object_detection_classes_yolov3.txt').read().strip().split('\n')
+net = cv.dnn.readNetFromDarknet(PATH+'yolov3.cfg', PATH+'yolov3.weights') 
+net.setPreferableBackend(cv.dnn.DNN_BACKEND_OPENCV)
+ln = net.getLayerNames()
+ln = [ln[i - 1] for i in net.getUnconnectedOutLayers()]
+blob = cv.dnn.blobFromImages(images, 1/255.0, (416, 416), swapRB=True, crop=False)
+net.setInput(blob)
+
+print("Analyse")
+outputs = net.forward(ln)
+
+print("shape de l output: ", np.shape(outputs)) #np.shape ne marche pas là dessus:
+
+#ValueError: could not broadcast input array from shape (12,507,85) into shape (12,)
+
