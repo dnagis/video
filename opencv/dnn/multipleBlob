@@ -74,7 +74,18 @@ outputs = net.forward(ln)
 
 #iterate sur chaque frame
 for i in range (0,len(outputs[0])):
-	print("traitement de la frame:", i)
+	detected = 0
 	tuple_frame = (outputs[0][i], outputs[1][i], outputs[2][i])
 	combined_frame = np.vstack(tuple_frame) #combine ("aplatir") the 3 outputs groups into 1
-	print("np.shape(combined_frame):", np.shape(combined_frame)) #(10647, 85)
+	#print("np.shape(combined_frame):", np.shape(combined_frame)) #(10647, 85)
+	for output in combined_frame:
+		scores = output[5:] #pour chaque array de len=85, on récupère à partir de l'index 5
+		classID = np.argmax(scores)
+		confidence = scores[classID]
+		
+		#classID == 0 --> class = "person". 
+		if ((classID==0) and (confidence>0.9)):
+			detected = 1		
+			#print("frame n°=", pos_frames, " person CI=", confidence)
+	
+	print("frame n°=", i, "  detected=", detected)
