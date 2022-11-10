@@ -11,8 +11,6 @@ FRAME_SKIPPER = 5 #mécanisme pour ne traiter qu'une partie des frames
 
 images = [] #list of images we'll be passing through the network
 
-
-
 #Lecture video, passage des frames dans la list "images"
 
 cap = cv.VideoCapture(sys.argv[1])
@@ -48,19 +46,35 @@ ln = [ln[i - 1] for i in net.getUnconnectedOutLayers()]
 blob = cv.dnn.blobFromImages(images, 1/255.0, (416, 416), swapRB=True, crop=False)
 net.setInput(blob)
 
+#Analyse
 print("Analyse")
 outputs = net.forward(ln)
 
-print("type de l output total: ", type(outputs)) 			# <class 'tuple'>
-print("length de : l output total: ", len(outputs)) 		#len = 3 
-print("type d'un element de outputs: ", type(outputs[0])) 	#<class 'numpy.ndarray'> pour chaque element
-print("np.shape(outputs[0]):", np.shape(outputs[0]))		#(N, 507, 85) N = nb d'images passées à cv.dnn.blobFromImages
-print("np.shape(outputs[1]):", np.shape(outputs[1]))		#(N, 2028, 85)
-print("np.shape(outputs[2]):", np.shape(outputs[2]))		#(N, 8112, 85)
+#Comprendre l output
+#print("type de l output total: ", type(outputs)) 			# <class 'tuple'>
+#print("length de : l output total: ", len(outputs)) 		#len = 3 
+#print("type d'un element de outputs: ", type(outputs[0])) 	#<class 'numpy.ndarray'> pour chaque element
+#print("np.shape(outputs[0]):", np.shape(outputs[0]))		#(N, 507, 85) N = nb d'images passées à cv.dnn.blobFromImages
+#print("np.shape(outputs[1]):", np.shape(outputs[1]))		#(N, 2028, 85)
+#print("np.shape(outputs[2]):", np.shape(outputs[2]))		#(N, 8112, 85)
 
-#print("shape de l output[0]: ", np.shape(outputs[0])) #np.shapeoutputs) donne erreur:
-#ValueError: could not broadcast input array from shape (12,507,85) into shape (12,)
-#mais np.shape(outputs[0]) donne (12, 507, 85)
+#la première frame:
+#print("np.shape(outputs[0][0]):", np.shape(outputs[0][0]))	#(507, 85)
+#print("np.shape(outputs[1][0]):", np.shape(outputs[1][0]))	#(2028, 85)
+#print("np.shape(outputs[2][0]):", np.shape(outputs[2][0]))	#(8112, 85)
 
-#output_first = np.vstack(outputs[0])
-#print("np.shape(outputs[0]):", np.shape(outputs[0])) #
+#tuple_frame = (outputs[0][0], outputs[1][0], outputs[2][0])
+#print("type de tuple_frame: ", type(tuple_frame))
+
+#combined_first_frame = np.vstack(tuple_first_frame) #combine ("aplatir") the 3 outputs groups into 1
+#print("np.shape(combined_first_frame):", np.shape(combined_first_frame)) #(10647, 85)
+
+#Pour iterate sur les frames il me faut le nombre d'elements dans la dimension la plus haute d'un des trois groupes (small, medium, large)
+#print("len de la top dimension du premier groupe small: ", len(outputs[0])) #j'ai bien le nombre de frames
+
+#iterate sur chaque frame
+for i in range (0,len(outputs[0])):
+	print("traitement de la frame:", i)
+	tuple_frame = (outputs[0][i], outputs[1][i], outputs[2][i])
+	combined_frame = np.vstack(tuple_frame) #combine ("aplatir") the 3 outputs groups into 1
+	print("np.shape(combined_frame):", np.shape(combined_frame)) #(10647, 85)

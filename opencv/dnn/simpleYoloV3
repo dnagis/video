@@ -56,7 +56,7 @@ print("np.shape(outputs[2]):", np.shape(outputs[2])) # (8112, 85)
 # large objects (507, 85)
 # medium objects (2028, 85)
 # small objects (8112, 85)
-outputs = np.vstack(outputs)
+outputs = np.vstack(outputs) #(10647, 85)
 
 #print("np.shape(outputs):", np.shape(outputs)) #(10647, 85)
 #print(outputs[0]) #voir un exemple
