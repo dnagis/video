@@ -51,9 +51,16 @@ net.setInput(blob)
 print("Analyse")
 outputs = net.forward(ln)
 
-print("type de l output: ", type(outputs)) # <class 'tuple'>
+print("type de l output total: ", type(outputs)) 			# <class 'tuple'>
+print("length de : l output total: ", len(outputs)) 		#len = 3 
+print("type d'un element de outputs: ", type(outputs[0])) 	#<class 'numpy.ndarray'> pour chaque element
+print("np.shape(outputs[0]):", np.shape(outputs[0]))		#(N, 507, 85) N = nb d'images passées à cv.dnn.blobFromImages
+print("np.shape(outputs[1]):", np.shape(outputs[1]))		#(N, 2028, 85)
+print("np.shape(outputs[2]):", np.shape(outputs[2]))		#(N, 8112, 85)
 
-print("shape de l output[0]: ", np.shape(outputs[0])) #np.shapeoutputs) donne erreur:
+#print("shape de l output[0]: ", np.shape(outputs[0])) #np.shapeoutputs) donne erreur:
 #ValueError: could not broadcast input array from shape (12,507,85) into shape (12,)
 #mais np.shape(outputs[0]) donne (12, 507, 85)
 
+#output_first = np.vstack(outputs[0])
+#print("np.shape(outputs[0]):", np.shape(outputs[0])) #

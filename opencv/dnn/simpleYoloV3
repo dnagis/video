@@ -16,11 +16,11 @@ outputs = None
 #PATH prepended aux fichiers weight, config, class names...
 PATH='/initrd/mnt/dev_save/packages/cv_dnn_data/detection/yolov3-opencv/'
 
-# Load names of classes and get random colors
+# Load names of classes 
 #J'ai pris le fichier de noms de classes:dans les sources openCV dans opencv-4.6.0/samples/data/dnn/
 classes = open(PATH+'object_detection_classes_yolov3.txt').read().strip().split('\n')
 np.random.seed(42)
-colors = np.random.randint(0, 255, size=(len(classes), 3), dtype='uint8')
+
 
 # Give the configuration and weight files for the model and load the network.
 net = cv.dnn.readNetFromDarknet(PATH+'yolov3.cfg', PATH+'yolov3.weights') #
@@ -44,6 +44,12 @@ net.setInput(blob)
 
 #Premier résultat: 3 groupes selon taille
 outputs = net.forward(ln)
+print("type de outputs: ", type(outputs)) 						# <class 'tuple'>
+print("len de outputs: ", len(outputs))							# 3
+print("type du premier element de outputs: ", type(outputs[1])) # <class 'numpy.ndarray'> (idem pour chacun des 3
+print("np.shape(outputs[0]):", np.shape(outputs[0])) # (507, 85)
+print("np.shape(outputs[1]):", np.shape(outputs[1])) # (2028, 85)
+print("np.shape(outputs[2]):", np.shape(outputs[2])) # (8112, 85)
 
 
 # combine ("aplatir") the 3 outputs groups into 1 (10647, 85)
