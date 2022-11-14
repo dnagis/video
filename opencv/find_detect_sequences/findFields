@@ -1,0 +1,26 @@
+#!/usr/bin/env python
+
+#Trouver les séquences de détection dans un array
+
+import numpy as np
+
+detects = np.array([1,1,1,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,0,0,0,0,0,1,1,1,1])
+
+
+#imprimer la totalité de l'array
+print(detects)
+
+#imprimer la taille de l'array
+print("taille=",detects.size)
+
+
+for i in range(0, detects.size-1):
+	print(i, " ", detects[i])
+	if ((detects[i]==0) and (detects[i+1]==1)):
+		print("on a un start en cours de capture pos=", i+1)
+	elif ((i==0) and (detects[i]==1)):
+		print("on a un start au débutde capture position index 0")
+	elif ((detects[i]==1) and (detects[i+1]==0)):
+		print("on a un end en cours de capture pos=", i+1)
+	elif ((i==detects.size-1) and (detects[i]==1)):
+		print("on a un end à la fin de la capture au dernier index")
