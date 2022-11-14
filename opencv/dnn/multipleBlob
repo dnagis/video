@@ -7,7 +7,7 @@ import cv2 as cv
 import numpy as np
 import sys
 
-FRAME_SKIPPER = 5 #mécanisme pour ne traiter qu'une partie des frames
+FRAME_SKIPPER = 120 #mécanisme pour ne traiter qu'une partie des frames
 
 images = [] #list of images we'll be passing through the network
 
