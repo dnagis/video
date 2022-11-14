@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 #Trouver les séquences de détection dans un array
+#Ne pourra pas gérer les singletons: "0" ou "1" isolés
 
 import numpy as np
 
@@ -13,14 +14,19 @@ print(detects)
 #imprimer la taille de l'array
 print("taille=",detects.size)
 
-
+#Attention: la boucle range s'arrête juste avant le deuxième argument. 
+#Ici on va toujours évaluer ce qui se passe dans l'index juste devant (i+1)
+#donc il faut s'arrêter un index avant pour ne pas sortir de l'array
 for i in range(0, detects.size-1):
 	print(i, " ", detects[i])
+	#On passe de 0 à 1 n'importe où sauf au tout début
 	if ((detects[i]==0) and (detects[i+1]==1)):
-		print("on a un start en cours de capture pos=", i+1)
+		print("on a un start en cours de capture position=", i+1)
 	elif ((i==0) and (detects[i]==1)):
-		print("on a un start au débutde capture position index 0")
+		print("on a un start en début de capture en position index 0")
+	#On passe de 1 à 0 n'importe où sauf au tout début
 	elif ((detects[i]==1) and (detects[i+1]==0)):
-		print("on a un end en cours de capture pos=", i+1)
-	elif ((i==detects.size-1) and (detects[i]==1)):
-		print("on a un end à la fin de la capture au dernier index")
+		print("on a un end en cours de capture position=", i+1)
+	#l'index du dernier slot dans lequel la boucle passe c'est detects.size-2
+	elif ((i==detects.size-2) and (detects[i+1]==1)):
+		print("on a une detection à la fin de la capture au dernier index évalué, donc un end")
