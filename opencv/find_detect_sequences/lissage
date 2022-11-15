@@ -1,0 +1,32 @@
+#!/usr/bin/env python
+
+#Eliminer les occurences de "0" ou "1" unique (length=1) isolées au milieu de plages
+
+import numpy as np
+
+#Les détections (input)
+detects = np.array([0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,0,0,0,0,0,1,1,0,0,0])
+
+#Un array de destination rempli de zeros
+dest = np.zeros(detects.shape, detects.dtype)
+
+
+# version moyenne de i-1, i, i+1
+#for i in range(0, detects.size):
+#	if (i>0 and i<detects.size-1):
+#		mean = (detects[i-1] + detects[i] + detects[i+1]) / 3
+#		dest[i] = round(mean)
+
+# version moyenne de i-2, i-1, i, i+1, i+2
+for i in range(0, detects.size):
+	if (i>1 and i<detects.size-2):
+		mean = (detects[i-2] + detects[i-1] + detects[i] + detects[i+1] + detects[i+2]) / 5
+		dest[i] = round(mean)
+
+
+
+		
+
+
+print(detects)
+print(dest)
