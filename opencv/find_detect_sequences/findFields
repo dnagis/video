@@ -7,26 +7,37 @@ import numpy as np
 
 detects = np.array([1,1,1,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,0,0,0,0,0,1,1,1,1])
 
-
 #imprimer la totalité de l'array
 print(detects)
 
 #imprimer la taille de l'array
 print("taille=",detects.size)
 
+#Initialisation d'un array 2D vide qui contiendra des indexes de start et end [[start, end], [start, end], ...]
+positive_fields_array = np.empty((0, 2), int)
+
 #Attention: la boucle range s'arrête juste avant le deuxième argument. 
 #Ici on va toujours évaluer ce qui se passe dans l'index juste devant (i+1)
 #donc il faut s'arrêter un index avant pour ne pas sortir de l'array
 for i in range(0, detects.size-1):
-	print(i, " ", detects[i])
+	#print(i, " ", detects[i])
 	#On passe de 0 à 1 n'importe où sauf au tout début
 	if ((detects[i]==0) and (detects[i+1]==1)):
 		print("on a un start en cours de capture position=", i+1)
+		start=i+1 #on note le start, on s'en servira plus tard
 	elif ((i==0) and (detects[i]==1)):
 		print("on a un start en début de capture en position index 0")
-	#On passe de 1 à 0 n'importe où sauf au tout début
+		start=0 #on note le start, on s'en servira plus tard
+	#On passe de 1 à 0 n'importe où sauf à la fin
 	elif ((detects[i]==1) and (detects[i+1]==0)):
 		print("on a un end en cours de capture position=", i+1)
+		positive_fields_array = np.append(positive_fields_array, np.array([[start, i]]), axis=0)
 	#l'index du dernier slot dans lequel la boucle passe c'est detects.size-2
 	elif ((i==detects.size-2) and (detects[i+1]==1)):
 		print("on a une detection à la fin de la capture au dernier index évalué, donc un end")
+		positive_fields_array = np.append(positive_fields_array, np.array([[start, i]]), axis=0)
+
+print("parsing terminé")
+
+#L'array qui nous interesse
+print(positive_fields_array)
