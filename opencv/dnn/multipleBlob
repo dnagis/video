@@ -3,11 +3,16 @@
 #dnn sur un blob multiple créé avec cv.dnn.blobFromImages
 #https://pyimagesearch.com/2017/11/06/deep-learning-opencvs-blobfromimage-works/
 
+#Marche au moins jusqu'à 67 images
+
 import cv2 as cv
 import numpy as np
 import sys
 
-FRAME_SKIPPER = 120 #mécanisme pour ne traiter qu'une partie des frames
+FRAME_SKIPPER = 30 #mécanisme pour ne traiter qu'une partie des frames
+
+#Fichier des résultats
+file_object = open('detect.txt', 'w')
 
 images = [] #list of images we'll be passing through the network
 
@@ -89,3 +94,4 @@ for i in range (0,len(outputs[0])):
 			#print("frame n°=", pos_frames, " person CI=", confidence)
 	
 	print("frame n°=", i, "  detected=", detected)
+	file_object.write(str(i) + ' ' + str(detected) + '\n')
