@@ -4,8 +4,17 @@
 
 import numpy as np
 
-#Les détections (input)
-detects = np.array([0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,0,0,0,0,0,1,1,0,0,0])
+#Des résultats hardcoded pour essais
+#detects = np.array([0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,0,0,0,0,0,1,1,0,0,0])
+
+#Resultats de detection de videoYolov3 ou multipleBlob
+file = open("results_numpy.npy", "r")
+content = file.read() #type=str
+
+#transformation de str type "[0 0 0 0 0 0 0 0 0 0 1 1 1 1 1]" en array
+#le [1:-1] je suppose que c'est pour enlever les brackets
+#marche mal... J'ai une deprecation warning
+detects = np.fromstring(content[1:-1], dtype=int, sep=' ')
 
 #Un array de destination rempli de zeros
 dest = np.zeros(detects.shape, detects.dtype)

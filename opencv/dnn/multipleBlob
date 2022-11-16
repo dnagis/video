@@ -11,8 +11,10 @@ import sys
 
 FRAME_SKIPPER = 30 #mécanisme pour ne traiter qu'une partie des frames
 
-#Fichier des résultats
-file_object = open('detect.txt', 'w')
+#Fichier des résultats format gnuplot
+file_gnuplot = open('results_gnuplot.txt', 'w')
+#Fichier des résultats, format numpy
+numpy_file = open('results_numpy.npy', 'w')
 
 images = [] #list of images we'll be passing through the network
 
@@ -77,6 +79,9 @@ outputs = net.forward(ln)
 #Pour iterate sur les frames il me faut le nombre d'elements dans la dimension la plus haute d'un des trois groupes (small, medium, large)
 #print("len de la top dimension du premier groupe small: ", len(outputs[0])) #j'ai bien le nombre de frames
 
+#list dans laquelle append() les résultats pour format numpy
+results_list = []
+
 #iterate sur chaque frame
 for i in range (0,len(outputs[0])):
 	detected = 0
@@ -94,4 +99,15 @@ for i in range (0,len(outputs[0])):
 			#print("frame n°=", pos_frames, " person CI=", confidence)
 	
 	print("frame n°=", i, "  detected=", detected)
-	file_object.write(str(i) + ' ' + str(detected) + '\n')
+	file_gnuplot.write(str(i) + ' ' + str(detected) + '\n')
+	results_list.append(detected)
+
+
+numpy_array_results = np.array(results_list) 
+
+print("Array de résultats:", numpy_array_results) 
+
+#Saving the array in a text file pour format avec import numpy OK
+content = str(numpy_array_results)
+numpy_file.write(content)
+numpy_file.close()

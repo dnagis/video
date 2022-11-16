@@ -83,7 +83,7 @@ numpy_array_results = np.array(results_list)
 
 print("Array de résultats:", numpy_array_results) 
 
-# Saving the array in a text file
+#Saving the array in a text file pour format avec import numpy OK
 content = str(numpy_array_results)
 numpy_file.write(content)
 numpy_file.close()
