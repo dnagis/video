@@ -16,8 +16,11 @@ FRAME_SKIPPER = 30 #mécanisme pour ne traiter qu'une partie des frames
 #PATH de recherche prepended aux fichiers weight, config, class names...
 PATH='/initrd/mnt/dev_save/packages/cv_dnn_data/detection/yolov3-opencv/'
 
-#Fichier des résultats
-file_object = open('detect.txt', 'w')
+#Fichier des résultats, format gnuplot
+gnuplot_file = open('results_gnuplot.txt', 'w')
+#Fichier des résultats, format numpy
+numpy_file = open('results_numpy.npy', 'w')
+
 
 
 #Préparation Yolo
@@ -28,9 +31,6 @@ net = cv.dnn.readNetFromDarknet(PATH+'yolov3.cfg', PATH+'yolov3.weights')
 net.setPreferableBackend(cv.dnn.DNN_BACKEND_OPENCV)
 ln = net.getLayerNames()
 ln = [ln[i - 1] for i in net.getUnconnectedOutLayers()]
-
-
-
 
 
 #Yolov3 detection sur une frame
@@ -50,12 +50,17 @@ def do_yolov3(frame):
 			detected = 1		
 			#print("frame n°=", pos_frames, " person CI=", confidence)	
 	
-	print("frame n°=", pos_frames, "  detected=", detected)
-	file_object.write(str(pos_frames) + ' ' + str(detected) + '\n')
+	#print("frame n°=", pos_frames, "  detected=", detected)
+	#gnuplot_file.write(str(pos_frames) + ' ' + str(detected) + '\n')
+	return detected
+	
 
 
 
 cap = cv.VideoCapture(sys.argv[1])
+
+#une list est faite pour append, numpy marche mal comme ça
+results_list = []
 
 while cap.isOpened():
 	ret, frame = cap.read()
@@ -67,11 +72,22 @@ while cap.isOpened():
 
 	#check divisibility par ce qui est après le "%", permet de skipper des frames
 	if (pos_frames%FRAME_SKIPPER == 0): 
-		do_yolov3(frame)
+		result = do_yolov3(frame)
+		print("frame n°=", pos_frames, "  detected=", result)
+		results_list.append(result)
 		
 	if cv.waitKey(33) == ord('q'):
 		break
-        
+
+numpy_array_results = np.array(results_list) 
+
+print("Array de résultats:", numpy_array_results) 
+
+# Saving the array in a text file
+content = str(numpy_array_results)
+numpy_file.write(content)
+numpy_file.close()
+     
         
 cap.release()
 cv.destroyAllWindows()
