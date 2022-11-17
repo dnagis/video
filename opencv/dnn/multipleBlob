@@ -13,8 +13,7 @@ FRAME_SKIPPER = 30 #mécanisme pour ne traiter qu'une partie des frames
 
 #Fichier des résultats format gnuplot
 file_gnuplot = open('results_gnuplot.txt', 'w')
-#Fichier des résultats, format numpy
-numpy_file = open('results_numpy.npy', 'w')
+#Fichier des résultats, format numpy sera results_numpy.npy
 
 images = [] #list of images we'll be passing through the network
 
@@ -105,9 +104,7 @@ for i in range (0,len(outputs[0])):
 
 numpy_array_results = np.array(results_list) 
 
-print("Array de résultats:", numpy_array_results) 
+#Saving the array au format numpy sera ouvert avec read = np.fromfile('results_numpy.npy', dtype=int)
+numpy_array_results.tofile('results_numpy.npy')
 
-#Saving the array in a text file pour format avec import numpy OK
-content = str(numpy_array_results)
-numpy_file.write(content)
-numpy_file.close()
+print("Array de résultats:", numpy_array_results, " sauvegardé dans results_numpy.npy") 
