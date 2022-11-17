@@ -18,8 +18,8 @@ PATH='/initrd/mnt/dev_save/packages/cv_dnn_data/detection/yolov3-opencv/'
 
 #Fichier des résultats, format gnuplot
 gnuplot_file = open('results_gnuplot.txt', 'w')
-#Fichier des résultats, format numpy
-numpy_file = open('results_numpy.npy', 'w')
+#Fichier des résultats, format numpy sera results_numpy.npy
+
 
 
 
@@ -81,12 +81,11 @@ while cap.isOpened():
 
 numpy_array_results = np.array(results_list) 
 
-print("Array de résultats:", numpy_array_results) 
 
-#Saving the array in a text file pour format avec import numpy OK
-content = str(numpy_array_results)
-numpy_file.write(content)
-numpy_file.close()
+#Saving the array au format numpy sera ouvert avec read = np.fromfile('results_numpy.npy', dtype=int)
+numpy_array_results.tofile('results_numpy.npy')
+
+print("Array de résultats:", numpy_array_results, " sauvegardé dans results_numpy.npy") 
      
         
 cap.release()
