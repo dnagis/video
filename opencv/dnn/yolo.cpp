@@ -1,5 +1,11 @@
 /**
+ * #Compil native
  * g++ yolo.cpp -o yolo `pkg-config --cflags --libs opencv4`
+ * 
+ * #X-Compil
+ * export PKG_CONFIG_LIBDIR=/initrd/mnt/dev_save/packages/opencv-4.6.0/platforms/linux/build_aarch64/install/lib/pkgconfig/
+ * export PATH=$PATH:/initrd/mnt/dev_save/rpi/cross/bin/
+ * aarch64-linux-gnu-g++ yolo.cpp -o yolo `pkg-config --cflags --libs opencv4`
  * 
  * https://learnopencv.com/deep-learning-based-object-detection-using-yolov3-with-opencv-python-c/
  * https://github.com/krutikabapat/DNN-Object-Detection-YOLOv3/blob/master/yolo.cpp
