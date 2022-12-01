@@ -81,6 +81,12 @@ int main( int argc, char** argv)
     
     vector<Mat> outs;
     net.forward(outs, getOutputsNames(net));
+    
+	//Début processing des résultats
+	
+	//Dans https://github.com/krutikabapat/DNN-Object-Detection-YOLOv3/blob/master/yolo.cpp
+	// c'est la fonction remove_box()
+	cout << "Taille du vector out: " << outs.size() << endl; //outs.size() = 3
 
     return 0;
 }
