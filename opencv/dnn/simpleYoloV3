@@ -52,6 +52,14 @@ print("np.shape(outputs[1]):", np.shape(outputs[1])) # (2028, 85)
 print("np.shape(outputs[2]):", np.shape(outputs[2])) # (8112, 85)
 
 
+#Explication des arrays de taille 85
+#Le fichier des classes object_detection_classes_yolov3.txt contient 80 classes d'objets
+#The network outputs bounding boxes are each represented by a vector of a number of classes + 5 elements (80+5 = 85)
+#The first 4 elements represent the center_x, center_y, width, and height. The fifth element represents the confidence that the bounding box encloses an object.
+#The rest of the elements are the confidence associated with each class (i.e., object type). The box is assigned to the class corresponding to the highest score for the box.
+
+
+
 # combine ("aplatir") the 3 outputs groups into 1 (10647, 85)
 # large objects (507, 85)
 # medium objects (2028, 85)

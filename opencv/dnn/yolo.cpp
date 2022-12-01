@@ -86,7 +86,12 @@ int main( int argc, char** argv)
 	
 	//Dans https://github.com/krutikabapat/DNN-Object-Detection-YOLOv3/blob/master/yolo.cpp
 	// c'est la fonction remove_box()
-	cout << "Taille du vector out: " << outs.size() << endl; //outs.size() = 3
+	cout << "Taille du vector out: " << outs.size() << endl; 		//outs.size() = 3
+	cout << "Taille du vector out[0]: " << outs[0].size() << endl;	//outs[0].size() = [85 x 507]
+	cout << "Taille du vector out[1]: " << outs[1].size() << endl;	//outs[1].size() = [85 x 2028]
+	cout << "Taille du vector out[2]: " << outs[2].size() << endl;	//outs[2].size() = [85 x 8112]
+	
+	//507 + 2028 + 8112 = 10647
 
     return 0;
 }
