@@ -71,8 +71,8 @@ int main( int argc, char** argv)
 	String modelWeights = "yolov3.weights";
 		
 	Net net = readNetFromDarknet(modelConfiguration, modelWeights);
-	//net.setPreferableBackend(DNN_BACKEND_OPENCV);
-	net.setPreferableTarget(DNN_TARGET_CPU);
+	net.setPreferableBackend(DNN_BACKEND_OPENCV);
+	//net.setPreferableTarget(DNN_TARGET_CPU);
 	
 	Mat frame, blob;
     frame = imread(argv[1]);
@@ -113,7 +113,7 @@ int main( int argc, char** argv)
             // https://docs.opencv.org/3.4/d2/de8/group__core__array.html#gab473bf2eb6d14ff97e89b355dac20707
             // arg1: input array, arg2: min value (0 car non used), arg3: max value, arg4: min index (non used), arg5: max value index
             minMaxLoc(scores, 0, &confidence, 0, &classIdPoint);
-            cout << "confidence=" << confidence << endl;
+            //cout << "confidence=" << confidence << endl;
             if (confidence > confThreshold)
             {
                cout << "classIdPoint=" << classIdPoint.x << endl;
