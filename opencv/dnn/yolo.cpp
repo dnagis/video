@@ -100,6 +100,7 @@ int main( int argc, char** argv)
     for (size_t i = 0; i < outs.size(); ++i)
     {
         float* data = (float*)outs[i].data;
+        //ce ne sont pas trois arguments mais le dernier argument est un "comma operator"
         for (int j = 0; j < outs[i].rows; ++j, data += outs[i].cols)
         {
             Mat scores = outs[i].row(j).colRange(5, outs[i].cols);
