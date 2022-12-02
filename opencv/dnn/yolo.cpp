@@ -108,14 +108,16 @@ int main( int argc, char** argv)
             
             Point classIdPoint;
             double confidence;
+            float confThreshold = 0.5; 
             // Get the value and location of the maximum score
             // https://docs.opencv.org/3.4/d2/de8/group__core__array.html#gab473bf2eb6d14ff97e89b355dac20707
             // arg1: input array, arg2: min value (0 car non used), arg3: max value, arg4: min index (non used), arg5: max value index
             minMaxLoc(scores, 0, &confidence, 0, &classIdPoint);
-            //if (confidence > confThreshold)
-            //{
-               //do something
-            //}
+            cout << "confidence=" << confidence << endl;
+            if (confidence > confThreshold)
+            {
+               cout << "classIdPoint=" << classIdPoint.x << endl;
+            }
         }
     }
 	
