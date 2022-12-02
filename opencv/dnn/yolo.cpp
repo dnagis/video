@@ -71,7 +71,7 @@ int main( int argc, char** argv)
 	String modelWeights = "yolov3.weights";
 		
 	Net net = readNetFromDarknet(modelConfiguration, modelWeights);
-	net.setPreferableBackend(DNN_BACKEND_OPENCV);
+	//net.setPreferableBackend(DNN_BACKEND_OPENCV);
 	net.setPreferableTarget(DNN_TARGET_CPU);
 	
 	Mat frame, blob;
@@ -92,6 +92,33 @@ int main( int argc, char** argv)
 	cout << "Taille du vector out[2]: " << outs[2].size() << endl;	//outs[2].size() = [85 x 8112]
 	
 	//507 + 2028 + 8112 = 10647
+	
+	vector<int> classIds;
+    vector<float> confidences;
+    
+    //outs est un vector<Mat>
+    for (size_t i = 0; i < outs.size(); ++i)
+    {
+        float* data = (float*)outs[i].data;
+        for (int j = 0; j < outs[i].rows; ++j, data += outs[i].cols)
+        {
+            Mat scores = outs[i].row(j).colRange(5, outs[i].cols);
+            //les dimensions d'un scores: scores.rows=1 et scores.cols=80
+            //cout << "scores.rows=" << scores.rows << " et scores.cols=" << scores.cols << endl; 
+            
+            Point classIdPoint;
+            double confidence;
+            // Get the value and location of the maximum score
+            // https://docs.opencv.org/3.4/d2/de8/group__core__array.html#gab473bf2eb6d14ff97e89b355dac20707
+            // arg1: input array, arg2: min value (0 car non used), arg3: max value, arg4: min index (non used), arg5: max value index
+            minMaxLoc(scores, 0, &confidence, 0, &classIdPoint);
+            //if (confidence > confThreshold)
+            //{
+               //do something
+            //}
+        }
+    }
+	
 
     return 0;
 }
