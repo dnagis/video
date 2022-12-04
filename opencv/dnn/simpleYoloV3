@@ -35,8 +35,12 @@ ln = [ln[i - 1] for i in net.getUnconnectedOutLayers()]
 
 IMAGE_FILE = sys.argv[1]
 
-
 img = cv.imread(IMAGE_FILE)
+
+
+
+
+
 
 blob = cv.dnn.blobFromImage(img, 1/255.0, (416, 416), swapRB=True, crop=False)
 
