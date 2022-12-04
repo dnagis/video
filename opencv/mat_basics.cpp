@@ -1,6 +1,9 @@
 /**
  * g++ mat_basics.cpp -o mat_basics `pkg-config --cflags --libs opencv4`
  * 
+ * https://docs.opencv.org/4.6.0/db/da5/tutorial_how_to_scan_images.html
+ * 
+ * 
  * 
  */ 
 
@@ -16,8 +19,6 @@ using namespace cv;
 
 int main( int argc, char** argv)
 {
-	
-	
 	Mat img;
     img = imread(argv[1], IMREAD_COLOR);
     
@@ -45,6 +46,18 @@ int main( int argc, char** argv)
     
     //countNonZero() can handle only single channel images (https://answers.opencv.org/question/172784/count-non-zero-error/)
     //cout << "countNonZeros: " << countNonZero(img) << endl; //countNonZero()=
+    
+    //accéder aux valeurs individuelles
+    //https://docs.opencv.org/4.6.0/db/da5/tutorial_how_to_scan_images.html
+    uchar* p;
+    p = img.ptr<uchar>(0); //un pointer vers le début de la row numéro N
+    uchar value1 = *p;
+    printf("value1 = %u\n", value1);
+    p++;
+    uchar value2 = *p;
+    printf("value2 = %u\n", value2);
+    //cout << "value: " << value << endl;
+    
     
     
     return 0;
