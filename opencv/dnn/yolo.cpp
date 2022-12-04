@@ -40,7 +40,7 @@ int inpHeight = 416;
 vector<string> classes;
 
 // Get the names of the output layers
-vector<Mat> outs;
+
 vector<String> getOutputsNames(const Net& net)
 {
     static vector<String> names;
@@ -62,13 +62,13 @@ vector<String> getOutputsNames(const Net& net)
 
 int main( int argc, char** argv)
 {
-	string classesFile = "object_detection_classes_yolov3.txt";
+	string classesFile = "/initrd/mnt/dev_save/packages/cv_dnn_data/detection/yolov3-opencv/object_detection_classes_yolov3.txt";
 	ifstream ifs(classesFile.c_str());
 	string line;
 	while (getline(ifs, line)) classes.push_back(line);
 		
-	String modelConfiguration = "yolov3.cfg";
-	String modelWeights = "yolov3.weights";
+	String modelConfiguration = "/initrd/mnt/dev_save/packages/cv_dnn_data/detection/yolov3-opencv/yolov3.cfg";
+	String modelWeights = "/initrd/mnt/dev_save/packages/cv_dnn_data/detection/yolov3-opencv/yolov3.weights";
 		
 	Net net = readNetFromDarknet(modelConfiguration, modelWeights);
 	net.setPreferableBackend(DNN_BACKEND_OPENCV);

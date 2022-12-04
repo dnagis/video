@@ -67,18 +67,27 @@ print("np.shape(outputs[2]):", np.shape(outputs[2])) # (8112, 85)
 outputs = np.vstack(outputs) #(10647, 85)
 
 #print("np.shape(outputs):", np.shape(outputs)) #(10647, 85)
-#print(outputs[0]) #voir un exemple
+#print(outputs[10000]) #voir un exemple
 
+#pour avoir accès aux résultats intéressants
+i=0
 
 for output in outputs:
-	scores = output[5:] #pour chaque array de len=85, on récupère à partir de l'index 5
-	classID = np.argmax(scores) #des 80 classes (object_detection_classes_yolov3.txt) celle qui a la valeur max
-	confidence = scores[classID] #La confidence est la valeur à l'index de la classID
+	scores = output[5:] #pour chaque array de len=85, on récupère seulement à partir de l'index 5 (i.e. les CI pour chaque classe)
 	
+	#Afficher les 80 CI à chaque fois qu'on a au moins une valeur > 0
+	if (cv.countNonZero(scores) > 0):
+		print("@index=", i)
+		print("au moins une valeur de CI > 0")
+		print(scores)
+	
+	classID = np.argmax(scores) #des 80 classes (object_detection_classes_yolov3.txt) celle qui a la valeur max
+	confidence = scores[classID] #La confidence est la valeur à l'index de la classID	
 	#classID == 0 --> class = "person". 
 	if ((classID==0) and (confidence>0.9)):		
 		print("person CI=", confidence)
-
+	
+	i+=1	
 
 
 
