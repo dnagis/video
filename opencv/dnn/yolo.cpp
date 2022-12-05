@@ -91,8 +91,12 @@ int main( int argc, char** argv)
 	cout << "Taille du vector out[0]: " << outs[0].size() << endl;	//outs[0].size() = [85 x 507]
 	cout << "Taille du vector out[1]: " << outs[1].size() << endl;	//outs[1].size() = [85 x 2028]
 	cout << "Taille du vector out[2]: " << outs[2].size() << endl;	//outs[2].size() = [85 x 8112]
-	
 	//507 + 2028 + 8112 = 10647
+	
+	//Voir une row d'un des 3 Mat de length 85
+	cout << "une row : " << outs[0].row(208) << endl;
+	
+	
 	
 	vector<int> classIds;
     vector<float> confidences;
