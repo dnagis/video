@@ -77,7 +77,12 @@ int main( int argc, char** argv)
 	Mat img, blob;
     img = imread(argv[1], IMREAD_COLOR);
    
-    blobFromImage(img, blob, 1/255, Size(inpWidth,inpHeight),Scalar(0,0,0), true, false);
+	//Création du blob original --> toutes les valeurs de CI de l'output sont à zero
+    //blobFromImage(img, blob, 1/255, Size(inpWidth,inpHeight),Scalar(0,0,0), true, false);
+    
+    //Tentative de modifications
+    blobFromImage(img, blob, 1/255.0, Size(inpWidth,inpHeight) ,Scalar(0,0,0), true, false); //avec ça j'ai des valeurs dans l'output > 0
+    
     net.setInput(blob);
     
     vector<Mat> outs;
@@ -114,15 +119,15 @@ int main( int argc, char** argv)
             
             Point classIdPoint;
             double confidence;
-            float confThreshold = 0.5; 
+            float confThreshold = 0.9; 
             // Get the value and location of the maximum score
             // https://docs.opencv.org/3.4/d2/de8/group__core__array.html#gab473bf2eb6d14ff97e89b355dac20707
             // arg1: input array, arg2: min value (0 car non used), arg3: max value, arg4: min index (non used), arg5: max value index
             minMaxLoc(scores, 0, &confidence, 0, &classIdPoint);
             //cout << "confidence=" << confidence << endl;
-            if (confidence > confThreshold)
+            if (confidence > confThreshold && classIdPoint.x == 0)
             {
-               cout << "classIdPoint=" << classIdPoint.x << endl;
+               cout << "classIdPoint=" << classIdPoint.x << " confidence = " << confidence << endl;
             }
         }
     }
