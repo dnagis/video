@@ -62,15 +62,25 @@ vector<String> getOutputsNames(const Net& net)
 
 int main( int argc, char** argv)
 {
-	string classesFile = "/initrd/mnt/dev_save/packages/cv_dnn_data/detection/yolov3-opencv/object_detection_classes_yolov3.txt";
-	ifstream ifs(classesFile.c_str());
+	//PATH sur le NUC
+	//string prependPath = "/initrd/mnt/dev_save/packages/cv_dnn_data/detection/yolov3-opencv/";
+	
+	//PATH dans /root/: nb: marche très bien avec des symlinks
+	string prependPath = "/root/";
+	
+	
+	string classesFile = "object_detection_classes_yolov3.txt";
+	string pathClassesFile = prependPath + classesFile;
+	ifstream ifs(pathClassesFile.c_str());
 	string line;
 	while (getline(ifs, line)) classes.push_back(line);
 		
-	String modelConfiguration = "/initrd/mnt/dev_save/packages/cv_dnn_data/detection/yolov3-opencv/yolov3.cfg";
-	String modelWeights = "/initrd/mnt/dev_save/packages/cv_dnn_data/detection/yolov3-opencv/yolov3.weights";
+	String modelConfiguration = "yolov3.cfg";
+	String modelConfigurationPath = prependPath + modelConfiguration;
+	String modelWeights = "yolov3.weights";
+	String modelWeightsPath = prependPath + modelWeights;
 		
-	Net net = readNetFromDarknet(modelConfiguration, modelWeights);
+	Net net = readNetFromDarknet(modelConfigurationPath, modelWeightsPath);
 	net.setPreferableBackend(DNN_BACKEND_OPENCV);
 	//net.setPreferableTarget(DNN_TARGET_CPU);
 	
