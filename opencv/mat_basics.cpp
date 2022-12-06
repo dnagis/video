@@ -1,7 +1,13 @@
 /**
+ * Juste de quoi comprendre les bases de Mat
+ * 
+ * 
  * g++ mat_basics.cpp -o mat_basics `pkg-config --cflags --libs opencv4`
  * 
+ * 
+ * https://docs.opencv.org/4.6.0/d6/d6d/tutorial_mat_the_basic_image_container.html
  * https://docs.opencv.org/4.6.0/db/da5/tutorial_how_to_scan_images.html
+ * https://docs.opencv.org/4.6.0/d5/d98/tutorial_mat_operations.html
  * 
  * 
  * 
@@ -28,20 +34,26 @@ int main( int argc, char** argv)
 	        return 1;
 	    }
 	    
-	if(img.type() == CV_8UC3)
-		{
-	        cout << "img type = CV_8UC3" << endl;
-	    }
+
     
     cout << "img.rows: " << img.rows << endl; 
     cout << "img.cols: " << img.cols << endl; 
     cout << "img.depth: " << img.depth() << endl; //img.depth()=0
     cout << "img.channels: " << img.channels() << endl; //img.channels()=3
-    cout << "img.type: " << img.type() << endl; //img.type: 16     
     
-    //avec 3 channels et type = 16 ce serait CV_8U selon https://stackoverflow.com/questions/10167534/how-to-find-out-what-type-of-a-mat-object-is-with-mattype-in-opencv
+    //Le type (ex.: CV_8UC3)
+    //malheureusement impossible de récupérer directement le type, la méthode 'politiquement correcte' est de tester:   
+    if(img.type() == CV_8UC3)
+		{
+	        cout << "Mat type = CV_8UC3" << endl;
+	    }    
+    //Néanmoins, ce post SO a un tableau (user='empty') qui permet de déduire le type si tu connais le nombre de channels
+    //https://stackoverflow.com/questions/10167534/how-to-find-out-what-type-of-a-mat-object-is-with-mattype-in-opencv
     
-    //Comment accéder à une valeur particulière pour comparer avec Python
+    cout << "img.type: " << img.type() << endl; //img.type: 16 --> si 3 channels ce serait CV_8U (donc CV_8UC3) 
+    
+    
+    //Comment accéder à une valeur particulière (initialement pour debug pour comparer avec Python)
     //cout << "img.at(X,Y): " << img.at<uchar>(0,0) << endl; //
     
     //countNonZero() can handle only single channel images (https://answers.opencv.org/question/172784/count-non-zero-error/)

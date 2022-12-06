@@ -11,7 +11,7 @@ import sys
 #FILE = 'digits.png'
 #img = cv.imread(cv.samples.findFile(FILE))
 
-img = cv.imread(sys.argv[1])
+img = cv.imread(sys.argv[1], IMREAD_COLOR)
 
 if img is None:
     sys.exit("Could not read the image.")
