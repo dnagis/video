@@ -93,7 +93,7 @@ for output in outputs:
 	confidence = scores[classID] #La confidence est la valeur à l'index de la classID	
 	#classID == 0 --> class = "person". 
 	if ((classID==0) and (confidence>0.9)):		
-		print("person CI = ",confidence,"\t\t box:", output[0], "\t", output[1],"\t",output[2],"\t",output[3])
+		print("person CI = ",confidence,"   raw box:", output[0], "\t", output[1],"\t",output[2],"\t",output[3])
 		
 		#Calcul bounding box: The first 4 elements represent the center_x, center_y, width, and height. The fifth element represents the confidence that the bounding box encloses an object.
 		center_x = int(output[0] * frameWidth)

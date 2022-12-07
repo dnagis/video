@@ -1,4 +1,7 @@
 /**
+ * 
+ * Voir simpleYoloV3 pour des commentaires explicatifs
+ * 
  * #Compil native
  * g++ yolo.cpp -o yolo `pkg-config --cflags --libs opencv4`
  * 
@@ -31,7 +34,7 @@ using namespace cv;
 using namespace dnn;
 
 // confidence threshold
-float confThreshold = 0.7; 
+float confThreshold = 0.9; 
 // nms threshold
 float nmsThreshold = 0.4;
 
@@ -64,11 +67,11 @@ vector<String> getOutputsNames(const Net& net)
 
 int main( int argc, char** argv)
 {
-	//PATH sur le NUC
-	//string prependPath = "/initrd/mnt/dev_save/packages/cv_dnn_data/detection/yolov3-opencv/";
+	//PATH dans dev_save sur le NUC
+	string prependPath = "/initrd/mnt/dev_save/packages/cv_dnn_data/detection/yolov3-opencv/";
 	
 	//PATH dans /root/: nb: marche très bien avec des symlinks
-	string prependPath = "/root/";
+	//string prependPath = "/root/";
 	
 	
 	string classesFile = "object_detection_classes_yolov3.txt";
@@ -77,10 +80,12 @@ int main( int argc, char** argv)
 	string line;
 	while (getline(ifs, line)) classes.push_back(line);
 		
-	String modelConfiguration = "yolov3-tiny.cfg";	
+	//String modelConfiguration = "yolov3-tiny.cfg";	
+	String modelConfiguration = "yolov3.cfg";
 	String modelConfigurationPath = prependPath + modelConfiguration;
 	
-	String modelWeights = "yolov3-tiny.weights";	
+	//String modelWeights = "yolov3-tiny.weights";	
+	String modelWeights = "yolov3.weights";
 	String modelWeightsPath = prependPath + modelWeights;
 		
 	Net net = readNetFromDarknet(modelConfigurationPath, modelWeightsPath);
@@ -142,7 +147,7 @@ int main( int argc, char** argv)
             //cout << "confidence=" << confidence << endl;
             if (confidence > confThreshold && classIdPoint.x == 0)
             {
-               cout << "classIdPoint=" << classIdPoint.x << " confidence = " << confidence << endl;
+               cout << "class=" << classIdPoint.x << " CI=" << confidence << " raw box: " << *data << " " << *(data+1) << " " << *(data+2) << " " << *(data+3) << endl;
             }
         }
     }
