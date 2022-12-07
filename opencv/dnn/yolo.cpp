@@ -31,9 +31,11 @@ using namespace cv;
 using namespace dnn;
 
 // confidence threshold
-float conf_threshold = 0.5;
+float confThreshold = 0.7; 
 // nms threshold
 float nmsThreshold = 0.4;
+
+
 int inpWidth = 416;
 int inpHeight = 416;
 
@@ -75,9 +77,10 @@ int main( int argc, char** argv)
 	string line;
 	while (getline(ifs, line)) classes.push_back(line);
 		
-	String modelConfiguration = "yolov3.cfg";
+	String modelConfiguration = "yolov3-tiny.cfg";	
 	String modelConfigurationPath = prependPath + modelConfiguration;
-	String modelWeights = "yolov3.weights";
+	
+	String modelWeights = "yolov3-tiny.weights";	
 	String modelWeightsPath = prependPath + modelWeights;
 		
 	Net net = readNetFromDarknet(modelConfigurationPath, modelWeightsPath);
@@ -102,14 +105,16 @@ int main( int argc, char** argv)
 	
 	//Dans https://github.com/krutikabapat/DNN-Object-Detection-YOLOv3/blob/master/yolo.cpp
 	// c'est la fonction remove_box()
-	cout << "Taille du vector out: " << outs.size() << endl; 		//outs.size() = 3
-	cout << "Taille du vector out[0]: " << outs[0].size() << endl;	//outs[0].size() = [85 x 507]
-	cout << "Taille du vector out[1]: " << outs[1].size() << endl;	//outs[1].size() = [85 x 2028]
-	cout << "Taille du vector out[2]: " << outs[2].size() << endl;	//outs[2].size() = [85 x 8112]
-	//507 + 2028 + 8112 = 10647
+	cout << "Nombre de Mat dans outs: " << outs.size() << endl; 		//outs.size() = 3 en yolov3, 2 en yolov3 tiny
+
+	for (size_t i = 0; i < outs.size(); ++i)
+	{
+		cout << "Taille du vector " << i << " : " << outs[i].size() << endl;
+	}
+
 	
-	//Voir une row d'un des 3 Mat de length 85
-	cout << "une row : " << outs[0].row(208) << endl;
+	//Voir une row de length 85 d'un des Mat juste pour debug
+	//cout << "une row : " << outs[0].row(208) << endl;
 	
 	
 	
@@ -129,7 +134,7 @@ int main( int argc, char** argv)
             
             Point classIdPoint;
             double confidence;
-            float confThreshold = 0.9; 
+            
             // Get the value and location of the maximum score
             // https://docs.opencv.org/3.4/d2/de8/group__core__array.html#gab473bf2eb6d14ff97e89b355dac20707
             // arg1: input array, arg2: min value (0 car non used), arg3: max value, arg4: min index (non used), arg5: max value index
