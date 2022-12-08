@@ -2,6 +2,8 @@
  * 
  * Voir simpleYoloV3 pour des commentaires explicatifs
  * 
+ * ./yolo 0.7 horse.jpg
+ * 
  * #Compil native
  * g++ yolo.cpp -o yolo `pkg-config --cflags --libs opencv4`
  * 
@@ -33,12 +35,6 @@ using namespace std;
 using namespace cv;
 using namespace dnn;
 
-// confidence threshold
-float confThreshold = 0.7; 
-// nms threshold
-float nmsThreshold = 0.4;
-
-
 int inpWidth = 416;
 int inpHeight = 416;
 
@@ -67,6 +63,13 @@ vector<String> getOutputsNames(const Net& net)
 
 int main( int argc, char** argv)
 {
+	 if(argc != 3) {
+      cout << "You need to supply 2 arguments to this program: conf_threshold et input file\n";
+      return -1;
+	 }
+	
+	
+	
 	//PATH dans dev_save sur le NUC
 	//string prependPath = "/initrd/mnt/dev_save/packages/cv_dnn_data/detection/yolov3-opencv/";
 	
@@ -92,8 +95,11 @@ int main( int argc, char** argv)
 	net.setPreferableBackend(DNN_BACKEND_OPENCV);
 	//net.setPreferableTarget(DNN_TARGET_CPU);
 	
+	double confThreshold;
+	confThreshold = atof(argv[1]);
+	
 	Mat img, blob;
-    img = imread(argv[1], IMREAD_COLOR);
+    img = imread(argv[2], IMREAD_COLOR);
    
 	//Création du blob original --> toutes les valeurs de CI de l'output sont à zero
     //blobFromImage(img, blob, 1/255, Size(inpWidth,inpHeight),Scalar(0,0,0), true, false);
