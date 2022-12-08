@@ -98,13 +98,17 @@ int main( int argc, char** argv)
 	double confThreshold;
 	confThreshold = atof(argv[1]);
 	
+	String inputFile = argv[2];
+	cout << "##### Fichier analysé: " << inputFile << endl;
+	
 	Mat img, blob;
-    img = imread(argv[2], IMREAD_COLOR);
+    img = imread(inputFile, IMREAD_COLOR);
    
-	//Création du blob original --> toutes les valeurs de CI de l'output sont à zero
+	//Création du blob
+	//dans le script original tel que téléchargé (première ligne ci dessous) --> toutes les valeurs de CI de l'output sont à zero
     //blobFromImage(img, blob, 1/255, Size(inpWidth,inpHeight),Scalar(0,0,0), true, false);
     
-    //Tentative de modifications
+    //Modif du troisième argument: marche mieux:
     blobFromImage(img, blob, 1/255.0, Size(inpWidth,inpHeight) ,Scalar(0,0,0), true, false); //avec ça j'ai des valeurs dans l'output > 0
     
     net.setInput(blob);
@@ -112,22 +116,19 @@ int main( int argc, char** argv)
     vector<Mat> outs;
     net.forward(outs, getOutputsNames(net));
     
-	//Début processing des résultats
+	/**Début processing des résultats**/
 	
-	//Dans https://github.com/krutikabapat/DNN-Object-Detection-YOLOv3/blob/master/yolo.cpp
-	// c'est la fonction remove_box()
-	cout << "Nombre de Mat dans outs: " << outs.size() << endl; 		//outs.size() = 3 en yolov3, 2 en yolov3 tiny
 
-	for (size_t i = 0; i < outs.size(); ++i)
+	//Afficher des infos sur les arrays de resultats
+	//cout << "Nombre de Mat dans outs: " << outs.size() << endl; 		//outs.size() = 3 en yolov3, 2 en yolov3 tiny
+	/*for (size_t i = 0; i < outs.size(); ++i)
 	{
 		cout << "Taille du vector " << i << " : " << outs[i].size() << endl;
-	}
+	}*/
 
 	
-	//Voir une row de length 85 d'un des Mat juste pour debug
+	//Afficher une row de length 85 d'un des Mat juste pour debug
 	//cout << "une row : " << outs[0].row(208) << endl;
-	
-	
 	
 	vector<int> classIds;
     vector<float> confidences;
