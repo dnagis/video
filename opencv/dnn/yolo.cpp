@@ -152,7 +152,8 @@ int main( int argc, char** argv)
             // arg1: input array, arg2: min value (0 car non used), arg3: max value, arg4: min index (non used), arg5: max value index
             minMaxLoc(scores, 0, &confidence, 0, &classIdPoint);
             //cout << "confidence=" << confidence << endl;
-            if (confidence > confThreshold && classIdPoint.x == 0)
+            //if (confidence > confThreshold && classIdPoint.x == 0)
+            if (confidence > confThreshold)
             {
                cout << "class=" << classIdPoint.x << " CI=" << confidence << " raw box: [" << *data << "," << *(data+1) << "," << *(data+2) << "," << *(data+3)<< "]" << endl;
             }
