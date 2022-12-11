@@ -16,9 +16,16 @@
  * https://github.com/krutikabapat/DNN-Object-Detection-YOLOv3/blob/master/yolo.cpp
  * 
  * Fichier de noms de classes vient de opencv-4.6.0/samples/data/dnn/
+ * 
+ * Pour yolov3:
  * yolov3.cfg et .weights viennent de https://opencv-tutorial.readthedocs.io/en/latest/yolo/yolo.html
  * je stocke dans
  * /initrd/mnt/dev_save/packages/cv_dnn_data/detection/yolov3-opencv/
+ * 
+ * Pour tiny yolov3:
+ * https://pjreddie.com/darknet/yolo/
+ * https://pjreddie.com/media/files/yolov3-tiny.weights
+ * https://raw.githubusercontent.com/pjreddie/darknet/master/cfg/yolov3-tiny.cfg
  * 
  */ 
 
@@ -83,11 +90,11 @@ int main( int argc, char** argv)
 	string line;
 	while (getline(ifs, line)) classes.push_back(line);
 		
-	String modelConfiguration = "yolov3-tiny.cfg";	
+	String modelConfiguration = "yolov3-tiny.cfg";	//https://raw.githubusercontent.com/pjreddie/darknet/master/cfg/yolov3-tiny.cfg
 	//String modelConfiguration = "yolov3.cfg";
 	String modelConfigurationPath = prependPath + modelConfiguration;
 	
-	String modelWeights = "yolov3-tiny.weights";	
+	String modelWeights = "yolov3-tiny.weights"; //https://pjreddie.com/media/files/yolov3-tiny.weights	
 	//String modelWeights = "yolov3.weights";
 	String modelWeightsPath = prependPath + modelWeights;
 		
