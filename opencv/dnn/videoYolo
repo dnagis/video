@@ -12,6 +12,19 @@ WHITE = (255, 255, 255)
 FRAME_SKIPPER = 30 #mécanisme pour ne traiter qu'une partie des frames
 
 
+#Parsing des arguments
+if len(sys.argv) < 3:
+    print("Mauvais nombre d args Usage:  videoYolo CI_threshold file")
+    sys.exit(1)
+    
+#print("n args=", len(sys.argv))
+
+conf_threshold = float(sys.argv[1]) #premier argument = CI
+
+VIDEO_FILE = sys.argv[len(sys.argv)-1]
+print("fichier video = ", VIDEO_FILE)
+
+
 
 #PATH de recherche prepended aux fichiers weight, config, class names...
 PATH='/initrd/mnt/dev_save/packages/cv_dnn_data/detection/yolov3-opencv/'
@@ -33,8 +46,8 @@ ln = net.getLayerNames()
 ln = [ln[i - 1] for i in net.getUnconnectedOutLayers()]
 
 
-#Yolov3 detection sur une frame
-def do_yolov3(frame):
+#Yolo detection sur une frame
+def do_detection(frame):
 	detected = 0
 	blob = cv.dnn.blobFromImage(frame, 1/255.0, (416, 416), swapRB=True, crop=False)
 	net.setInput(blob)
@@ -46,7 +59,7 @@ def do_yolov3(frame):
 		confidence = scores[classID] #La confidence est la valeur à l'index de la classID
 		
 		#classID == 0 --> class = "person". 
-		if ((classID==0) and (confidence>0.9)):
+		if ((classID==0) and (confidence > conf_threshold)):
 			detected = 1		
 			#print("frame n°=", pos_frames, " person CI=", confidence)	
 	
@@ -57,7 +70,7 @@ def do_yolov3(frame):
 
 
 
-cap = cv.VideoCapture(sys.argv[1])
+cap = cv.VideoCapture(VIDEO_FILE)
 
 #une list est faite pour append, numpy marche mal comme ça
 results_list = []
@@ -72,7 +85,7 @@ while cap.isOpened():
 
 	#check divisibility par ce qui est après le "%", permet de skipper des frames
 	if (pos_frames%FRAME_SKIPPER == 0): 
-		result = do_yolov3(frame)
+		result = do_detection(frame)
 		print("frame n°=", pos_frames, "  detected=", result)
 		results_list.append(result)
 		
