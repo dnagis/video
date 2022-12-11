@@ -45,7 +45,7 @@ ln = [ln[i - 1] for i in net.getUnconnectedOutLayers()]
 
 
 
-#Lecture du fichier image
+#Lecture du fichier image et création du blob 
 img = cv.imread(IMAGE_FILE)
 
 frameHeight = img.shape[0]
@@ -53,21 +53,26 @@ frameWidth = img.shape[1]
 print('Image Rows (frameHeight): ',frameHeight)
 print('Image Cols (frameWidth): ',frameWidth)
 
-
-
-
 blob = cv.dnn.blobFromImage(img, 1/255.0, (416, 416), swapRB=True, crop=False)
 
 net.setInput(blob)
 
-#Premier résultat: 3 groupes selon taille
+#Forward(): where the magic occurs...
 outputs = net.forward(ln)
-print("type de outputs: ", type(outputs)) 						# <class 'tuple'>
-print("len de outputs: ", len(outputs))							# 3
-print("type du premier element de outputs: ", type(outputs[1])) # <class 'numpy.ndarray'> (idem pour chacun des 3
-print("np.shape(outputs[0]):", np.shape(outputs[0])) # (507, 85)
-print("np.shape(outputs[1]):", np.shape(outputs[1])) # (2028, 85)
-print("np.shape(outputs[2]):", np.shape(outputs[2])) # (8112, 85)
+
+#Debug de la sortie de forward()
+#En yolov3:
+# large objects (507, 85)
+# medium objects (2028, 85)
+# small objects (8112, 85)
+#print("type de outputs: ", type(outputs)) 						# <class 'tuple'>
+print("len de outputs: ", len(outputs))							# 3 en yolov3, 2 en tiny yolo
+#print("type du premier element de outputs: ", type(outputs[1])) # <class 'numpy.ndarray'> (idem pour chacun des n)
+for i in range(len(outputs)):
+    #print("np.shape(outputs[i]):", np.shape(outputs[i]))
+    print("np.shape(outputs[{0}]: {1}".format(i, np.shape(outputs[i])))
+
+
 
 
 #Explication des arrays de taille 85
@@ -80,9 +85,6 @@ print("np.shape(outputs[2]):", np.shape(outputs[2])) # (8112, 85)
 #print("outputs[0][0] :", outputs[0][208])
 
 # combine ("aplatir") the 3 outputs groups into 1 (10647, 85)
-# large objects (507, 85)
-# medium objects (2028, 85)
-# small objects (8112, 85)
 outputs = np.vstack(outputs) #(10647, 85)
 
 #print("np.shape(outputs):", np.shape(outputs)) #(10647, 85)
