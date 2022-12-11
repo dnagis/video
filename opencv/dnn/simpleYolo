@@ -1,8 +1,8 @@
 #!/usr/bin/python
 
-#Detection Yolov3, basé sur helloYoloV3
+#Detection Yolo, initielement basé sur helloYoloV3
 #
-#Usage: simpleYoloV3 CI img_file
+#Usage: simpleYolo CI img_file
 
 
 import cv2 as cv
@@ -23,7 +23,8 @@ conf_threshold = float(sys.argv[1])
 IMAGE_FILE = sys.argv[2]
 
 #PATH prepended aux fichiers weight, config, class names...
-PATH='/initrd/mnt/dev_save/packages/cv_dnn_data/detection/yolov3-opencv/'
+#PATH='/initrd/mnt/dev_save/packages/cv_dnn_data/detection/yolov3-opencv/'
+PATH='/initrd/mnt/dev_save/packages/cv_dnn_data/detection/yolov3-tiny/'
 
 # Load names of classes 
 #J'ai pris le fichier de noms de classes:dans les sources openCV dans opencv-4.6.0/samples/data/dnn/
@@ -32,7 +33,9 @@ np.random.seed(42)
 
 
 # Give the configuration and weight files for the model and load the network.
-net = cv.dnn.readNetFromDarknet(PATH+'yolov3.cfg', PATH+'yolov3.weights') #
+#net = cv.dnn.readNetFromDarknet(PATH+'yolov3.cfg', PATH+'yolov3.weights') #
+net = cv.dnn.readNetFromDarknet(PATH+'yolov3-tiny.cfg', PATH+'yolov3-tiny.weights') #
+
 net.setPreferableBackend(cv.dnn.DNN_BACKEND_OPENCV)
 # net.setPreferableTarget(cv.dnn.DNN_TARGET_CPU)
 
