@@ -25,9 +25,21 @@ VIDEO_FILE = sys.argv[len(sys.argv)-1]
 print("fichier video = ", VIDEO_FILE)
 
 
+if sys.argv[2] == "t":
+	print("Detection par tiny-yolo")
+	#PPATH prepended aux fichiers weight, config, class names...
+	PPATH='/initrd/mnt/dev_save/packages/cv_dnn_data/detection/yolov3-tiny/'
+	CONFIG_FILE=PPATH+'yolov3-tiny.cfg'
+	WEIGHT_FILE=PPATH+'yolov3-tiny.weights'
+else:
+	print("Detection par regular yolo")
+	#PPATH prepended aux fichiers weight, config, class names...
+	PPATH='/initrd/mnt/dev_save/packages/cv_dnn_data/detection/yolov3-opencv/'
+	CONFIG_FILE=PPATH+'yolov3.cfg'
+	WEIGHT_FILE=PPATH+'yolov3.weights'
 
-#PATH de recherche prepended aux fichiers weight, config, class names...
-PATH='/initrd/mnt/dev_save/packages/cv_dnn_data/detection/yolov3-opencv/'
+
+
 
 #Fichier des résultats, format gnuplot
 gnuplot_file = open('results_gnuplot.txt', 'w')
@@ -37,10 +49,10 @@ gnuplot_file = open('results_gnuplot.txt', 'w')
 
 
 #Préparation Yolo
-classes = open(PATH+'object_detection_classes_yolov3.txt').read().strip().split('\n')
+classes = open(PPATH+'object_detection_classes_yolov3.txt').read().strip().split('\n')
 np.random.seed(42)
 colors = np.random.randint(0, 255, size=(len(classes), 3), dtype='uint8')
-net = cv.dnn.readNetFromDarknet(PATH+'yolov3.cfg', PATH+'yolov3.weights') 
+net = cv.dnn.readNetFromDarknet(CONFIG_FILE, WEIGHT_FILE) 
 net.setPreferableBackend(cv.dnn.DNN_BACKEND_OPENCV)
 ln = net.getLayerNames()
 ln = [ln[i - 1] for i in net.getUnconnectedOutLayers()]
