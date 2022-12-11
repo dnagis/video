@@ -2,7 +2,7 @@
 
 #Detection Yolo, initielement basé sur helloYoloV3
 #
-#Usage: simpleYolo CI img_file
+#Usage: simpleYolo CI [t] img_file
 
 
 import cv2 as cv
@@ -14,27 +14,41 @@ WHITE = (255, 255, 255)
 img = None
 outputs = None
 
-
-if len(sys.argv) != 3:
+#Parsing des arguments
+if len(sys.argv) < 3:
     print("Mauvais nombre d args Usage:  simpleYoloV3 CI img_file")
     sys.exit(1)
+    
+#print("n args=", len(sys.argv))
 
-conf_threshold = float(sys.argv[1])
-IMAGE_FILE = sys.argv[2]
+conf_threshold = float(sys.argv[1]) #premier argument = CI
 
-#PATH prepended aux fichiers weight, config, class names...
-#PATH='/initrd/mnt/dev_save/packages/cv_dnn_data/detection/yolov3-opencv/'
-PATH='/initrd/mnt/dev_save/packages/cv_dnn_data/detection/yolov3-tiny/'
+IMAGE_FILE = sys.argv[len(sys.argv)-1]
+print("fichier image = ", IMAGE_FILE)
+
+if sys.argv[2] == "t":
+	print("Detection par tiny-yolo")
+	#PPATH prepended aux fichiers weight, config, class names...
+	PPATH='/initrd/mnt/dev_save/packages/cv_dnn_data/detection/yolov3-tiny/'
+	CONFIG_FILE=PPATH+'yolov3-tiny.cfg'
+	WEIGHT_FILE=PPATH+'yolov3-tiny.weights'
+else:
+	print("Detection par regular yolo")
+	#PPATH prepended aux fichiers weight, config, class names...
+	PPATH='/initrd/mnt/dev_save/packages/cv_dnn_data/detection/yolov3-opencv/'
+	CONFIG_FILE=PPATH+'yolov3.cfg'
+	WEIGHT_FILE=PPATH+'yolov3.weights'
+	
 
 # Load names of classes 
 #J'ai pris le fichier de noms de classes:dans les sources openCV dans opencv-4.6.0/samples/data/dnn/
-classes = open(PATH+'object_detection_classes_yolov3.txt').read().strip().split('\n')
+#Je le mets dans les deux PPATH (yolo et regular)
+classes = open(PPATH+'object_detection_classes_yolov3.txt').read().strip().split('\n')
+
 np.random.seed(42)
 
-
 # Give the configuration and weight files for the model and load the network.
-#net = cv.dnn.readNetFromDarknet(PATH+'yolov3.cfg', PATH+'yolov3.weights') #
-net = cv.dnn.readNetFromDarknet(PATH+'yolov3-tiny.cfg', PATH+'yolov3-tiny.weights') #
+net = cv.dnn.readNetFromDarknet(CONFIG_FILE, WEIGHT_FILE) 
 
 net.setPreferableBackend(cv.dnn.DNN_BACKEND_OPENCV)
 # net.setPreferableTarget(cv.dnn.DNN_TARGET_CPU)
@@ -42,7 +56,6 @@ net.setPreferableBackend(cv.dnn.DNN_BACKEND_OPENCV)
 # determine the output layer
 ln = net.getLayerNames()
 #print(len(ln), ln) #len=254
-
 ln = [ln[i - 1] for i in net.getUnconnectedOutLayers()]
 
 
@@ -62,6 +75,8 @@ net.setInput(blob)
 
 #Forward(): where the magic occurs...
 outputs = net.forward(ln)
+
+
 
 #Debug de la sortie de forward()
 #En yolov3:
