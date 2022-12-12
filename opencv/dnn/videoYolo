@@ -100,6 +100,7 @@ results_list = []
 while cap.isOpened():
 	ret, frame = cap.read()
 	pos_frames=int(cap.get(cv.CAP_PROP_POS_FRAMES))
+	pos_time=round(int(cap.get(cv.CAP_PROP_POS_MSEC))/1000)
 	# if frame is read correctly ret is True
 	if not ret:
 		print("Can't receive frame (stream end?). Exiting ...")
@@ -108,8 +109,8 @@ while cap.isOpened():
 	#check divisibility par ce qui est après le "%", permet de skipper des frames
 	if (pos_frames%FRAME_SKIPPER == 0): 
 		result = do_detection(frame)
-		print("frame n°=", pos_frames, "  detected=", result)
-		output_file.write(str(pos_frames) + ' ' + str(result) + '\n')
+		print("Pos s = ", pos_time, " frame n°=", pos_frames, "  detected=", result)
+		output_file.write(str(pos_time) + ' ' + str(result) + '\n')
 		results_list.append(result)
 		
 	if cv.waitKey(33) == ord('q'):
@@ -123,7 +124,7 @@ numpy_array_results = np.array(results_list)
 
 print("Array de résultats: ", numpy_array_results)
 
-print("Nombre total de frames: ", pos_frames) 
+print("last pos_time: ", pos_time, "last pos_frames: ", pos_frames) 
         
 cap.release()
 cv.destroyAllWindows()
