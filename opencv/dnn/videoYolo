@@ -1,6 +1,16 @@
 #!/usr/bin/python
 
-#Passer une vidéo en YoloV3: basé sur simpleYoloV3
+#Passer une vidéo en Yolo: basé sur simpleYolo
+
+#Usage: videoYolo CI [t] video_file
+
+
+#Plot les results: 
+#gnuplot 5.4 patchlevel 4 (gnuplot-5.4.4.tar.gz)
+#gnuplot -e "plot 'detect.txt' with impulses lw 1; pause -1"
+#
+#gnuplot output to file
+#gnuplot -e "set terminal pngcairo; plot 'detect.txt' with impulses lw 1;" > output.png
 
 
 import cv2 as cv
@@ -41,9 +51,9 @@ else:
 
 
 
-#Fichier des résultats, format gnuplot
-gnuplot_file = open('results_gnuplot.txt', 'w')
-#Fichier des résultats, format numpy sera results_numpy.npy
+#Fichier des résultats détection
+output_file = open('detect.txt', 'w')
+
 
 
 
@@ -76,7 +86,7 @@ def do_detection(frame):
 			#print("frame n°=", pos_frames, " person CI=", confidence)	
 	
 	#print("frame n°=", pos_frames, "  detected=", detected)
-	#gnuplot_file.write(str(pos_frames) + ' ' + str(detected) + '\n')
+
 	return detected
 	
 
@@ -99,6 +109,7 @@ while cap.isOpened():
 	if (pos_frames%FRAME_SKIPPER == 0): 
 		result = do_detection(frame)
 		print("frame n°=", pos_frames, "  detected=", result)
+		output_file.write(str(pos_frames) + ' ' + str(result) + '\n')
 		results_list.append(result)
 		
 	if cv.waitKey(33) == ord('q'):
@@ -108,10 +119,11 @@ numpy_array_results = np.array(results_list)
 
 
 #Saving the array au format numpy sera ouvert avec read = np.fromfile('results_numpy.npy', dtype=int)
-numpy_array_results.tofile('results_numpy.npy')
+#numpy_array_results.tofile('results_numpy.npy')
 
-print("Array de résultats:", numpy_array_results, " sauvegardé dans results_numpy.npy") 
-     
+print("Array de résultats: ", numpy_array_results)
+
+print("Nombre total de frames: ", pos_frames) 
         
 cap.release()
 cv.destroyAllWindows()
