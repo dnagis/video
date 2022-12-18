@@ -16,7 +16,7 @@ outputs = None
 
 #Parsing des arguments
 if len(sys.argv) < 3:
-    print("Mauvais nombre d args Usage:  simpleYolo CI img_file")
+    print("Mauvais nombre d args Usage:  simpleYolo CI [t] img_file")
     sys.exit(1)
     
 #print("n args=", len(sys.argv))

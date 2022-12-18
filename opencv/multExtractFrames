@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 
-#nmultExtractFrames capture.mp4 52,48,98
+#nmultExtractFrames capture.mp4 52.48.98
 VIDFILE=$1
 TIMES=$2
 
