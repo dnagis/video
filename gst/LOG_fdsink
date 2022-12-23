@@ -1,0 +1,6 @@
+#Dec 2022
+#Objectif: récupérer des frames au cours d'une capture pour les passer à opencv pour détection dnn
+
+gst-launch-1.0 videotestsrc num-buffers=100 ! tee name=t \
+t. ! queue ! fdsink \
+t. ! queue ! vaapih264enc ! h264parse ! mp4mux ! filesink location=test.mp4
