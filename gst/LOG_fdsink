@@ -11,3 +11,8 @@ gst-launch-1.0 --quiet videotestsrc num-buffers=10 ! fdsink
 gst-launch-1.0 videotestsrc num-buffers=100 ! tee name=t \
 t. ! queue ! fdsink \
 t. ! queue ! vaapih264enc ! h264parse ! mp4mux ! filesink location=test.mp4
+
+#Vérification EOS capté et shutdown OK, par ctrl+C ou kill -s SIGINT `pidof gst-launch-1.0`
+gst-launch-1.0 -e --quiet videotestsrc ! tee name=t \
+t. ! queue ! fdsink \
+t. ! queue ! vaapih264enc ! h264parse ! mp4mux ! filesink location=test.mp4
