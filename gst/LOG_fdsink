@@ -1,6 +1,13 @@
 #Dec 2022
 #Objectif: récupérer des frames au cours d'une capture pour les passer à opencv pour détection dnn
 
+#Output propre (pas de messages d'informations gstreamer dans l'output): --quiet
+trouvé dans: 
+https://stackoverflow.com/questions/71950827/the-fdsink-element-in-gstreamer-cannot-be-used-to-output-the-correct-byte-stream
+
+gst-launch-1.0 --quiet videotestsrc num-buffers=10 ! fdsink
+
+#Hello World Tee
 gst-launch-1.0 videotestsrc num-buffers=100 ! tee name=t \
 t. ! queue ! fdsink \
 t. ! queue ! vaapih264enc ! h264parse ! mp4mux ! filesink location=test.mp4
