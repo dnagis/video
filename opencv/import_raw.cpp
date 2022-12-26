@@ -1,11 +1,12 @@
 /**
- * Importer de la data (je suppose frame) venant de gstreamer type:
+ * Import d'une raw frame from gstreamer dans une Mat opencv
  * 
- * gst-launch-1.0 --quiet videotestsrc pattern=5 num-buffers=1 ! video/x-raw,width=640,height=480,format=BGR,framerate=30/1 ! fdsink > image.raw
+ * gst-launch-1.0 --quiet videotestsrc num-buffers=1 ! video/x-raw,width=640,height=480,format=BGR,framerate=30/1 ! fdsink > image.raw
  * 
  * 
  * g++ import_raw.cpp -o import_raw `pkg-config --cflags --libs opencv4`
  * 
+ * ./import_raw image.raw
  * 
  * https://answers.opencv.org/question/58106/unable-to-open-raw-image-through-opencv/
  * 
@@ -49,6 +50,8 @@ int main( int argc, char** argv)
 	free(imagedata);
 
 	fclose(fp);
+	
+	
 	
 	imshow("Display window", img);
     int k = waitKey(0); // Wait for a keystroke in the window
