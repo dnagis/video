@@ -1,5 +1,5 @@
 #Dec 2022
-#Objectif: récupérer des frames au cours d'une capture pour les passer à opencv pour détection dnn
+#Objectif: récupérer des frames au cours d'une capture pour les passer à opencv pour détection dnn tiny yolo
 
 #Output propre (pas de messages d'informations gstreamer dans l'output): --quiet
 trouvé dans: 
@@ -17,7 +17,10 @@ gst-launch-1.0 -e --quiet videotestsrc ! tee name=t \
 t. ! queue ! fdsink \
 t. ! queue ! vaapih264enc ! h264parse ! mp4mux ! filesink location=test.mp4
 
-###Attention: si capuchon au bout de camera: images noires: le fdsink au niveau du raw est vide (???)
+
+####RPi4 pour déterminer quel format possible entre rpicamsrc et v4l2h264enc
+***Attention: si capuchon au bout de camera: images noires: en console output fdsink au niveau du raw est vide***
+***MAIS (bonne nouvelle): avec videotestsrc pattern=2 (black) je vois bien des bytes passer***
 
 #pipeline dans laquelle insérer tee fdsink
 gst-launch-1.0 -e rpicamsrc ! video/x-raw,width=640,height=480,format=BGR,framerate=30/1 ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! h264parse ! mp4mux ! filesink location=test.mp4
@@ -29,3 +32,11 @@ gst-launch-1.0 -e rpicamsrc ! 'video/x-raw,width=640,height=480,format=BGR,frame
 gst-launch-1.0 -e --quiet rpicamsrc ! 'video/x-raw,width=640,height=480,format=BGR,framerate=30/1' ! tee name=t \
 t. ! queue ! fdsink \
 t. ! queue ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! h264parse ! mp4mux ! filesink location=test.mp4
+
+
+####Comprendre l'output fdsink, sur le NUC
+##Redirection simple
+gst-launch-1.0 --quiet videotestsrc ! video/x-raw,width=640,height=480,format=BGR,framerate=30/1 ! fdsink
+pattern = 5 --> green
+gst-launch-1.0 --quiet videotestsrc pattern=5 num-buffers=1 ! video/x-raw,width=640,height=480,format=BGR,framerate=30/1 ! fdsink > essai.dat
+ls -l essai.dat --> 921600
