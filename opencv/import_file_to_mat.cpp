@@ -1,5 +1,5 @@
 /**
- * Import d'une raw frame from gstreamer dans une Mat opencv
+ * Import d'une raw frame from gstreamer dans une Mat opencv via une file 
  * 
  * gst-launch-1.0 --quiet videotestsrc num-buffers=1 ! video/x-raw,width=640,height=480,format=BGR,framerate=30/1 ! fdsink > image.raw
  * 
