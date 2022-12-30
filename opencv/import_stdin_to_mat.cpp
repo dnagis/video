@@ -3,7 +3,7 @@
  * 
  * g++ import_stdin_to_mat.cpp -o import_stdin_to_mat `pkg-config --cflags --libs opencv4`
  * 
- * gst-launch-1.0 --quiet videotestsrc ! clockoverlay ! video/x-raw,width=640,height=480,format=BGR,framerate=30/1 ! fdsink | ./import_stdin_to_mat
+ * gst-launch-1.0 --quiet videotestsrc is-live=true ! clockoverlay ! video/x-raw,width=640,height=480,format=BGR,framerate=30/1 ! fdsink | ./import_stdin_to_mat
  * 
  * kill -s SIGINT `pidof gst-launch-1.0`
  * 
@@ -32,25 +32,25 @@ int main()
 
 		
 		//Création d'une Mat
-		//img.create(IMAGE_HEIGHT, IMAGE_WIDTH, CV_8UC3);
+		img.create(IMAGE_HEIGHT, IMAGE_WIDTH, CV_8UC3);
 		
+		//Memory allocation for image data buffer.
+		imagebuffer = (char*) malloc (sizeof(char) * framesize);		
 		
 		while (!cin.eof()) {
-			//cout << "Début loop read buffer" << endl;
+			cout << "Début loop read buffer" << endl;
 			
-			//Memory allocation for image data buffer.
-			imagebuffer = (char*) malloc (sizeof(char) * framesize);
+
 			
 			//Rx depuis stdin ref: https://cplusplus.com/reference/istream/istream/read/
 			cin.read(imagebuffer, framesize);
-			//memcpy(img.data, imagebuffer, framesize);
+			memcpy(img.data, imagebuffer, framesize);
 			
-			free(imagebuffer);
-			
-			
+
+				
 		}
 		
-		
+			free(imagebuffer);		
 		
 		
 		
