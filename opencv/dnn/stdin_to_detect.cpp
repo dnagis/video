@@ -64,10 +64,10 @@ void detect()
 
 int main() 
 {
-	//Création d'une Mat
+	//Création d'une Mat img qui va recevoir la frame passée à read_stdin via stdin
 	img.create(IMAGE_HEIGHT, IMAGE_WIDTH, CV_8UC3);	
 
-
+	//Démarrage (spawn) des deux threads
 	thread first (read_stdin);     // spawn new thread that calls read_stdin() nb on peut passer des arguments, à partir d'arg2
 	thread second (detect);  // spawn new thread that calls detect(0)
 	
@@ -77,7 +77,7 @@ int main()
 	first.join();                // pauses until first finishes
 	second.join();               // pauses until second finishes
 	
-	cout << "read_stdin and detect completed.\n";
+	cout << "Fin du programme read_stdin and detect completed.\n";
 	
 	return 0;
 }

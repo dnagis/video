@@ -78,10 +78,10 @@ int main( int argc, char** argv)
 	
 	
 	//PATH dans dev_save sur le NUC
-	//string prependPath = "/initrd/mnt/dev_save/packages/cv_dnn_data/detection/yolov3-opencv/";
+	string prependPath = "/initrd/mnt/dev_save/packages/cv_dnn_data/detection/yolov3-opencv/";
 	
 	//PATH dans /root/: nb: marche très bien avec des symlinks
-	string prependPath = "/root/";
+	//string prependPath = "/root/";
 	
 	
 	string classesFile = "object_detection_classes_yolov3.txt";
@@ -90,12 +90,12 @@ int main( int argc, char** argv)
 	string line;
 	while (getline(ifs, line)) classes.push_back(line);
 		
-	String modelConfiguration = "yolov3-tiny.cfg";	//https://raw.githubusercontent.com/pjreddie/darknet/master/cfg/yolov3-tiny.cfg
-	//String modelConfiguration = "yolov3.cfg";
+	//String modelConfiguration = "yolov3-tiny.cfg";	//https://raw.githubusercontent.com/pjreddie/darknet/master/cfg/yolov3-tiny.cfg
+	String modelConfiguration = "yolov3.cfg";
 	String modelConfigurationPath = prependPath + modelConfiguration;
 	
-	String modelWeights = "yolov3-tiny.weights"; //https://pjreddie.com/media/files/yolov3-tiny.weights	
-	//String modelWeights = "yolov3.weights";
+	//String modelWeights = "yolov3-tiny.weights"; //https://pjreddie.com/media/files/yolov3-tiny.weights	
+	String modelWeights = "yolov3.weights";
 	String modelWeightsPath = prependPath + modelWeights;
 		
 	Net net = readNetFromDarknet(modelConfigurationPath, modelWeightsPath);
