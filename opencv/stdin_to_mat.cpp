@@ -1,9 +1,9 @@
 /**
  * Import de raw frames from gstreamer dans une Mat opencv via fdsink -> stdin 
  * 
- * g++ import_stdin_to_mat.cpp -o import_stdin_to_mat `pkg-config --cflags --libs opencv4`
+ * g++ stdin_to_mat.cpp -o stdin_to_mat `pkg-config --cflags --libs opencv4`
  * 
- * gst-launch-1.0 --quiet videotestsrc is-live=true ! clockoverlay ! video/x-raw,width=640,height=480,format=BGR,framerate=30/1 ! fdsink | ./import_stdin_to_mat
+ * gst-launch-1.0 --quiet videotestsrc is-live=true ! clockoverlay ! video/x-raw,width=640,height=480,format=BGR,framerate=30/1 ! fdsink | ./stdin_to_mat
  * 
  * kill -s SIGINT `pidof gst-launch-1.0`
  * 
