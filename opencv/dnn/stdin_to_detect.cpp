@@ -55,8 +55,10 @@ void detect()
 {
 		while (!cin.eof()) {
 			cout << "Début loop detect" << endl;
-			sleep(5);
-			//ToDo: accéder à Mat ici
+			sleep(5); //unistd.h en secondes
+			imshow("Display window", img);
+			waitKey(3000); // opencv2/opencv.hpp en millisecondes
+			destroyAllWindows();
 		}
 }
 
