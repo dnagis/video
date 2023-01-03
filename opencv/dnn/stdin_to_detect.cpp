@@ -13,10 +13,14 @@
  *  
  * aarch64-linux-gnu-g++ -pthread stdin_to_detect.cpp -o stdin_to_detect `pkg-config --cflags --libs opencv4`
  * 
- * La partie détection yolo vient de opencv/dnn/yolo.cpp
+ * La partie détection yolo vient de:
+ * 		--> video/opencv/dnn/yolo.cpp
+ * J'ai travaillé sur l'import de raw frames depuis une file puis depuis stdin (pour fdsink) dans:
+ * 		--> video/opencv/file_to_mat.cpp
+ * 		--> video/opencv/stdin_to_mat.cpp
  * 
  * **ATTENTION sans is-live=true on est bien au dessus de 30 fps, bien que le capsfilter contienne framerate=30/1***
- * gst-launch-1.0 --quiet videotestsrc is-live=true ! clockoverlay ! video/x-raw,width=640,height=480,format=BGR,framerate=30/1 ! fdsink | ./stdin_to_detect
+ * gst-launch-1.0 --quiet videotestsrc is-live=true ! video/x-raw,width=640,height=480,format=BGR,framerate=30/1 ! fdsink | ./stdin_to_detect
  * 
  * kill -s SIGINT `pidof gst-launch-1.0`
  * 
@@ -38,6 +42,12 @@
 using namespace std;
 using namespace cv;
 using namespace dnn;
+
+
+//Pour chercher les fichiers de config dnn au bon endroit
+bool ARM=false;
+
+
 
 int frame_n=0; 
 
@@ -147,24 +157,21 @@ int main()
 	img.create(IMAGE_HEIGHT, IMAGE_WIDTH, CV_8UC3);	
 
 	
-	//Préparation net pour dnn
+	/**Préparation net pour dnn**/
 	
-	//PATH dans dev_save sur un NUC ou XPS13
-	string prependPath = "/initrd/mnt/dev_save/packages/cv_dnn_data/detection/yolov3-opencv/";
-	//PATH dans /root/: nb: marche très bien avec des symlinks
-	//string prependPath = "/root/";
+	//Path où je mets les fichiers de configuration dnn
+	string prependPath = (ARM) ? "/root/" : "/initrd/mnt/dev_save/packages/cv_dnn_data/detection/yolov3-opencv/";
+	
 	string classesFile = "object_detection_classes_yolov3.txt";
 	string pathClassesFile = prependPath + classesFile;
 	ifstream ifs(pathClassesFile.c_str());
 	string line;
 	while (getline(ifs, line)) classes.push_back(line);
 		
-	//String modelConfiguration = "yolov3-tiny.cfg";	//https://raw.githubusercontent.com/pjreddie/darknet/master/cfg/yolov3-tiny.cfg
-	String modelConfiguration = "yolov3.cfg";
+	String modelConfiguration = (ARM) ? "yolov3-tiny.cfg" : "yolov3.cfg"; //https://raw.githubusercontent.com/pjreddie/darknet/master/cfg/yolov3-tiny.cfg
 	String modelConfigurationPath = prependPath + modelConfiguration;
-	
-	//String modelWeights = "yolov3-tiny.weights"; //https://pjreddie.com/media/files/yolov3-tiny.weights	
-	String modelWeights = "yolov3.weights";
+
+	String modelWeights = (ARM) ? "yolov3-tiny.weights" : "yolov3.weights"; //https://pjreddie.com/media/files/yolov3-tiny.weights	
 	String modelWeightsPath = prependPath + modelWeights;
 		
 	net = readNetFromDarknet(modelConfigurationPath, modelWeightsPath);
@@ -178,7 +185,8 @@ int main()
 	
 	
 
-	//Démarrage (spawn) des deux threads
+	/**Démarrage (spawn) des deux threads**/
+	
 	thread first (read_stdin);     // spawn new thread that calls read_stdin() nb on peut passer des arguments, à partir d'arg2
 	thread second (detect);  // spawn new thread that calls detect(0)
 	
