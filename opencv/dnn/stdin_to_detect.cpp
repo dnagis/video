@@ -1,15 +1,21 @@
 
 /**
- * Objectif: read() des frames en stdin, et sur une frame de temps en temps faire une detection
  * 
- * Attention pour les threads la compil nécessite un flag particulier: -pthread
- * Hello world threads trouvé avec recherche 'c++ threads'
- * https://cplusplus.com/reference/thread/thread/
+ * read() de toutes les frames captured en stdin (Rx depuis un fdsink gstreamer), et detection yolo sur une partie des frames (30 detections par secondes pas possible)
+ * 
+ * Threads nécessaires: un pour le read (qui doit importer toutes les frames), l'autre pour lancer la détection yolo
+ * ***pour les threads la compil nécessite un flag particulier: -pthread***
+ * 	Hello world threads trouvé avec recherche 'c++ threads': https://cplusplus.com/reference/thread/thread/
+ * 
+ * 
  * 
  * g++ -pthread stdin_to_detect.cpp -o stdin_to_detect `pkg-config --cflags --libs opencv4`
  *  
- * aarch64-linux-gnu-g++ -pthread stdin_to_detect.cpp -o stdin_to_detect #reste à ajouter pkg config opencv
+ * aarch64-linux-gnu-g++ -pthread stdin_to_detect.cpp -o stdin_to_detect `pkg-config --cflags --libs opencv4`
  * 
+ * La partie détection yolo vient de opencv/dnn/yolo.cpp
+ * 
+ * **ATTENTION sans is-live=true on est bien au dessus de 30 fps, bien que le capsfilter contienne framerate=30/1***
  * gst-launch-1.0 --quiet videotestsrc is-live=true ! clockoverlay ! video/x-raw,width=640,height=480,format=BGR,framerate=30/1 ! fdsink | ./stdin_to_detect
  * 
  * kill -s SIGINT `pidof gst-launch-1.0`
@@ -32,6 +38,8 @@
 using namespace std;
 using namespace cv;
 using namespace dnn;
+
+int frame_n=0; 
 
 int IMAGE_WIDTH=640;
 int IMAGE_HEIGHT=480;
@@ -69,6 +77,32 @@ vector<String> getOutputsNames(const Net& net)
     return names;
 }
 
+void process_results(vector<Mat> outs) {
+	cout << "	On a un résultat" << endl;
+	cout << "	Nombre de Mat dans vector<Mat> outs: " << outs.size() << endl;
+		
+	vector<int> classIds;
+    vector<float> confidences;
+    
+    for (size_t i = 0; i < outs.size(); ++i)
+    {
+        float* data = (float*)outs[i].data;
+        
+        for (int j = 0; j < outs[i].rows; ++j, data += outs[i].cols)
+        {
+            Mat scores = outs[i].row(j).colRange(5, outs[i].cols);
+            Point classIdPoint;
+            double confidence;
+            minMaxLoc(scores, 0, &confidence, 0, &classIdPoint);
+            if (confidence > confThreshold)
+            {
+               cout << "	class=" << classIdPoint.x << " CI=" << confidence << " raw box: [" << *data << "," << *(data+1) << "," << *(data+2) << "," << *(data+3)<< "]" << endl;
+            }
+        }
+    } 
+	
+}
+
 
 //Le thread qui va importer les frames via fdsink (cin) 
 void read_stdin() 
@@ -81,23 +115,27 @@ void read_stdin()
 			//Rx depuis stdin ref: https://cplusplus.com/reference/istream/istream/read/
 			cin.read(imagebuffer, framesize);
 			memcpy(img.data, imagebuffer, framesize);
+			frame_n++;
 		}		
 		free(imagebuffer);	
 }
 
-//Le thread qui va faire la détection
+//Le thread qui initie le travail de détection
 void detect()
 {
 		while (!cin.eof()) {
-			cout << "Début loop detect" << endl;
-			sleep(5); //unistd.h en secondes
+			cout << "Début loop dans thread detect on est sur la frame n° " << frame_n << endl;
+			sleep(2); //unistd.h en secondes
+			
 			//imshow("Display window", img);
 			//waitKey(3000); // opencv2/opencv.hpp en millisecondes
 			//destroyAllWindows();
+			
 			blobFromImage(img, blob, 1/255.0, Size(inpWidth,inpHeight) ,Scalar(0,0,0), true, false);
 			net.setInput(blob);
 		    vector<Mat> outs;
 		    net.forward(outs, getOutputsNames(net));
+		    process_results(outs);
 		}
 }
 
@@ -107,13 +145,11 @@ int main()
 {
 	//Création d'une Mat img qui va recevoir la frame passée à read_stdin via stdin
 	img.create(IMAGE_HEIGHT, IMAGE_WIDTH, CV_8UC3);	
-	
-	
-	
+
 	
 	//Préparation net pour dnn
 	
-	//PATH dans dev_save sur le NUC
+	//PATH dans dev_save sur un NUC ou XPS13
 	string prependPath = "/initrd/mnt/dev_save/packages/cv_dnn_data/detection/yolov3-opencv/";
 	//PATH dans /root/: nb: marche très bien avec des symlinks
 	//string prependPath = "/root/";
