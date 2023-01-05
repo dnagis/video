@@ -44,10 +44,18 @@ ls -l image.raw --> 921600
 
 #####Rpicamsrc vers capture filesink + vers une Mat dans du code en cpp via fdsink
 
-#Le code .cpp (par ex. import_stdin_to_mat) pour recevoir les frames à partir de fdsink est dans github video/opencv/import_stdin_to_mat
+#Le code .cpp (par ex. import_stdin_to_mat) pour recevoir les frames à partir de fdsink est dans github video/opencv/stdin_to_mat
 
-gst-launch-1.0 --quiet rpicamsrc ! 'video/x-raw,width=640,height=480,format=BGR,framerate=30/1' ! fdsink | ./import_stdin_to_mat
+gst-launch-1.0 --quiet rpicamsrc ! 'video/x-raw,width=640,height=480,format=BGR,framerate=30/1' ! fdsink | ./stdin_to_mat
 
 gst-launch-1.0 -e --quiet rpicamsrc ! 'video/x-raw,width=640,height=480,format=BGR,framerate=30/1' ! tee name=t \
 t. ! queue ! fdsink \
-t. ! queue ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! h264parse ! mp4mux ! filesink location=test.mp4 | ./import_stdin_to_mat
+t. ! queue ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! h264parse ! mp4mux ! filesink location=test.mp4 | ./stdin_to_mat
+
+
+#####XPS13 webcam (cause déplacement) tee 1)--> cpp détection yolo 2)--> capture
+
+gst-launch-1.0 -e --quiet v4l2src ! videoconvert ! video/x-raw,width=640,height=480,format=BGR,framerate=30/1 ! tee name=t \
+t. ! queue ! videoconvert ! vaapih264enc ! h264parse ! mp4mux ! filesink location=capture.mp4 \
+t. ! queue ! fdsink | ./stdin_to_detect 
+
