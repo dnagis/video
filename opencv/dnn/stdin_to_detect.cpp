@@ -47,9 +47,8 @@ using namespace dnn;
 //Pour chercher les fichiers de config dnn au bon endroit
 bool ARM=false;
 
-
-
-int frame_n=0; 
+int frame_n=0; //le compteur de frame "de base"
+int detect_frame; //il faut figer le numéro de la frame au lancement dun detect sinon il continue à augmenter dans l'autre thread
 
 int IMAGE_WIDTH=640;
 int IMAGE_HEIGHT=480;
@@ -64,6 +63,8 @@ ofstream results_file;
 
 //dnn
 double confThreshold = 0.7;
+int searched_class_id = 0; //la classe recherchée, 0 = person
+
 int inpWidth = 416;
 int inpHeight = 416;
 vector<string> classes;
@@ -90,8 +91,10 @@ vector<String> getOutputsNames(const Net& net)
 }
 
 void process_results(vector<Mat> outs) {
+	bool detect_pos = false;
+	
 	cout << "	On a un résultat" << endl;
-	results_file << "	On a un résultat" << endl;
+	//results_file << "	On a un résultat" << endl;
 	//cout << "	Nombre de Mat dans vector<Mat> outs: " << outs.size() << endl;
 		
 	vector<int> classIds;
@@ -109,12 +112,15 @@ void process_results(vector<Mat> outs) {
             minMaxLoc(scores, 0, &confidence, 0, &classIdPoint);
             if (confidence > confThreshold)
             {
-               cout << "	class=" << classIdPoint.x << " CI=" << confidence << " raw box: [" << *data << "," << *(data+1) << "," << *(data+2) << "," << *(data+3)<< "]" << endl;
-               results_file << "	class=" << classIdPoint.x << " CI=" << confidence << " raw box: [" << *data << "," << *(data+1) << "," << *(data+2) << "," << *(data+3)<< "]" << endl;
+				if (classIdPoint.x==searched_class_id) detect_pos = true; 	
+				cout << "	class=" << classIdPoint.x << " CI=" << confidence << " raw box: [" << *data << "," << *(data+1) << "," << *(data+2) << "," << *(data+3)<< "]" << endl;
+				//results_file << "	class=" << classIdPoint.x << " CI=" << confidence << " raw box: [" << *data << "," << *(data+1) << "," << *(data+2) << "," << *(data+3)<< "]" << endl;
             }
         }
-    } 
-	
+    }
+    string result = (detect_pos) ? "1" : "0";
+    cout << "bilan frame n°" << detect_frame << " détection = " << result << endl; 
+    results_file << detect_frame << " " << result << endl;	
 }
 
 
@@ -138,10 +144,9 @@ void read_stdin()
 void detect()
 {
 		while (!cin.eof()) {
-			cout << "Début loop dans thread detect on est sur la frame n° " << frame_n << endl;
-			results_file << "Début loop dans thread detect on est sur la frame n° " << frame_n << endl;
-			sleep(2); //unistd.h en secondes
-			
+			detect_frame = frame_n;
+			cout << "Début loop dans thread detect on est sur la frame n° " << detect_frame << endl;
+						
 			//imshow("Display window", img);
 			//waitKey(3000); // opencv2/opencv.hpp en millisecondes
 			//destroyAllWindows();
@@ -151,6 +156,8 @@ void detect()
 		    vector<Mat> outs;
 		    net.forward(outs, getOutputsNames(net));
 		    process_results(outs);
+		    
+		    sleep(2); //unistd.h en secondes
 		}
 }
 
