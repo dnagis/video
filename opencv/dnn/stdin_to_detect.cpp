@@ -60,6 +60,8 @@ int framesize = IMAGE_WIDTH * IMAGE_HEIGHT * IMAGE_DEPTH;
 
 Mat img, blob;
 
+ofstream results_file;
+
 //dnn
 double confThreshold = 0.7;
 int inpWidth = 416;
@@ -89,7 +91,8 @@ vector<String> getOutputsNames(const Net& net)
 
 void process_results(vector<Mat> outs) {
 	cout << "	On a un résultat" << endl;
-	cout << "	Nombre de Mat dans vector<Mat> outs: " << outs.size() << endl;
+	results_file << "	On a un résultat" << endl;
+	//cout << "	Nombre de Mat dans vector<Mat> outs: " << outs.size() << endl;
 		
 	vector<int> classIds;
     vector<float> confidences;
@@ -107,6 +110,7 @@ void process_results(vector<Mat> outs) {
             if (confidence > confThreshold)
             {
                cout << "	class=" << classIdPoint.x << " CI=" << confidence << " raw box: [" << *data << "," << *(data+1) << "," << *(data+2) << "," << *(data+3)<< "]" << endl;
+               results_file << "	class=" << classIdPoint.x << " CI=" << confidence << " raw box: [" << *data << "," << *(data+1) << "," << *(data+2) << "," << *(data+3)<< "]" << endl;
             }
         }
     } 
@@ -135,6 +139,7 @@ void detect()
 {
 		while (!cin.eof()) {
 			cout << "Début loop dans thread detect on est sur la frame n° " << frame_n << endl;
+			results_file << "Début loop dans thread detect on est sur la frame n° " << frame_n << endl;
 			sleep(2); //unistd.h en secondes
 			
 			//imshow("Display window", img);
@@ -153,6 +158,8 @@ void detect()
 
 int main() 
 {
+	results_file.open("results.txt");
+	
 	//Création d'une Mat img qui va recevoir la frame passée à read_stdin via stdin
 	img.create(IMAGE_HEIGHT, IMAGE_WIDTH, CV_8UC3);	
 
@@ -197,6 +204,7 @@ int main()
 	second.join();               // pauses until second finishes
 	
 	cout << "Fin du programme read_stdin and detect completed.\n";
+	results_file.close();
 	
 	return 0;
 }
