@@ -19,12 +19,16 @@
  * 		--> video/opencv/file_to_mat.cpp
  * 		--> video/opencv/stdin_to_mat.cpp
  * 
+ * Pipeline simple pour tests
  * **ATTENTION avec videotestsrc sans is-live=true on est bien au dessus de 30 fps, bien que le capsfilter contienne framerate=30/1***
  * gst-launch-1.0 --quiet videotestsrc is-live=true ! video/x-raw,width=640,height=480,format=BGR,framerate=30/1 ! fdsink | ./stdin_to_detect
  * 
  * kill -s SIGINT `pidof gst-launch-1.0`
  * 
  * Les pipelines avec tee rpicamsrc / v4l2src sont dans video/gst/LOG_fdsink
+ * 
+ * #fpsdisplaysink pour voir le compte de frames
+ * gst-launch-1.0 filesrc location=capture.mp4 ! qtdemux ! vaapih264dec ! videorate ! videoconvert ! fpsdisplaysink
  * 
  * */ 
 
