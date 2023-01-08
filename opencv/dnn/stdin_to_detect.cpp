@@ -7,7 +7,7 @@
  * ***pour les threads la compil nécessite un flag particulier: -pthread***
  * 	Hello world threads trouvé avec recherche 'c++ threads': https://cplusplus.com/reference/thread/thread/
  * 
- * 
+ * Compil:
  * 
  * g++ -pthread stdin_to_detect.cpp -o stdin_to_detect `pkg-config --cflags --libs opencv4`
  *  
@@ -19,10 +19,12 @@
  * 		--> video/opencv/file_to_mat.cpp
  * 		--> video/opencv/stdin_to_mat.cpp
  * 
- * **ATTENTION sans is-live=true on est bien au dessus de 30 fps, bien que le capsfilter contienne framerate=30/1***
+ * **ATTENTION avec videotestsrc sans is-live=true on est bien au dessus de 30 fps, bien que le capsfilter contienne framerate=30/1***
  * gst-launch-1.0 --quiet videotestsrc is-live=true ! video/x-raw,width=640,height=480,format=BGR,framerate=30/1 ! fdsink | ./stdin_to_detect
  * 
  * kill -s SIGINT `pidof gst-launch-1.0`
+ * 
+ * Les pipelines avec tee rpicamsrc / v4l2src sont dans video/gst/LOG_fdsink
  * 
  * */ 
 

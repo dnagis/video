@@ -4,8 +4,8 @@ hog_people_detect/hog_pd_file.py
 
 #Plotter les results: 
 gnuplot 5.4 patchlevel 4 (gnuplot-5.4.4.tar.gz)
-gnuplot -e "plot 'detect.txt' with impulses lw 1; pause -1"
+gnuplot -e "plot 'results.txt' with impulses lw 1; pause -1"
 
 #Output to file (png)
-gnuplot -e "set terminal pngcairo; plot 'detect.txt' with impulses lw 1;" > output.png
+gnuplot -e "set terminal pngcairo; plot 'results.txt' with impulses lw 1;" > output.png
 
