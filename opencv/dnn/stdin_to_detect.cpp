@@ -206,14 +206,16 @@ int main()
 	thread first (read_stdin);     // spawn new thread that calls read_stdin() nb on peut passer des arguments, à partir d'arg2
 	thread second (detect);  // spawn new thread that calls detect(0)
 	
-	cout << "main, read_stdin and detect now execute concurrently...\n";
+	//cout << "main, read_stdin and detect now execute concurrently...\n";
 	
 	// synchronize threads:
 	first.join();                // pauses until first finishes
 	second.join();               // pauses until second finishes
 	
-	cout << "Fin du programme read_stdin and detect completed.\n";
+	//cout << "Fin du programme read_stdin and detect completed.\n";
 	results_file.close();
+	
+	cout << "Fin du programme frame_n=" << frame_n << endl;
 	
 	return 0;
 }
