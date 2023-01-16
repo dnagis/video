@@ -1,7 +1,8 @@
-#Dec 2022
-#Objectif: récupérer des frames au cours d'une capture pour les passer à opencv pour détection dnn tiny yolo
+#Gstreamer: Pipelines video src (ultimately la rpicam) tee t1-->detection yolo via fdsink t2-->filesink
 
-#Output propre (pas de messages d'informations gstreamer dans l'output): --quiet
+#Attention: sans is-live=true videotestsrc envoie de la data dès qu'elle est générée, donc beaucoup!
+
+#Output propre (pas de messages d'informations gstreamer dans l'output, nécessaire pour passer raw video data à yolo): --quiet
 trouvé dans: 
 https://stackoverflow.com/questions/71950827/the-fdsink-element-in-gstreamer-cannot-be-used-to-output-the-correct-byte-stream
 
@@ -60,8 +61,18 @@ t. ! queue ! videoconvert ! vaapih264enc ! h264parse ! mp4mux ! filesink locatio
 t. ! queue ! fdsink | ./stdin_to_detect 
 
 
-#####rpicamsrc tee t-1)--> cpp détection yolo t-2)--> capture
+#####RPi:
 
+##videotestsrc tee t-1)--> cpp détection yolo t-2)--> capture
+
+gst-launch-1.0 -e videotestsrc is-live=true ! 'video/x-raw,width=640,height=480,format=BGR,framerate=30/1' ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! h264parse ! mp4mux ! filesink location=capture.mp4
+
+gst-launch-1.0 -e --quiet videotestsrc is-live=true ! 'video/x-raw,width=640,height=480,format=BGR,framerate=30/1' ! tee name=t \
+t. ! queue ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! h264parse ! mp4mux ! filesink location=capture.mp4 \
+t. ! queue ! fdsink | ./stdin_to_detect 
+
+
+##rpicamsrc
 gst-launch-1.0 -e --quiet rpicamsrc ! 'video/x-raw,width=640,height=480,format=BGR,framerate=30/1' ! tee name=t \
 t. ! queue ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! h264parse ! mp4mux ! filesink location=capture.mp4 \
 t. ! queue ! fdsink | ./stdin_to_detect 
