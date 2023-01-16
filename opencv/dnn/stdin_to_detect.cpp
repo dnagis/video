@@ -50,8 +50,8 @@ using namespace cv;
 using namespace dnn;
 
 
-//Pour chercher les fichiers de config dnn au bon endroit
-bool ARM=false;
+//Pour chercher les fichiers de config dnn au bon endroit selon si sur le RPi ou sur le NUC/XPS13
+bool ARM=true;
 
 int frame_n=0; //le compteur de frame "de base"
 int detect_frame; //il faut figer le numéro de la frame au lancement dun detect sinon il continue à augmenter dans l'autre thread
