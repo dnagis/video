@@ -163,7 +163,8 @@ void detect()
 		    net.forward(outs, getOutputsNames(net));
 		    process_results(outs);
 		    
-		    sleep(2); //unistd.h en secondes
+		    //Principe de précaution utilisé à partir du début par peur de crash, j'essaie d'enlever le 230123
+		    //sleep(2); //unistd.h en secondes
 		}
 }
 
@@ -217,6 +218,9 @@ int main()
 	second.join();               // pauses until second finishes
 	
 	//cout << "Fin du programme read_stdin and detect completed.\n";
+	
+	results_file << "Derniere frame vue " << frame_n << endl;
+	
 	results_file.close();
 	
 	cout << "Fin du programme frame_n=" << frame_n << endl;
