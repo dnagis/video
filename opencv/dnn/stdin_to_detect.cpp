@@ -68,7 +68,7 @@ Mat img, blob;
 ofstream results_file;
 
 //dnn
-double confThreshold = 0.7;
+double confThreshold;
 int searched_class_id = 0; //la classe recherchée, 0 = person
 
 int inpWidth = 416;
@@ -170,8 +170,17 @@ void detect()
 
 
 
-int main() 
+int main(int argc, char *argv[]) 
 {
+	//confThreshold en premier
+	if (argc < 2) {
+		cout << "pas assez d arguments" << endl;		
+		return 1;
+		}
+	confThreshold = atof(argv[1]);
+	
+	
+	
 	results_file.open("results.txt");
 	
 	//Création d'une Mat img qui va recevoir la frame passée à read_stdin via stdin
