@@ -1,0 +1,24 @@
+Décodage hwaccel sur le RPi4
+
+
+
+#Generer un fichier de test videotestsrc avec les mêmes caps que celles utilisées pour capturer début 2023 (LOG_fdsink à côté)
+gst-launch-1.0 videotestsrc num-buffers=100 ! 'video/x-raw,width=640,height=480,format=BGR,framerate=30/1' ! queue ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! h264parse ! mp4mux ! filesink location=test.mp4 
+
+#Essai d'utilisation v4l2h264dec et msg d'erreur gst
+
+rpi4: ~ # gst-launch-1.0 filesrc location=test.mp4 ! qtdemux ! queue ! h264parse ! v4l2h264dec ! fakesink
+Setting pipeline to PAUSED ...
+Pipeline is PREROLLING ...
+WARNING: from element /GstPipeline:pipeline0/GstQTDemux:qtdemux0: Delayed linking failed.
+ERROR: from element /GstPipeline:pipeline0/GstQTDemux:qtdemux0: Internal data stream error.
+Additional debug info:
+../gst/isomp4/qtdemux.c(6545): gst_qtdemux_loop (): /GstPipeline:pipeline0/GstQTDemux:qtdemux0:
+streaming stopped, reason not-linked (-1)
+ERROR: pipeline doesn't want to preroll.
+Additional debug info:
+gst/parse/grammar.y(540): gst_parse_no_more_pads (): /GstPipeline:pipeline0/GstQTDemux:qtdemux0:
+failed delayed linking some pad of GstQTDemux named qtdemux0 to some pad of GstQueue named queue0
+Setting pipeline to NULL ...
+Freeing pipeline ...
+rpi4: ~ # Connection to 192.168.1.135 closed.
