@@ -2,6 +2,8 @@
 
 #Passer une vidéo en Yolo: basé sur simpleYolo
 
+#Regular ou tiny yolo selon présence ou non de "t" après le CI
+
 #Usage: videoYolo CI [t] video_file
 
 
@@ -24,7 +26,7 @@ FRAME_SKIPPER = 30 #mécanisme pour ne traiter qu'une partie des frames
 
 #Parsing des arguments
 if len(sys.argv) < 3:
-    print("Mauvais nombre d args Usage:  videoYolo CI_threshold file")
+    print("Mauvais nombre d args Usage:  videoYolo CI_threshold [t] file")
     sys.exit(1)
     
 #print("n args=", len(sys.argv))
