@@ -56,8 +56,8 @@ bool ARM=true;
 int frame_n=0; //le compteur de frame "de base"
 int detect_frame; //il faut figer le numéro de la frame au lancement dun detect sinon il continue à augmenter dans l'autre thread
 
-int IMAGE_WIDTH=640;
-int IMAGE_HEIGHT=480;
+int IMAGE_WIDTH=480;
+int IMAGE_HEIGHT=640;
 int IMAGE_DEPTH=3;
 
 char *imagebuffer = NULL;
