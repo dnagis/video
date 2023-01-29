@@ -119,7 +119,7 @@ void process_results(vector<Mat> outs) {
             if (confidence > confThreshold)
             {
 				if (classIdPoint.x==searched_class_id) detect_pos = true; 	
-				cout << "	class=" << classIdPoint.x << " CI=" << confidence << " raw box: [" << *data << "," << *(data+1) << "," << *(data+2) << "," << *(data+3)<< "]" << endl;
+				//cout << "	class=" << classIdPoint.x << " CI=" << confidence << " raw box: [" << *data << "," << *(data+1) << "," << *(data+2) << "," << *(data+3)<< "]" << endl;
 				//results_file << "	class=" << classIdPoint.x << " CI=" << confidence << " raw box: [" << *data << "," << *(data+1) << "," << *(data+2) << "," << *(data+3)<< "]" << endl;
             }
         }
