@@ -1,11 +1,11 @@
-Décodage hwaccel sur le RPi4
+Décodage hwaccel sur le RPi4 v4l2h264dec
 
 
-
-#Generer un fichier de test videotestsrc avec les mêmes caps que celles utilisées pour capturer début 2023 (LOG_fdsink à côté)
+###Generer un fichier de test videotestsrc avec les mêmes caps que celles utilisées pour capturer début 2023 (LOG_fdsink à côté)
 gst-launch-1.0 videotestsrc num-buffers=100 ! 'video/x-raw,width=640,height=480,format=BGR,framerate=30/1' ! queue ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! h264parse ! mp4mux ! filesink location=test.mp4 
 
-#Essai d'utilisation v4l2h264dec et msg d'erreur gst
+
+###Essai d'utilisation v4l2h264dec et msg d'erreur gst
 
 rpi4: ~ # gst-launch-1.0 filesrc location=test.mp4 ! qtdemux ! queue ! h264parse ! v4l2h264dec ! fakesink
 Setting pipeline to PAUSED ...
@@ -21,4 +21,66 @@ gst/parse/grammar.y(540): gst_parse_no_more_pads (): /GstPipeline:pipeline0/GstQ
 failed delayed linking some pad of GstQTDemux named qtdemux0 to some pad of GstQueue named queue0
 Setting pipeline to NULL ...
 Freeing pipeline ...
-rpi4: ~ # Connection to 192.168.1.135 closed.
+rpi4: ~ # 
+
+
+
+###Essai de changer le level de l'encoding: 'video/x-h264,level=(string)3'
+-si j'enlève ces caps ne marche pas
+-je tente 'video/x-h264,level=(string)4':
+gst-launch-1.0 videotestsrc num-buffers=100 ! 'video/x-raw,width=640,height=480,format=BGR,framerate=30/1' ! queue ! v4l2h264enc ! 'video/x-h264,level=(string)4' ! h264parse ! mp4mux ! filesink location=test.mp4
+	--> possible ET lisible
+gst-launch-1.0 filesrc location=test.mp4 ! qtdemux ! queue ! h264parse ! v4l2h264dec ! fakesink
+	--> même erreur
+-je tente 'video/x-h264,level=(string)2':
+gst-launch-1.0 videotestsrc num-buffers=100 ! 'video/x-raw,width=640,height=480,format=BGR,framerate=30/1' ! queue ! v4l2h264enc ! 'video/x-h264,level=(string)2' ! h264parse ! mp4mux ! filesink location=test.mp4
+erreur (la même que sans les caps)
+
+
+###Essai sans la restriction de format avant:
+
+#Génération sans capsfilter après videotestsrc
+gst-launch-1.0 videotestsrc num-buffers=100 ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! h264parse ! mp4mux ! filesink location=test.mp4
+#Essai v4l2h264dec
+gst-launch-1.0 filesrc location=test.mp4 ! qtdemux ! queue ! h264parse ! v4l2h264dec ! fakesink
+--> pas d'erreur
+
+gst-discoverer du test.mp4 généré sans capsfilter:
+
+	gst-discoverer-1.0 test.mp4 
+	Analyzing file:///root/test.mp4
+	Done discovering file:///root/test.mp4
+	
+	Properties:
+	  Duration: 0:00:03.333333333
+	  Seekable: yes
+	  Live: no
+	  container: Quicktime
+	    video: H.264 (Baseline Profile)
+	      Stream ID: 7a2597c330d47ffd3baedbb01d2d2ba2eac42d671b02974f317529eeda59b7a4/001
+	      Width: 320
+	      Height: 240
+	      Depth: 24
+	      Frame rate: 30/1
+	      Pixel aspect ratio: 1/1
+	      Interlaced: false
+	      Bitrate: 985239
+	      Max bitrate: 1371840
+
+
+#Génération avec juste W et H set
+gst-launch-1.0 videotestsrc num-buffers=100 ! 'video/x-raw,width=640,height=480' ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! h264parse ! mp4mux ! filesink location=test.mp4
+--> OK
+gst-launch-1.0 filesrc location=test.mp4 ! qtdemux ! queue ! h264parse ! v4l2h264dec ! fakesink
+--> possible
+
+#Génération avec W, H et BGR
+gst-launch-1.0 videotestsrc num-buffers=100 ! 'video/x-raw,width=640,height=480,format=BGR' ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! h264parse ! mp4mux ! filesink location=test.mp4
+--> OK
+gst-launch-1.0 filesrc location=test.mp4 ! qtdemux ! queue ! h264parse ! v4l2h264dec ! fakesink
+--> Erreur
+
+DONC c'est le format qui pose problème!!!
+
+
+
