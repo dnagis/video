@@ -69,18 +69,18 @@ gst-discoverer du test.mp4 généré sans capsfilter:
 
 
 #Génération avec juste W et H set
-gst-launch-1.0 videotestsrc num-buffers=100 ! 'video/x-raw,width=640,height=480' ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! h264parse ! mp4mux ! filesink location=test.mp4
+gst-launch-1.0 videotestsrc num-buffers=100 ! 'video/x-raw,width=640,height=480' ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! h264parse ! mp4mux ! filesink location=test_nofmt.mp4
 --> OK
-gst-launch-1.0 filesrc location=test.mp4 ! qtdemux ! queue ! h264parse ! v4l2h264dec ! fakesink
---> possible
+gst-launch-1.0 filesrc location=test_nofmt.mp4 ! qtdemux ! queue ! h264parse ! v4l2h264dec ! fakesink
+--> possible (echo $? --> 0)
 
 #Génération avec W, H et BGR
-gst-launch-1.0 videotestsrc num-buffers=100 ! 'video/x-raw,width=640,height=480,format=BGR' ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! h264parse ! mp4mux ! filesink location=test.mp4
+gst-launch-1.0 videotestsrc num-buffers=100 ! 'video/x-raw,width=640,height=480,format=BGR' ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! h264parse ! mp4mux ! filesink location=test_bgrfmt.mp4
 --> OK
-gst-launch-1.0 filesrc location=test.mp4 ! qtdemux ! queue ! h264parse ! v4l2h264dec ! fakesink
---> Erreur
+gst-launch-1.0 filesrc location=test_bgrfmt.mp4 ! qtdemux ! queue ! h264parse ! v4l2h264dec ! fakesink
+--> Erreur (echo $? --> 1)
 
-DONC c'est le format qui pose problème!!!
+#Je passe test_nofmt.mp4 et test_bgrfmt.mp4 sur kimsufi dans /home/debian pour pouvoir travailler dessus whenever I want to
 
 
 
