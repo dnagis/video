@@ -82,5 +82,12 @@ gst-launch-1.0 filesrc location=test_bgrfmt.mp4 ! qtdemux ! queue ! h264parse ! 
 
 #Je passe test_nofmt.mp4 et test_bgrfmt.mp4 sur kimsufi dans /home/debian pour pouvoir travailler dessus whenever I want to
 
+##Essayer d'avoir des infos sur le stream h264, sur le NUC
+#via debug
+GST_DEBUG_FILE=/root/debug_bgrfmt GST_DEBUG=h264parse:5 gst-launch-1.0 filesrc location=test_bgrfmt.mp4 ! qtdemux ! h264parse ! vaapih264dec ! fakesink
+GST_DEBUG_FILE=/root/debug_nofmt GST_DEBUG=h264parse:5 gst-launch-1.0 filesrc location=test_nofmt.mp4 ! qtdemux ! h264parse ! vaapih264dec ! fakesink
+
+
+--> La troisième ligne donne des choses interessantes
 
 
