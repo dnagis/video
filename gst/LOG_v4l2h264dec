@@ -1,5 +1,48 @@
 Décodage hwaccel sur le RPi4 v4l2h264dec
 
+#####Synthèse
+
+##Situation de départ
+#Si je crée un fichier video encodé en suivant la même procédure que pour faire acquisition + détection (LOG_fdsink dans ce dir):
+gst-launch-1.0 -vvvv videotestsrc num-buffers=100 ! 'video/x-raw,width=640,height=480,format=BGR' ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! h264parse ! mp4mux ! filesink location=capture.mp4 
+
+#Je n'arrive pas à décoder sur le pi avec cette pipeline:
+gst-launch-1.0 -vvvv filesrc location=capture.mp4 ! qtdemux ! queue ! h264parse ! v4l2h264dec ! fakesink
+--> erreur
+
+#Par contre le fichier est lisible sur le NUC avec gst-play, et le décodage sur le NUC est possible:
+gst-launch-1.0 -vvvv filesrc location=capture.mp4 ! qtdemux ! queue ! h264parse ! vaapih264dec ! vaapisink
+
+
+##Modification format: avant l'encodage à la sortie de la source video je ne force pas BGR dans le capsfilter
+#Création du fichier encodé
+gst-launch-1.0 -vvvv videotestsrc num-buffers=100 ! 'video/x-raw,width=640,height=480' ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! h264parse ! mp4mux ! filesink location=nofmt.mp4 
+--> le format utilisé est YUY2
+
+#Le décodage via v4l2h264dec ne plante pas
+gst-launch-1.0 -vvvv filesrc location=nofmt.mp4 ! qtdemux ! queue ! h264parse ! v4l2h264dec ! fakesink
+
+
+##Je garde format=BGR dans le capsfilter mais j'enlève l'encapsulation, comme dans le post du forum rpi de 2020 (6by9 v4l2h264enc level=(string)3)
+#Création du fichier encodé
+gst-launch-1.0 -vvvv videotestsrc num-buffers=100 ! 'video/x-raw,width=640,height=480,format=BGR' ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! filesink location=capture.h264
+
+#gst-discoverer-1.0 fonctionne dessus
+gst-discoverer-1.0 capture.h264
+
+#Est ce que le décodage sur le pi marche et est ce que le décodage fonctionne: je décode en produisant un fichier raw:
+gst-launch-1.0 -vvvv filesrc location=capture.h264 ! h264parse ! v4l2h264dec ! filesink location=video.raw
+
+#Sur le NUC, est ce que le .raw est lisible? (le format vient de l'output de la création du raw: c'est ce que v4l2h264dec sort:
+gst-launch-1.0 filesrc location=video.raw ! queue ! "video/x-raw, width=640, height=480, format=I420, framerate=30/1" ! rawvideoparse use-sink-caps=true ! vaapisink
+--> oui
+
+
+
+
+
+
+#####Log chronologique
 
 ###Generer un fichier de test videotestsrc avec les mêmes caps que celles utilisées pour capturer début 2023 (LOG_fdsink à côté)
 gst-launch-1.0 videotestsrc num-buffers=100 ! 'video/x-raw,width=640,height=480,format=BGR,framerate=30/1' ! queue ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! h264parse ! mp4mux ! filesink location=test.mp4 
