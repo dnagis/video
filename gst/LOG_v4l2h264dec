@@ -8,10 +8,16 @@ gst-launch-1.0 -vvvv videotestsrc num-buffers=100 ! 'video/x-raw,width=640,heigh
 
 #Je n'arrive pas à décoder sur le pi avec cette pipeline:
 gst-launch-1.0 -vvvv filesrc location=capture.mp4 ! qtdemux ! queue ! h264parse ! v4l2h264dec ! fakesink
---> erreur
+--> erreur (pas d'erreur dans dmesg donc pas un pb de kernel à priori)
 
 #Par contre le fichier est lisible sur le NUC avec gst-play, et le décodage sur le NUC est possible:
 gst-launch-1.0 -vvvv filesrc location=capture.mp4 ! qtdemux ! queue ! h264parse ! vaapih264dec ! vaapisink
+
+#J'essaie le conteneur matroska
+gst-launch-1.0 -vvvv videotestsrc num-buffers=100 ! 'video/x-raw,width=640,height=480,format=BGR' ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! h264parse ! matroskamux ! filesink location=capture.mkv
+
+#idem que pour mp4 à la tentative de décodage avec:
+gst-launch-1.0 -vvvv filesrc location=capture.mkv ! matroskademux ! queue ! h264parse ! v4l2h264dec ! fakesink
 
 
 ##Modification format: avant l'encodage à la sortie de la source video je ne force pas BGR dans le capsfilter
