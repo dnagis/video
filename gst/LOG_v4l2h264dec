@@ -28,6 +28,9 @@ gst-launch-1.0 -vvvv videotestsrc num-buffers=100 ! 'video/x-raw,width=640,heigh
 #Le décodage via v4l2h264dec ne plante pas
 gst-launch-1.0 -vvvv filesrc location=nofmt.mp4 ! qtdemux ! queue ! h264parse ! v4l2h264dec ! fakesink
 
+#Mais ges-launch n'arrive pas à le cut (erreur kernel)
+ges-launch-1.0 +clip nofmt.mp4 inpoint=1 duration=1 -o tmp.mp4 -f "video/quicktime:video/x-h264"
+
 
 ##Je garde format=BGR dans le capsfilter mais j'enlève l'encapsulation, comme dans le post du forum rpi de 2020 (6by9 v4l2h264enc level=(string)3)
 #Création du fichier encodé
