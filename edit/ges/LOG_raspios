@@ -22,6 +22,11 @@ HOME_URL="http://www.raspbian.org/"
 SUPPORT_URL="http://www.raspbian.org/RaspbianForums"
 BUG_REPORT_URL="http://www.raspbian.org/RaspbianBugs"
 
+pi@raspberrypi:~ $ gst-launch-1.0 --version
+gst-launch-1.0 version 1.18.4
+GStreamer 1.18.4
+http://packages.qa.debian.org/gstreamer1.0
+
 Est ce que le package ges existe? OUI
 
 pi@raspberrypi:~ apt-file find ges-launch
@@ -29,6 +34,16 @@ ges1.0-tools: /usr/bin/ges-launch-1.0
 ges1.0-tools: /usr/share/bash-completion/completions/ges-launch-1.0
 ges1.0-tools: /usr/share/man/man1/ges-launch-1.0.1.gz
 
+
+pi@raspberrypi:~ $ apt show ges1.0-tools
+Package: ges1.0-tools
+Version: 1.18.4-2
+
+
+
+
+
+###Runtime ges cut
 
 
 gst-launch-1.0 videotestsrc num-buffers=100 ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! h264parse ! mp4mux ! filesink location=capture.mp4
