@@ -7,6 +7,21 @@ Raspberry Pi OS with desktop (pas 64 bits, pas legacy)
 
 https://downloads.raspberrypi.org/raspios_armhf/images/raspios_armhf-2022-09-26/2022-09-22-raspios-bullseye-armhf.img.xz
 
+pi@raspberrypi:~ $ uname -a:
+Linux raspberrypi 5.15.61-v7l+ #1579 SMP Fri Aug 26 11:13:03 BST 2022 armv7l GNU/Linux
+
+pi@raspberrypi:~ $ cat /etc/os-release 
+PRETTY_NAME="Raspbian GNU/Linux 11 (bullseye)"
+NAME="Raspbian GNU/Linux"
+VERSION_ID="11"
+VERSION="11 (bullseye)"
+VERSION_CODENAME=bullseye
+ID=raspbian
+ID_LIKE=debian
+HOME_URL="http://www.raspbian.org/"
+SUPPORT_URL="http://www.raspbian.org/RaspbianForums"
+BUG_REPORT_URL="http://www.raspbian.org/RaspbianBugs"
+
 Est ce que le package ges existe? OUI
 
 pi@raspberrypi:~ apt-file find ges-launch
