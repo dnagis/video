@@ -1,6 +1,9 @@
-##2023
+###ges sur raspios officielle
 
-#Tentative ges sur raspios officielle
+#02-2023
+
+https://www.raspberrypi.com/software/operating-systems/
+Raspberry Pi OS with desktop (pas 64 bits, pas legacy)
 
 https://downloads.raspberrypi.org/raspios_armhf/images/raspios_armhf-2022-09-26/2022-09-22-raspios-bullseye-armhf.img.xz
 
@@ -11,3 +14,131 @@ ges1.0-tools: /usr/bin/ges-launch-1.0
 ges1.0-tools: /usr/share/bash-completion/completions/ges-launch-1.0
 ges1.0-tools: /usr/share/man/man1/ges-launch-1.0.1.gz
 
+
+
+gst-launch-1.0 videotestsrc num-buffers=100 ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! h264parse ! mp4mux ! filesink location=capture.mp4
+
+ges-launch-1.0 +clip capture.mp4 inpoint=1 duration=1 -o out.mp4 -f "video/quicktime:video/x-h264"
+
+(la même commande sur le NUC avec le même fichier OK)
+
+###Message d'erreur en output:
+
+ERROR from element v4l2h264enc0: Failed to process frame./>
+
+Debugging info: ../sys/v4l2/gstv4l2videoenc.c(828): gst_v4l2_video_enc_handle_frame (): /GESPipeline:gespipeline0/GstEncodeBin:internal-encodebin/v4l2h264enc:v4l2h264enc0:
+Maybe be due to not enough memory or failing driver
+
+###Dmesg:
+
+[  189.005247] bcm2835-codec bcm2835-codec: bcm2835_codec_start_streaming: Failed enabling i/p port, ret -3
+[  189.005279] ------------[ cut here ]------------
+[  189.005291] WARNING: CPU: 0 PID: 1475 at drivers/media/common/videobuf2/videobuf2-core.c:1552 vb2_start_streaming+0x108/0x178 [videobuf2_common]
+[  189.005367] Modules linked in: rfcomm cmac algif_hash aes_arm_bs crypto_simd cryptd algif_skcipher af_alg bnep hci_uart btbcm bluetooth ecdh_generic ecc 8021q garp stp llc imx477 snd_soc_hdmi_codec brcmfmac vc4 brcmutil cec drm_kms_helper cfg80211 raspberrypi_hwmon snd_soc_core v3d gpu_sched snd_compress bcm2835_v4l2(C) rfkill rpivid_hevc(C) bcm2835_unicam bcm2835_codec(C) snd_bcm2835(C) snd_pcm_dmaengine bcm2835_isp(C) i2c_mux_pinctrl bcm2835_mmal_vchiq(C) videobuf2_vmalloc v4l2_dv_timings v4l2_mem2mem v4l2_fwnode snd_pcm v4l2_async videobuf2_dma_contig i2c_mux videobuf2_memops videobuf2_v4l2 i2c_brcmstb videobuf2_common snd_timer videodev vc_sm_cma(C) snd i2c_bcm2835 mc syscopyarea sysfillrect sysimgblt fb_sys_fops nvmem_rmem uio_pdrv_genirq uio drm i2c_dev fuse drm_panel_orientation_quirks backlight ip_tables x_tables ipv6
+[  189.006171] CPU: 0 PID: 1475 Comm: queue2:src Tainted: G         C        5.15.61-v7l+ #1579
+[  189.006186] Hardware name: BCM2711
+[  189.006194] Backtrace: 
+[  189.006205] [<c0bd555c>] (dump_backtrace) from [<c0bd57a8>] (show_stack+0x20/0x24)
+[  189.006235]  r7:00000610 r6:c0e3f314 r5:00000000 r4:60000013
+[  189.006241] [<c0bd5788>] (show_stack) from [<c0bd9eb8>] (dump_stack_lvl+0x70/0x94)
+[  189.006259] [<c0bd9e48>] (dump_stack_lvl) from [<c0bd9ef4>] (dump_stack+0x18/0x1c)
+[  189.006279]  r7:00000610 r6:00000009 r5:bf2191ac r4:bf21e084
+[  189.006285] [<c0bd9edc>] (dump_stack) from [<c02226c0>] (__warn+0xfc/0x114)
+[  189.006305] [<c02225c4>] (__warn) from [<c0bd5e68>] (warn_slowpath_fmt+0x70/0xd8)
+[  189.006322]  r7:00000610 r6:bf21e084 r5:c1205048 r4:00000000
+[  189.006329] [<c0bd5dfc>] (warn_slowpath_fmt) from [<bf2191ac>] (vb2_start_streaming+0x108/0x178 [videobuf2_common])
+[  189.006386]  r9:c34623e0 r8:00000001 r7:bf1c6110 r6:c4680d78 r5:c4680e78 r4:fffffffd
+[  189.006392] [<bf2190a4>] (vb2_start_streaming [videobuf2_common]) from [<bf219888>] (vb2_core_streamon+0x90/0x180 [videobuf2_common])
+[  189.006465]  r7:bf1c6110 r6:c1205048 r5:c4680c00 r4:c4680d78
+[  189.006471] [<bf2197f8>] (vb2_core_streamon [videobuf2_common]) from [<bf203050>] (vb2_streamon+0x24/0x64 [videobuf2_v4l2])
+[  189.006537]  r5:c4680c00 r4:0000000a
+[  189.006544] [<bf20302c>] (vb2_streamon [videobuf2_v4l2]) from [<bf294f90>] (v4l2_m2m_streamon+0x30/0x60 [v4l2_mem2mem])
+[  189.006599] [<bf294f60>] (v4l2_m2m_streamon [v4l2_mem2mem]) from [<bf294fe0>] (v4l2_m2m_ioctl_streamon+0x20/0x24 [v4l2_mem2mem])
+[  189.006652]  r7:bf1c6110 r6:c1205048 r5:40045612 r4:bf294fc0
+[  189.006659] [<bf294fc0>] (v4l2_m2m_ioctl_streamon [v4l2_mem2mem]) from [<bf1c613c>] (v4l_streamon+0x2c/0x30 [videodev])
+[  189.006800] [<bf1c6110>] (v4l_streamon [videodev]) from [<bf1cb470>] (__video_do_ioctl+0x234/0x460 [videodev])
+[  189.007015]  r5:40045612 r4:c34620a0
+[  189.007021] [<bf1cb23c>] (__video_do_ioctl [videodev]) from [<bf1cbc30>] (video_usercopy+0x140/0x630 [videodev])
+[  189.007233]  r10:00000000 r9:00000000 r8:c4bbbe34 r7:00000000 r6:c1205048 r5:40045612
+[  189.007240]  r4:40045612
+[  189.007246] [<bf1cbaf0>] (video_usercopy [videodev]) from [<bf1cc140>] (video_ioctl2+0x20/0x24 [videodev])
+[  189.007449]  r10:00000046 r9:00baeb18 r8:c482c180 r7:00000000 r6:af2c4000 r5:c1205048
+[  189.007456]  r4:bf1cc120
+[  189.007462] [<bf1cc120>] (video_ioctl2 [videodev]) from [<bf1c41f4>] (v4l2_ioctl+0x4c/0x60 [videodev])
+[  189.007674] [<bf1c41a8>] (v4l2_ioctl [videodev]) from [<c046f95c>] (sys_ioctl+0x12c/0xa20)
+[  189.007788]  r5:c1205048 r4:40045612
+[  189.007794] [<c046f830>] (sys_ioctl) from [<c0200040>] (ret_fast_syscall+0x0/0x1c)
+[  189.007810] Exception stack(0xc4bbbfa8 to 0xc4bbbff0)
+[  189.007822] bfa0:                   00b44e08 00000000 00000046 40045612 00baeb18 b67d1d40
+[  189.007833] bfc0: 00b44e08 00000000 af2c4000 00000036 000292dc 00b4c370 b04fdf50 00b4c460
+[  189.007842] bfe0: af2c40cc b04fdee4 af287924 b67d1d4c
+[  189.007852]  r10:00000036 r9:c4bba000 r8:c0200244 r7:00000036 r6:af2c4000 r5:00000000
+[  189.007859]  r4:00b44e08
+[  189.007868] ---[ end trace 9673d8d10713cb00 ]---
+[  189.243449] ------------[ cut here ]------------
+[  189.243458] WARNING: CPU: 0 PID: 1471 at drivers/media/common/videobuf2/videobuf2-core.c:1960 __vb2_queue_cancel+0x1e0/0x258 [videobuf2_common]
+[  189.243491] Modules linked in: rfcomm cmac algif_hash aes_arm_bs crypto_simd cryptd algif_skcipher af_alg bnep hci_uart btbcm bluetooth ecdh_generic ecc 8021q garp stp llc imx477 snd_soc_hdmi_codec brcmfmac vc4 brcmutil cec drm_kms_helper cfg80211 raspberrypi_hwmon snd_soc_core v3d gpu_sched snd_compress bcm2835_v4l2(C) rfkill rpivid_hevc(C) bcm2835_unicam bcm2835_codec(C) snd_bcm2835(C) snd_pcm_dmaengine bcm2835_isp(C) i2c_mux_pinctrl bcm2835_mmal_vchiq(C) videobuf2_vmalloc v4l2_dv_timings v4l2_mem2mem v4l2_fwnode snd_pcm v4l2_async videobuf2_dma_contig i2c_mux videobuf2_memops videobuf2_v4l2 i2c_brcmstb videobuf2_common snd_timer videodev vc_sm_cma(C) snd i2c_bcm2835 mc syscopyarea sysfillrect sysimgblt fb_sys_fops nvmem_rmem uio_pdrv_genirq uio drm i2c_dev fuse drm_panel_orientation_quirks backlight ip_tables x_tables ipv6
+[  189.243820] CPU: 0 PID: 1471 Comm: ges-launch-1.0 Tainted: G        WC        5.15.61-v7l+ #1579
+[  189.243825] Hardware name: BCM2711
+[  189.243829] Backtrace: 
+[  189.243834] [<c0bd555c>] (dump_backtrace) from [<c0bd57a8>] (show_stack+0x20/0x24)
+[  189.243848]  r7:000007a8 r6:c0e3f314 r5:00000000 r4:60000013
+[  189.243851] [<c0bd5788>] (show_stack) from [<c0bd9eb8>] (dump_stack_lvl+0x70/0x94)
+[  189.243859] [<c0bd9e48>] (dump_stack_lvl) from [<c0bd9ef4>] (dump_stack+0x18/0x1c)
+[  189.243868]  r7:000007a8 r6:00000009 r5:bf218698 r4:bf21e084
+[  189.243871] [<c0bd9edc>] (dump_stack) from [<c02226c0>] (__warn+0xfc/0x114)
+[  189.243879] [<c02225c4>] (__warn) from [<c0bd5e68>] (warn_slowpath_fmt+0x70/0xd8)
+[  189.243886]  r7:000007a8 r6:bf21e084 r5:c1205048 r4:00000000
+[  189.243889] [<c0bd5dfc>] (warn_slowpath_fmt) from [<bf218698>] (__vb2_queue_cancel+0x1e0/0x258 [videobuf2_common])
+[  189.243912]  r9:c2047be0 r8:00000001 r7:bf1c6140 r6:c50e6814 r5:c50e6814 r4:c50e6814
+[  189.243914] [<bf2184b8>] (__vb2_queue_cancel [videobuf2_common]) from [<bf219674>] (vb2_core_streamoff+0x28/0xbc [videobuf2_common])
+[  189.243948]  r10:bf2f290c r9:c2047be0 r8:00000001 r7:bf1c6140 r6:00000009 r5:c50e6814
+[  189.243951]  r4:c50e6814 r3:00000009
+[  189.243954] [<bf21964c>] (vb2_core_streamoff [videobuf2_common]) from [<bf203104>] (vb2_streamoff+0x24/0x64 [videobuf2_v4l2])
+[  189.243982]  r5:c50e6814 r4:c50e6800
+[  189.243985] [<bf2030e0>] (vb2_streamoff [videobuf2_v4l2]) from [<bf293c3c>] (v4l2_m2m_streamoff+0x40/0x10c [v4l2_mem2mem])
+[  189.244009] [<bf293bfc>] (v4l2_m2m_streamoff [v4l2_mem2mem]) from [<bf293d28>] (v4l2_m2m_ioctl_streamoff+0x20/0x24 [v4l2_mem2mem])
+[  189.244033]  r10:bf2f290c r9:c2047be0 r8:00000001 r7:bf1c6140 r6:c1205048 r5:40045613
+[  189.244036]  r4:bf293d08
+[  189.244039] [<bf293d08>] (v4l2_m2m_ioctl_streamoff [v4l2_mem2mem]) from [<bf1c616c>] (v4l_streamoff+0x2c/0x30 [videodev])
+[  189.244104] [<bf1c6140>] (v4l_streamoff [videodev]) from [<bf1cb470>] (__video_do_ioctl+0x234/0x460 [videodev])
+[  189.244195]  r5:40045613 r4:c20478a0
+[  189.244198] [<bf1cb23c>] (__video_do_ioctl [videodev]) from [<bf1cbc30>] (video_usercopy+0x140/0x630 [videodev])
+[  189.244287]  r10:00000000 r9:00000000 r8:c48f1e34 r7:00000000 r6:c1205048 r5:40045613
+[  189.244290]  r4:40045613
+[  189.244293] [<bf1cbaf0>] (video_usercopy [videodev]) from [<bf1cc140>] (video_ioctl2+0x20/0x24 [videodev])
+[  189.244381]  r10:00000018 r9:afb1a010 r8:c2e59180 r7:00000000 r6:af2c4844 r5:c1205048
+[  189.244384]  r4:bf1cc120
+[  189.244387] [<bf1cc120>] (video_ioctl2 [videodev]) from [<bf1c41f4>] (v4l2_ioctl+0x4c/0x60 [videodev])
+[  189.244474] [<bf1c41a8>] (v4l2_ioctl [videodev]) from [<c046f95c>] (sys_ioctl+0x12c/0xa20)
+[  189.244523]  r5:c1205048 r4:40045613
+[  189.244526] [<c046f830>] (sys_ioctl) from [<c0200040>] (ret_fast_syscall+0x0/0x1c)
+[  189.244533] Exception stack(0xc48f1fa8 to 0xc48f1ff0)
+[  189.244538] 1fa0:                   af138808 af2c4000 00000018 40045613 afb1a010 b67d1d40
+[  189.244543] 1fc0: af138808 af2c4000 af2c4844 00000036 af126c88 b6b8ae58 af11afa0 af11af6c
+[  189.244547] 1fe0: b6d08c58 becca21c af289264 b67d1d4c
+[  189.244551]  r10:00000036 r9:c48f0000 r8:c0200244 r7:00000036 r6:af2c4844 r5:af2c4000
+[  189.244555]  r4:af138808
+[  189.244558] ---[ end trace 9673d8d10713cb01 ]---
+[  189.244564] videobuf2_common: driver bug: stop_streaming operation is leaving buf b2575259 in active state
+[  189.244572] videobuf2_common: driver bug: stop_streaming operation is leaving buf eefced34 in active state
+[  189.244579] videobuf2_common: driver bug: stop_streaming operation is leaving buf 8a8b35d8 in active state
+[  189.244586] videobuf2_common: driver bug: stop_streaming operation is leaving buf f4fcbd72 in active state
+[  189.244593] videobuf2_common: driver bug: stop_streaming operation is leaving buf 86c0cad0 in active state
+[  189.244600] videobuf2_common: driver bug: stop_streaming operation is leaving buf 034f06b7 in active state
+[  189.244607] videobuf2_common: driver bug: stop_streaming operation is leaving buf 92f9b165 in active state
+[  189.244614] videobuf2_common: driver bug: stop_streaming operation is leaving buf 534335cd in active state
+[  189.244621] videobuf2_common: driver bug: stop_streaming operation is leaving buf cd36fc97 in active state
+[  189.244628] videobuf2_common: driver bug: stop_streaming operation is leaving buf 58f855cb in active state
+[  189.244636] videobuf2_common: driver bug: stop_streaming operation is leaving buf a537c3c4 in active state
+[  189.244642] videobuf2_common: driver bug: stop_streaming operation is leaving buf 92cfd9ea in active state
+[  189.244649] videobuf2_common: driver bug: stop_streaming operation is leaving buf 457b829d in active state
+[  189.244656] videobuf2_common: driver bug: stop_streaming operation is leaving buf 2ad73519 in active state
+[  189.244663] videobuf2_common: driver bug: stop_streaming operation is leaving buf 29034211 in active state
+[  189.244670] videobuf2_common: driver bug: stop_streaming operation is leaving buf ca912926 in active state
+[  189.244677] videobuf2_common: driver bug: stop_streaming operation is leaving buf a297fe77 in active state
+[  189.244684] videobuf2_common: driver bug: stop_streaming operation is leaving buf 22cb7d41 in active state
+[  189.244691] videobuf2_common: driver bug: stop_streaming operation is leaving buf 07661070 in active state
+[  189.244698] videobuf2_common: driver bug: stop_streaming operation is leaving buf 304d5337 in active state
+[  189.244705] videobuf2_common: driver bug: stop_streaming operation is leaving buf ea42083e in active state
+[  189.244712] videobuf2_common: driver bug: stop_streaming operation is leaving buf a711f711 in active state
