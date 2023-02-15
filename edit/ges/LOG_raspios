@@ -1,0 +1,13 @@
+##2023
+
+#Tentative ges sur raspios officielle
+
+https://downloads.raspberrypi.org/raspios_armhf/images/raspios_armhf-2022-09-26/2022-09-22-raspios-bullseye-armhf.img.xz
+
+Est ce que le package ges existe? OUI
+
+pi@raspberrypi:~ apt-file find ges-launch
+ges1.0-tools: /usr/bin/ges-launch-1.0     
+ges1.0-tools: /usr/share/bash-completion/completions/ges-launch-1.0
+ges1.0-tools: /usr/share/man/man1/ges-launch-1.0.1.gz
+
