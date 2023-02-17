@@ -318,45 +318,34 @@ gst-launch-1.0 filesrc location=bgrfmt.raw ! queue ! "video/x-raw, width=640, he
 ####Decode et reencode dans une même pipeline
 ges-launch plante (chez moi et chez raspios) avec erreur kernel. Est ce que c'est parce que le décodage et le réencodage en même temps impossible???
 
+##Sur RPi4 sur mon OS et sur raspiOS 
+#Création d'un fichier 
+gst-launch-1.0 videotestsrc num-buffers=100 ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! h264parse ! mp4mux ! filesink location=video.mp4
+
+#décode et réencode
+gst-launch-1.0 filesrc location=video.mp4 ! qtdemux ! h264parse ! v4l2h264dec ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! filesink location=out.h264
+
+gst-launch-1.0 filesrc location=video.mp4 ! qtdemux ! h264parse ! v4l2h264dec ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! h264parse ! mp4mux ! filesink location=out.mp4
+
+
+
+--> pas d'erreur et fichier out.mp4 lisible gst-play
+
+
+
+##Attention le premier essai m'a fait croire que ce n'était pas possible: avec erreur non negotiated:
 ##Dans mon OS sur RPi4:
 #Créer un .h264 le plus simplement possible
 gst-launch-1.0 videotestsrc num-buffers=100 ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! filesink location=test.h264
-
-#Décoder ce .h264
-gst-launch-1.0 filesrc location=test.h264 ! h264parse ! v4l2h264dec ! fakesink
-
 #Décodage + réencodage
 gst-launch-1.0 filesrc location=test.h264 ! h264parse ! v4l2h264dec ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! filesink location=out.h264
-
---> non negotiated, mais pas d'erreur kernel
-
+--> non negotiated, pas d'erreur kernel
 #j'essaie d'ajouter queue entre les deux
-
 gst-launch-1.0 filesrc location=test.h264 ! h264parse ! v4l2h264dec ! queue ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! filesink location=out.h264
-
 --> idem: non negotiated sans erreur kernel
-
-#est ce que -vvvv m'aide?
-
-gst-launch-1.0 -vvvv filesrc location=test.h264 ! h264parse ! v4l2h264dec ! queue ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! filesink location=out.h264
-
---> non
-
-#est ce que décodage vers filesink fonctionne?
-
-gst-launch-1.0 filesrc location=test.h264 ! h264parse ! v4l2h264dec ! filesink location=test.raw
-
-oui
 
 #essayer avec vaapi
 gst-launch-1.0 videotestsrc num-buffers=100 ! vaapih264enc ! filesink location=test.h264
 gst-launch-1.0 filesrc location=test.h264 ! h264parse ! vaapih264dec ! vaapih264enc ! filesink location=out.h264
 --> out.h264 lisible
 
-#GST_DEBUG comme dans le post de 2021
-GST_DEBUG=v4l2*:7 gst-launch-1.0 filesrc location=test.h264 ! h264parse ! v4l2h264dec ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! filesink location=out.h264
-
-#mettre un capsfilter entre les deux? en prenant compte les caps (gst-inspect sur vaapih264dec et sur vaapih264enc)
-v4l2h264dec --> SRC --> video/x-raw format: { (string)I420, (string)YV12, (string)NV12, (string)NV21, (string)RGB16 }
-v4l2h264enc --> SINK --> video/x-raw format: { (string)I420, (string)YV12, (string)NV12, (string)NV21, (string)RGB16, (string)RGB, (string)BGR, (string)BGRx, (string)BGRA, (string)YUY2, (string
-)YVYU, (string)UYVY }
