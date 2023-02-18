@@ -177,10 +177,41 @@ Maybe be due to not enough memory or failing driver
 
 ## Essai de ges vers RAW
 
-ges-launch-1.0 +clip video.mp4 inpoint=1 duration=1 -o out.raw -f "video/x-raw"
+#Je crée qq chose de moins long car sinon le RAW prend beaucoup de place
+gst-launch-1.0 videotestsrc num-buffers=30 ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! h264parse ! mp4mux ! filesink location=video.mp4
+
+
+
+ges-launch-1.0 +clip video.mp4 inpoint=0 duration=1 -o out.raw -f "video/x-raw"
+
+
 
 comment lire ce raw?
+Il faut que je connaisse le format
+GST_DEBUG=v4l2*:7 ges-launch-1.0 +clip video.mp4 inpoint=0 duration=1 -o out.raw -f "video/x-raw" > log_debug 2>&1
+li 960 j'ai Setting format to video/x-raw, format=(string)I420, width=(int)320, height=(int)240,
 
-gst-launch-1.0 filesrc location=out.raw ! queue ! "video/x-raw, width=320, height=240, format=I420, framerate=30/1" ! rawvideoparse use-sink-caps=true ! autovideosink
+caps=(GstCaps)"video/x-raw\,\ format\=\(string\)I420\,\ width\=\(int\)320\,\ height\=\(int\)240\,\ interlace-mode\=\(string\)progressive\,\ multiview-mode\=\(string\)mono\,\ multiview-flags\=\(GstVideoMultiviewFlagsSet\)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono\,\ pixel-aspect-ratio\=\(fraction\)1/1\,\ chroma-site\=\(string\)jpeg\,\ colorimetry\=\(string\)bt601\,\ framerate\=\(fraction\)30/1", size=(uint)115200, min-buffers=(uint)5, max-buffers=(uint)32, allocator=(GstAllocator)"NULL", params=(GstAllocationParams)NULL;
 
---> lisible (openable) mais le format n'est visiblement pas I420
+
+gst-launch-1.0 filesrc location=out.raw ! queue ! "video/x-raw, format=I420, width=320, height=240, framerate=30/1" ! rawvideoparse use-sink-caps=true ! vaapisink
+
+--> lisible (openable) mais les caps ne sont pas bonnes...
+
+qq part au début du debug il y a une énumération de formats, je les essaie tous:
+
+gst-launch-1.0 filesrc location=out.raw ! queue ! "video/x-raw, format=I420, width=320, height=240, framerate=30/1" ! rawvideoparse use-sink-caps=true ! videoconvert ! vaapisink
+
+
+YU12 YV12 NV21 NV12 RGBP NC12
+gst-launch-1.0 filesrc location=out.raw ! queue ! "video/x-raw, format=I420, width=320, height=240, framerate=30/1" ! rawvideoparse use-sink-caps=true ! videoconvert ! vaapisink
+
+erreurs différentes à chaque format testé
+
+qu'est ce que v4l2h264enc est capable de sortir??
+gst-inspect-1.0 v4l2h264dec
+format: { (string)I420, (string)YV12, (string)NV12, (string)NV21, (string)RGB16 }
+il n' a que RGB16 que je n'ai pas testé
+
+donc j'ai testé ces formats pour lecture, unsuccessfully: YU12 YV12 NV21 NV12 RGBP NC12 RGB16
+
