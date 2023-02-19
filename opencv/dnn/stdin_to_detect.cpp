@@ -56,8 +56,9 @@ bool ARM=true;
 int frame_n=0; //le compteur de frame "de base"
 int detect_frame; //il faut figer le numéro de la frame au lancement dun detect sinon il continue à augmenter dans l'autre thread
 
-int IMAGE_WIDTH=480;
-int IMAGE_HEIGHT=640;
+//sera ajusté dans main() selon les arguments (orientation), mais il le faut pour calculer framesize (sinon symptome = compteur de frames a des valeurs immenses)
+int IMAGE_WIDTH=640;
+int IMAGE_HEIGHT=480;
 int IMAGE_DEPTH=3;
 
 char *imagebuffer = NULL;
@@ -172,12 +173,28 @@ void detect()
 
 int main(int argc, char *argv[]) 
 {
-	//confThreshold en premier
-	if (argc < 2) {
-		cout << "pas assez d arguments" << endl;		
+	//arguments
+	
+	if (argc < 3) {
+		cout << "stdin_to_detect: pas assez d arguments (po ou pa et threshold)" << endl;		
 		return 1;
 		}
-	confThreshold = atof(argv[1]);
+		
+	//premier arg: po ou pa pour orientation	
+	if (strcmp(argv[1], "po") == 0) {
+		cout << "stdin_to_detect: orientation=po" << endl;
+		IMAGE_WIDTH=480;
+		IMAGE_HEIGHT=640;
+			} else {
+		IMAGE_WIDTH=640;
+		IMAGE_HEIGHT=480;
+		}
+	
+	
+	confThreshold = atof(argv[2]);
+	
+	
+
 	
 	
 	
