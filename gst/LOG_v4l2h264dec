@@ -319,7 +319,7 @@ gst-launch-1.0 filesrc location=bgrfmt.raw ! queue ! "video/x-raw, width=640, he
 ges-launch plante (chez moi et chez raspios) avec erreur kernel. Est ce que c'est parce que le décodage et le réencodage en même temps impossible???
 
 ##Sur RPi4 sur mon OS et sur raspiOS 
-#Création d'un fichier 
+#Je crée un h264 encapsulé mp4 (pas avec le format RGB car je sais que fera planter v4l2h264dec)
 gst-launch-1.0 videotestsrc num-buffers=100 ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! h264parse ! mp4mux ! filesink location=video.mp4
 
 #décode et réencode
@@ -327,7 +327,13 @@ gst-launch-1.0 filesrc location=video.mp4 ! qtdemux ! h264parse ! v4l2h264dec ! 
 
 gst-launch-1.0 filesrc location=video.mp4 ! qtdemux ! h264parse ! v4l2h264dec ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! h264parse ! mp4mux ! filesink location=out.mp4
 
+##En vue de ne garder que les frames qui m'interessent:
 
+#je peux décoder ce fichier et réencoder juste derrière
+gst-launch-1.0 filesrc location=video.mp4 ! qtdemux ! h264parse ! v4l2h264dec ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! h264parse ! mp4mux ! filesink location=out.mp4
+
+#je peux mettre un element queue au milieu entre le décodeur et l'encodeur
+gst-launch-1.0 filesrc location=video.mp4 ! qtdemux ! h264parse ! v4l2h264dec ! queue ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! h264parse ! mp4mux ! filesink location=out.mp4
 
 --> pas d'erreur et fichier out.mp4 lisible gst-play
 
