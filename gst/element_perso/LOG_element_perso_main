@@ -17,4 +17,10 @@ configure classique, le symlink vers busybox est en /bin/sed
 #Créer les fichiers sources et un .so (arg2: un des templates du dir element/templates)
 ./gst-element-maker my_element videofilter
 
+#gst-inspect peut voir l'élément sur place
 gst-inspect-1.0 ./gstmyelement.so
+
+#gst-inspect le trouve si je copie le .so dans /usr/lib64/gstreamer-1.0/
+
+#Tester l'élément sans avoir à l'installer:
+gst-launch-1.0 --gst-plugin-path=/initrd/mnt/dev_save/packages/gst-plugins-bad-1.18.1/tools videotestsrc is-live=true ! myelement ! fakesink
