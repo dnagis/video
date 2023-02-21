@@ -1,0 +1,20 @@
+###Créer un élément perso
+
+
+##Doc gstreamer
+https://gstreamer.freedesktop.org/documentation/plugin-development/basics/index.html?gi-language=c
+
+
+##gst-element-maker
+#Script création stub à partir de templates: 
+gst-plugins-bad-1.18.1/tools/gst-element-maker
+
+#Prereqs
+il vaut mieux avoir le sed officiel sinon les noms sont foireux
+https://ftp.gnu.org/gnu/sed/sed-4.9.tar.xz
+configure classique, le symlink vers busybox est en /bin/sed
+
+#Créer les fichiers sources et un .so (arg2: un des templates du dir element/templates)
+./gst-element-maker my_element videofilter
+
+gst-inspect-1.0 ./gstmyelement.so
