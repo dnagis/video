@@ -43,3 +43,22 @@ GST_DEBUG=myelement:7 gst-launch-1.0 --gst-plugin-path=/initrd/mnt/dev_save/pack
 
 si je modifie la string = arg 2 d'un GST_DEBUG_OBJECT (myelement, "transform_frame_ip");
 la compilation est possible, et je vois la modification au runtime
+
+##Cross - compil
+#Compil
+export PATH=$PATH:/initrd/mnt/dev_save/rpi/cross/bin/
+export PKG_CONFIG_LIBDIR=/initrd/mnt/dev_save/rpi/cross/aarch64-linux-gnu/lib/pkgconfig
+export PKG_CONFIG_SYSROOT_DIR=/initrd/mnt/dev_save/rpi/cross/aarch64-linux-gnu
+
+aarch64-linux-gnu-gcc -Wall -Werror -fPIC $(pkg-config --cflags gstreamer-1.0 gstreamer-video-1.0) -c -o gstmyelement.o gstmyelement.c
+aarch64-linux-gnu-gcc -shared -o gstmyelement.so gstmyelement.o $(pkg-config --libs gstreamer-1.0 gstreamer-video-1.0)
+
+gstmyelement.so est bien du ARM aarch64
+
+#Runtime, sur mon OS
+GST_DEBUG=myelement:7 gst-launch-1.0 --gst-plugin-path=/root videotestsrc is-live=true ! myelement ! fakesink
+--> OK fonctionne
+
+
+
+
