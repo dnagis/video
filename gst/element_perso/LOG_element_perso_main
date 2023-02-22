@@ -1,4 +1,4 @@
-###Créer un élément perso
+###Création et utilisation d'un élément perso
 
 
 ##Doc gstreamer
@@ -25,10 +25,7 @@ gst-inspect-1.0 ./gstmyelement.so
 ##Tester l'élément sans avoir à copier le .so ailleurs:
 gst-launch-1.0 --gst-plugin-path=/initrd/mnt/dev_save/packages/gst-plugins-bad-1.18.1/tools videotestsrc is-live=true ! myelement ! fakesink
 
-##Afficher le debug:
-comme je vois dans le .c: GST_DEBUG_CATEGORY_INIT (gst_my_element_debug_category, "myelement", 0, "debug category for myelement element"));
-je peux voir du debug avec:
-GST_DEBUG=myelement:7 gst-launch-1.0 --gst-plugin-path=/initrd/mnt/dev_save/packages/gst-plugins-bad-1.18.1/tools videotestsrc is-live=true ! myelement ! fakesink
+
 
 ##Rebuilder le .so après modification du .c
 #Pour ça j'utilise les deux lignes gcc ... de la fin du script gst-plugins-bad-1.18.1/tools/gst-element-maker, je regarde quelles sont les variables
@@ -36,3 +33,13 @@ GST_DEBUG=myelement:7 gst-launch-1.0 --gst-plugin-path=/initrd/mnt/dev_save/pack
 
 gcc -Wall -Werror -fPIC $(pkg-config --cflags gstreamer-1.0 gstreamer-video-1.0) -c -o gstmyelement.o gstmyelement.c
 gcc -shared -o gstmyelement.so gstmyelement.o $(pkg-config --libs gstreamer-1.0 gstreamer-video-1.0)
+
+
+
+##Afficher du debug:
+comme je vois dans le .c: GST_DEBUG_CATEGORY_INIT (gst_my_element_debug_category, "myelement", 0, "debug category for myelement element"));
+je peux voir du debug avec:
+GST_DEBUG=myelement:7 gst-launch-1.0 --gst-plugin-path=/initrd/mnt/dev_save/packages/gst-plugins-bad-1.18.1/tools videotestsrc is-live=true ! myelement ! fakesink
+
+si je modifie la string = arg 2 d'un GST_DEBUG_OBJECT (myelement, "transform_frame_ip");
+la compilation est possible, et je vois la modification au runtime
