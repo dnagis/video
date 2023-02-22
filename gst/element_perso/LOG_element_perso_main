@@ -22,5 +22,11 @@ gst-inspect-1.0 ./gstmyelement.so
 
 #gst-inspect le trouve si je copie le .so dans /usr/lib64/gstreamer-1.0/
 
-#Tester l'élément sans avoir à l'installer:
+#Tester l'élément sans avoir à copier le .so ailleurs:
 gst-launch-1.0 --gst-plugin-path=/initrd/mnt/dev_save/packages/gst-plugins-bad-1.18.1/tools videotestsrc is-live=true ! myelement ! fakesink
+
+#Afficher le debug:
+comme je vois dans le .c: GST_DEBUG_CATEGORY_INIT (gst_my_element_debug_category, "myelement", 0, "debug category for myelement element"));
+je peux voir du debug avec:
+GST_DEBUG=myelement:7 gst-launch-1.0 --gst-plugin-path=/initrd/mnt/dev_save/packages/gst-plugins-bad-1.18.1/tools videotestsrc is-live=true ! myelement ! fakesink
+
