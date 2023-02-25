@@ -1,0 +1,47 @@
+###un element fait à partir du template basetransform pour aller vers videorate
+
+
+
+
+## créer un élément à partir du template basetransform
+avoir sed de chez gnu pas busybox
+cd .../gst-plugins-bad-1.18.1/tools
+./gst-element-maker BaseTfmPerso basetransform
+
+
+
+
+## le faire fonctionner entre décodage et encodage
+	#créer un fichier h264 dans mp4 à partir de videotestsrc 300 frames
+	gst-launch-1.0 videotestsrc num-buffers=300 ! vaapih264enc ! h264parse ! mp4mux ! filesink location=in.mp4 
+		
+	#une pipeline qui décode et réencode ce fichier
+	gst-launch-1.0 filesrc location=in.mp4 ! qtdemux ! vaapih264dec ! vaapih264enc ! h264parse ! mp4mux ! filesink location=out.mp4
+	
+	#l'élément basetfmperso entre decode et reencode
+	gst-launch-1.0 --gst-plugin-path=/initrd/mnt/dev_save/packages/gst-plugins-bad-1.18.1/tools \
+	filesrc location=in.mp4 ! qtdemux ! vaapih264dec ! basetfmperso ! vaapih264enc ! h264parse ! mp4mux ! filesink location=out.mp4
+	
+	--> WARNING: erroneous pipeline: could not link vaapidecode_h264-0 to basetfmperso0
+	
+	mon hypothèse: les caps vont pas. je modifie en m'inspirant de gstvideorate.c
+	
+	je rebuilde
+	
+	gcc -Wall -Werror -fPIC $(pkg-config --cflags gstreamer-1.0 gstreamer-video-1.0) -c -o gstbasetfmperso.o gstbasetfmperso.c
+	gcc -shared -o gstbasetfmperso.so gstbasetfmperso.o $(pkg-config --libs gstreamer-1.0 gstreamer-video-1.0)
+	
+	gst-launch-1.0 --gst-plugin-path=/initrd/mnt/dev_save/packages/gst-plugins-bad-1.18.1/tools videotestsrc is-live=true ! basetfmperso ! fakesink
+	
+	--> WARNING: erroneous pipeline: could not link videotestsrc0 to basetfmperso0 
+	
+	
+	
+	
+	debug avec nombre de frames que l'élément voit passer
+
+
+
+
+## essais de modifications dans le code de l'élément en s'inspirant de videorate.c (plugins-base)
+
