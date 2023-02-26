@@ -45,7 +45,15 @@ cd .../gst-plugins-bad-1.18.1/tools
 	
 	quel est le mécanisme de setting up des pads? est ce que je passe bien là où je devrais passer pour les set up?
 	
+	DEBUG:
+	GST_DEBUG_CATEGORY_INIT (gst_basetfmperso_debug_category, "basetfmperso", 0, "debug category for basetfmperso element"));
+	donc
+	GST_DEBUG=basetfmperso:7 gst-launch-1.0 --gst-plugin-path=/initrd/mnt/dev_save/packages/gst-plugins-bad-1.18.1/tools fakesrc ! basetfmperso ! fakesink
 	
+	Je vérifie qu'on passe bien dans _class_init () avec du debug:
+	//vincent debug passage dans _class_init
+	GstElementClass *element_class = GST_ELEMENT_CLASS (klass);
+	GST_DEBUG_OBJECT (element_class, "_class_init");
 	
 	
 	
