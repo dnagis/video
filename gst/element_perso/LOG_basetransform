@@ -35,10 +35,26 @@ cd .../gst-plugins-bad-1.18.1/tools
 	
 	--> WARNING: erroneous pipeline: could not link videotestsrc0 to basetfmperso0 
 	
+	j'essaie 
+	gst-launch-1.0 --gst-plugin-path=/initrd/mnt/dev_save/packages/gst-plugins-bad-1.18.1/tools fakesrc ! basetfmperso ! fakesink
+	même erreur
+	
+	parmi les erreurs:
+	gst_caps_can_intersect: assertion 'GST_IS_CAPS (caps1)' failed
+	gst_element_request_compatible_pad: assertion 'GST_IS_PAD_TEMPLATE (templ)' failed
+	
+	quel est le mécanisme de setting up des pads? est ce que je passe bien là où je devrais passer pour les set up?
 	
 	
 	
-	debug avec nombre de frames que l'élément voit passer
+	
+	
+	
+	
+	
+	
+	
+	#debug avec nombre de frames que l'élément voit passer
 
 
 
