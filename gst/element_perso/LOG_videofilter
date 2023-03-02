@@ -81,5 +81,12 @@ je laisse 3s: 60 Mo
 gst-launch-1.0 --gst-plugin-path=/initrd/mnt/dev_save/packages/gst-plugins-bad-1.18.1/tools videotestsrc is-live=true ! myelement ! filesink location=out.raw
 je laisse 3s: 28Mo, donc n'est pas vide
 
+Est ce qu'un videoconvert règle le pb de link mon element - vaapih264enc?
+gst-launch-1.0 --gst-plugin-path=/initrd/mnt/dev_save/packages/gst-plugins-bad-1.18.1/tools fakesrc ! myelement ! videoconvert ! vaapih264enc ! fakesink
+--> non --> streaming stopped, reason not-negotiated (-4)
+
+-Formats: compatibilité?
+gst-inspect-1.0 vaapih264enc --> prend 3 formats:  { (string)NV12, (string)YV12, (string)I420 }
+le template de pads de mon element: #define VIDEO_SRC_CAPS GST_VIDEO_CAPS_MAKE("{ I420, Y444, Y42B, UYVY, RGBA }")
 
 
