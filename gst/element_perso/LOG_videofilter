@@ -41,3 +41,24 @@ gst-launch-1.0 -vvvv --gst-plugin-path=/initrd/mnt/dev_save/packages/gst-plugins
 --> est ce que le format qui sort de mon element convient à vaapih264enc?
 --> je n'ai pas not negotiated
 
+--> j'essaie fakesrc ! myelement ! vaapih264enc ! fakesink
+gst-launch-1.0 --gst-plugin-path=/initrd/mnt/dev_save/packages/gst-plugins-bad-1.18.1/tools fakesrc ! myelement ! vaapih264enc ! fakesink
+streaming stopped, reason not-negotiated (-4)
+--> ce serait donc un problème entre mon element et vaapisink, un queue qq part n'amènera rien (la première erreur aurait pu laisser supposer que queue qq part aiderait: 
+"Delayed linking failed .. "
+mais visiblement c'est l'erreur "streaming stopped, reason not-linked (-1)" de la première pipeline qui était plus informative
+
+je décompose: 
+gst-launch-1.0 --gst-plugin-path=/initrd/mnt/dev_save/packages/gst-plugins-bad-1.18.1/tools videotestsrc is-live=true ! vaapih264enc ! fakesink
+marche mais 
+gst-launch-1.0 --gst-plugin-path=/initrd/mnt/dev_save/packages/gst-plugins-bad-1.18.1/tools fakesrc ! vaapih264enc ! fakesink
+ne marche pas
+
+gst-launch-1.0 --gst-plugin-path=/initrd/mnt/dev_save/packages/gst-plugins-bad-1.18.1/tools fakesrc ! myelement ! fakesink
+ne marche pas
+
+
+gst-launch-1.0 --gst-plugin-path=/initrd/mnt/dev_save/packages/gst-plugins-bad-1.18.1/tools videotestsrc is-live=true ! myelement ! fakesink
+marche
+gst-launch-1.0 --gst-plugin-path=/initrd/mnt/dev_save/packages/gst-plugins-bad-1.18.1/tools videotestsrc is-live=true ! myelement ! vaapisink
+apparait vert je ne vois pas la mire: mauvais format???
