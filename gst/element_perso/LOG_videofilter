@@ -1,0 +1,7 @@
+###Objectif de départ: un element fait à partir du template videofilter pour aller vers videorate
+##(avec la notion que videofilter et videorate héritent d'une classe basetransform)
+
+##Stratégie initiale:
+#Créer un element perso à partir du template videofilter
+#Le faire fonctionner entre un décodeur et un encodeur pour qu'il traite les frames en raw une par une
+#Essai Piste: valeur retournée par videorate dans la fonction gst_video_rate_transform_ip() GST_BASE_TRANSFORM_FLOW_DROPPED
