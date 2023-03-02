@@ -61,4 +61,25 @@ ne marche pas
 gst-launch-1.0 --gst-plugin-path=/initrd/mnt/dev_save/packages/gst-plugins-bad-1.18.1/tools videotestsrc is-live=true ! myelement ! fakesink
 marche
 gst-launch-1.0 --gst-plugin-path=/initrd/mnt/dev_save/packages/gst-plugins-bad-1.18.1/tools videotestsrc is-live=true ! myelement ! vaapisink
-apparait vert je ne vois pas la mire: mauvais format???
+apparait ***vert*** je ne vois pas la mire: mauvais format? ou vide???
+
+gst-launch-1.0  videotestsrc is-live=true ! videorate ! vaapisink
+ou
+gst-launch-1.0  videotestsrc is-live=true ! videoconvert ! vaapisink
+je vois la mire
+
+mais 
+
+gst-launch-1.0 --gst-plugin-path=/initrd/mnt/dev_save/packages/gst-plugins-bad-1.18.1/tools videotestsrc is-live=true ! myelement ! vaapisink
+
+apparait vert... mais avec la bonne taille
+
+si vide, un fichier out.raw doit être quasi vide?
+gst-launch-1.0  videotestsrc is-live=true ! videorate ! filesink location=out.raw
+je laisse 3s: 60 Mo
+
+gst-launch-1.0 --gst-plugin-path=/initrd/mnt/dev_save/packages/gst-plugins-bad-1.18.1/tools videotestsrc is-live=true ! myelement ! filesink location=out.raw
+je laisse 3s: 28Mo, donc n'est pas vide
+
+
+
