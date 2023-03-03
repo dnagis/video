@@ -1,15 +1,21 @@
 ###Objectif de départ: un element fait à partir du template videofilter pour aller vers videorate
 ##(avec la notion que videofilter et videorate héritent d'une classe basetransform)
 
+
+
 ##Stratégie initiale:
 #Créer un element perso à partir du template videofilter
 #Le faire fonctionner entre un décodeur et un encodeur pour qu'il traite les frames en raw une par une
 #Essai Piste: valeur retournée par videorate dans la fonction gst_video_rate_transform_ip() GST_BASE_TRANSFORM_FLOW_DROPPED
 
+
+
+
+
 ##LOG
 ## Créer un element perso à partir du template videofilter
 --> sed de chez GNU cf LOG_element_perso_main
---> gst-plugins-bad/tools -->gst-element-maker my_element videofilter
+--> gst-plugins-bad/tools --> ./gst-element-maker my_element videofilter
 --> le voir fonctionner:
 gst-launch-1.0 --gst-plugin-path=/initrd/mnt/dev_save/packages/gst-plugins-bad-1.18.1/tools videotestsrc is-live=true ! myelement ! fakesink
 
@@ -111,15 +117,56 @@ Est ce qu'un videoconvert règle le pb de link mon element - vaapih264enc?
 gst-launch-1.0 --gst-plugin-path=/initrd/mnt/dev_save/packages/gst-plugins-bad-1.18.1/tools fakesrc ! myelement ! videoconvert ! vaapih264enc ! fakesink
 --> non --> streaming stopped, reason not-negotiated (-4)
 
-Formats: compatibilité?
+-Formats: compatibilité?
 gst-inspect-1.0 vaapih264enc --> prend 3 formats:  { (string)NV12, (string)YV12, (string)I420 }
 le template de pads de mon element: #define VIDEO_SRC_CAPS GST_VIDEO_CAPS_MAKE("{ I420, Y444, Y42B, UYVY, RGBA }")
 
+-Rationale: Il semble évident que mon élément ne peut pas convertir d'un format à un autre. Donc je me dis que peut être, il négocie avec son élément
+en amont qq chose, et ensuite, comme il ne peut choisir autre chose en aval que ce qu'il a négocié en amont, il essaie un format qui ne convient 
+pas à vaapih264enc.
 
 
+-J'essaie de forcer un format avec un capsfilter entre videotestsrc et mon element
 
+gst-launch-1.0 -vvvv --gst-plugin-path=/initrd/mnt/dev_save/packages/gst-plugins-bad-1.18.1/tools videotestsrc is-live=true ! myelement ! fakesink
+le format negocié entre videotestsrc et mon element: videotestsrc0.GstPad:src: caps = video/x-raw, format=(string)RGBA, width=(int)320, height=(int)240, framerate=(fraction)30/1, multiview-mode=(string)mono, pixel-aspect-ratio=(fraction)1/1, interlace-mode=(string)progressive
 
+j'essaie d'insérer un capsfilter:
 
+juste pour avoir la syntaxe:
+video/x-raw,format=RGBA,width=320,height=200
+gst-launch-1.0 -vvvv --gst-plugin-path=/initrd/mnt/dev_save/packages/gst-plugins-bad-1.18.1/tools videotestsrc is-live=true ! video/x-raw,format=RGBA,width=320,height=200 ! myelement ! fakesink
+
+essai format I420
+gst-launch-1.0 -vvvv --gst-plugin-path=/initrd/mnt/dev_save/packages/gst-plugins-bad-1.18.1/tools videotestsrc is-live=true ! video/x-raw,format=I420,width=320,height=200 ! myelement ! fakesink
+--> OK (et l'output verbose -vvvv montre bien le format demandé=I420)
+
+-Maintenant que j'ai un format qui, selon gst-inspect-1.0 vaapih264enc, devrait être compatible en entrée vaapih264enc, est ce que le link devient possible?
+Déjà je vérifie que le capsfilter entre videotestsrc et vaapih264enc fonctionne
+
+gst-launch-1.0 -vvvv videotestsrc is-live=true ! video/x-raw,format=I420,width=320,height=200 ! vaapih264enc ! fakesink
+--> streaming stopped, reason not-negotiated (-4)
+
+avec YV12 idem
+
+gst-launch-1.0 -vvvv videotestsrc is-live=true ! video/x-raw,format=NV12,width=320,height=200 ! vaapih264enc ! fakesink
+--> OK
+
+Donc contrairement à ce que dit gst-inspect-1.0 vaapih264enc, le seul format que vaapih264enc accepte en entrée est NV12???
+
+Si c'est bien le cas, normalement une conversion avant devrait marcher?
+
+videoconvert ! video/x-raw,format=NV12
+
+gst-launch-1.0 -vvvv --gst-plugin-path=/initrd/mnt/dev_save/packages/gst-plugins-bad-1.18.1/tools videotestsrc is-live=true ! myelement ! videoconvert ! video/x-raw,format=NV12 ! vaapih264enc ! fakesink
+
+--> OUI MARCHE
+
+--> Donc la trouvaille ici c'est basé sur 2 notions "Mantras":
+	1-Un element perso fraichement créé à partir du template videofilter ne peut pas convertir d'un format à un autre (l'inverse aurait été étonnant, mais il m'a fallu du running espiguette pour le trouver...)
+	2-vaapih264enc, contrairement à ce qu'il advertise avec gst-inspect, ne prend que NV12 en entrée
+	
+--> Maintenant il faut essayer de construire la pipeline avec décodage et encodage
 
 
 
