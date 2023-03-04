@@ -147,17 +147,71 @@ gst-launch-1.0 -vvvv videotestsrc is-live=true ! myelement ! videoconvert ! vide
 
 ## J'essaie de comprendre ce qui sort de mon element
 
-#Si j'essaie avec videotestsrc j'ai des choses bizarres, écran vert, mais ce que je veux c'est partir d'un decode
+#Si j'essaie avec videotestsrc j'ai des choses bizarres, écran vert, mais ce que je veux c'est partir d'un decode donc:
 
+#decode ! myelement ! vaapisink 
 gst-launch-1.0 -vvvv filesrc location=in.mp4 ! qtdemux ! h264parse ! vaapih264dec ! myelement ! vaapisink
 --> je vois la mire
 --> le format négocié à partir de la sortie du décodeur = I420
 
-
+#decode ! myelement ! convertir en NV12 ! filesink
 gst-launch-1.0 -vvvv filesrc location=in.mp4 ! qtdemux ! h264parse ! vaapih264dec ! myelement ! videoconvert ! video/x-raw,format=NV12 ! vaapih264enc ! filesink location=out.mp4
 --> ne plante pas
 --> out.mp4 pèse 2.5K (in.mp4 pèse 361.2K)
 --> lecture gst-play: vert
+vaapidecode_h264-0.GstPad:src: caps = video/x-raw, format=(string)I420,
+
+myelement0.GstPad:sink: caps = video/x-raw, format=(string)I420,
+myelement0.GstPad:src: caps = video/x-raw, format=(string)I420
+
+videoconvert0.GstPad:sink: caps = video/x-raw, format=(string)I420, 
+--> videoconvert.src le format est à la fin
+videoconvert0.GstPad:src: caps = video/x-raw, width=(int)320, height=(int)240, interlace-mode=(string)progressive, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, pixel-aspect-ratio=(fraction)1/1, framerate=(fraction)30/1, format=(string)NV12
+
+#Ce qui sort de myelement est affichable en vaapisink, mais si à la place de vaapisink je fais de la conversion et de l'encode j'ai du vert à la sortie de l'encodage
+
+#Si derrière le decode ! myelement je sors du raw, est ce que je peux le lire?
+
+gst-launch-1.0 -vvvv filesrc location=in.mp4 ! qtdemux ! h264parse ! vaapih264dec ! myelement ! filesink location=out.raw
+
+out.raw --> 11 Mo
+l'output donne:
+video/x-raw, format=(string)I420, width=(int)320, height=(int)240
+
+gst-launch-1.0 -vvvv filesrc location=out.raw ! rawvideoparse use-sink-caps=false width=320 height=240 format=i420 ! vaapisink
+ou
+gst-launch-1.0 -vvvv filesrc location=out.raw ! queue ! "video/x-raw, width=320, height=240, format=I420, framerate=30/1" ! rawvideoparse use-sink-caps=true ! vaapisink
+--> vert
+
+si j'essaie de forcer le plus possible le format à la création du raw?
+gst-launch-1.0 -vvvv filesrc location=in.mp4 ! qtdemux ! h264parse ! vaapih264dec ! video/x-raw,format=I420 ! myelement ! video/x-raw,format=I420 ! filesink location=out.raw
+--> vert à la lecture
+
+Piste des caps autres que format width height: le -vvvv à la lecture en vaapisink montre d'autres propriétés 
+interlace-mode=(string)progressive, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, pixel-aspect-ratio=(fraction)1/1, chroma-site=(string)jpeg, colorimetry=(string)bt601, framerate=(fraction)30/1
+
+Quand je crée le .raw j'ai:
+caps = video/x-raw, format=(string)I420, width=(int)320, height=(int)240, interlace-mode=(string)progressive, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, pixel-aspect-ratio=(fraction)1/1, chroma-site=(string)jpeg, colorimetry=(string)bt601, framerate=(fraction)30/1
+
+Quand j'essaie de le lire je vois:
+src: caps = video/x-raw, format=(string)I420, width=(int)320, height=(int)240, interlace-mode=(string)progressive, pixel-aspect-ratio=(fraction)1/1, chroma-site=(string)jpeg, colorimetry=(string)bt601, framerate=(fraction)0/1
+
+Donc déjà il faut le bon framerate
+
+gst-launch-1.0 -vvvv filesrc location=out.raw ! queue ! "video/x-raw, width=320, height=240, format=I420, framerate=30/1" ! rawvideoparse use-sink-caps=true ! vaapisink
+
+j'essaie un autre format: pareil
+
+
+
+
+
+
+
+
+
+
+
 
 
 
