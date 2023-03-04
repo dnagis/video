@@ -1,0 +1,31 @@
+### Objectif: utiliser le seek pour ne garder qu'une portion d'une video en input
+
+
+## Création d'une video avec timeoverlay
+
+gst-launch-1.0 videotestsrc num-buffers=100 ! timeoverlay ! vaapih264enc ! h264parse ! mp4mux ! filesink location=in.mp4
+
+
+## Appli qui lit le fichier, décode, encode et filesink un fichier
+
+Une pipeline qui fasse le même job:
+gst-launch-1.0 filesrc location=in.mp4 ! qtdemux ! h264parse ! vaapih264dec ! vaapih264enc ! h264parse ! mp4mux ! filesink location=out.mp4
+
+# Création de la pipeline à partir d'une string type gst-launch (gst_parse_launch) basé sur hello_world
+seek.c
+gcc seek.c -o seek `pkg-config --cflags --libs gstreamer-1.0`
+debug: GST_DEBUG=*:WARN ./seek
+
+# Seeking
+
+https://gstreamer.freedesktop.org/documentation/additional/design/seeking.html?gi-language=c
+
+il faudrait envoyer gst_event_new_seek() à une bin, donc ma pipeline?
+https://github.com/GStreamer/gst-docs/blob/master/examples/tutorials/basic-tutorial-13.c#L30
+
+si je gst_element_send_event() avant set_state() il ne se passe rien, si je le mets après au runtime plante
+
+--> Il me faut la doc de reférence de gst_event_new_seek()
+
+
+
