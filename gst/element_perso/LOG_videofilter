@@ -147,18 +147,26 @@ gst-launch-1.0 -vvvv videotestsrc is-live=true ! myelement ! videoconvert ! vide
 
 ## J'essaie de comprendre ce qui sort de mon element
 
-# si vide, un fichier out.raw doit être quasi vide?
-gst-launch-1.0  videotestsrc is-live=true ! videorate ! filesink location=out.raw
-je laisse 3s: 60 Mo
+#Si j'essaie avec videotestsrc j'ai des choses bizarres, écran vert, mais ce que je veux c'est partir d'un decode
 
-gst-launch-1.0 --gst-plugin-path=/initrd/mnt/dev_save/packages/gst-plugins-bad-1.18.1/tools videotestsrc is-live=true ! myelement ! filesink location=out.raw
-je laisse 3s: 28Mo, donc n'est pas vide
+gst-launch-1.0 -vvvv filesrc location=in.mp4 ! qtdemux ! h264parse ! vaapih264dec ! myelement ! vaapisink
+--> je vois la mire
+--> le format négocié à partir de la sortie du décodeur = I420
 
-#A ranger
 
+gst-launch-1.0 -vvvv filesrc location=in.mp4 ! qtdemux ! h264parse ! vaapih264dec ! myelement ! videoconvert ! video/x-raw,format=NV12 ! vaapih264enc ! filesink location=out.mp4
+--> ne plante pas
+--> out.mp4 pèse 2.5K (in.mp4 pèse 361.2K)
+--> lecture gst-play: vert
+
+
+
+
+
+#Essais initiaux avec videotestsrc et pas filesrc, à ranger ou jeter???
 
 gst-launch-1.0 videotestsrc is-live=true ! myelement ! fakesink
---> OK
+--> OK (tourne)
 gst-launch-1.0 videotestsrc is-live=true ! myelement ! vaapisink
 apparait ***vert*** je ne vois pas la mire: mauvais format? ou vide???
 
@@ -170,12 +178,23 @@ gst-launch-1.0  videotestsrc is-live=true ! videoconvert ! vaapisink ou ximagesi
 
 si je remplace video[rate,convert] par mon element:
 
-gst-launch-1.0 -vvvv --gst-plugin-path=/initrd/mnt/dev_save/packages/gst-plugins-bad-1.18.1/tools videotestsrc is-live=true ! myelement ! vaapisink
+gst-launch-1.0 -vvvv videotestsrc is-live=true ! myelement ! vaapisink
 
 -->apparait vert... mais avec la bonne taille, -vvvv me montre que le format négocié est:
 -->video/x-raw, format=(string)I420, width=(int)320, height=(int)240, framerate=(fraction)30/1
 
 
 (par contre avec ximagesink --> reason not-negotiated (-4))
+
+
+-si vide, un fichier out.raw doit être quasi vide?
+gst-launch-1.0  videotestsrc is-live=true ! videorate ! filesink location=out.raw
+je laisse 3s: 60 Mo
+
+gst-launch-1.0  videotestsrc is-live=true ! myelement ! filesink location=out.raw
+je laisse 3s: 28Mo, donc n'est pas vide
+
+
+
 
 
