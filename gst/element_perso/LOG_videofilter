@@ -17,7 +17,8 @@
 --> sed de chez GNU cf LOG_element_perso_main
 --> gst-plugins-bad/tools --> ./gst-element-maker my_element videofilter
 --> le voir fonctionner:
-gst-launch-1.0 --gst-plugin-path=/initrd/mnt/dev_save/packages/gst-plugins-bad-1.18.1/tools videotestsrc is-live=true ! myelement ! fakesink
+export GST_PLUGIN_PATH=/initrd/mnt/dev_save/packages/gst-plugins-bad-1.18.1/tools
+gst-launch-1.0 videotestsrc is-live=true ! myelement ! fakesink
 
 ## Le faire fonctionner entre un décodeur et un encodeur pour qu'il traite les raw frames une par une
 
@@ -28,7 +29,8 @@ gst-launch-1.0 videotestsrc num-buffers=100 ! vaapih264enc ! h264parse ! mp4mux 
 gst-launch-1.0 filesrc location=in.mp4 ! qtdemux ! h264parse ! vaapih264dec ! vaapih264enc ! h264parse ! mp4mux ! filesink location=out.mp4
 
 -La même pipeline avec mon element au milieu
-gst-launch-1.0 --gst-plugin-path=/initrd/mnt/dev_save/packages/gst-plugins-bad-1.18.1/tools filesrc location=in.mp4 ! qtdemux ! h264parse ! vaapih264dec ! myelement ! vaapih264enc ! h264parse ! mp4mux ! filesink location=out.mp4
+export GST_PLUGIN_PATH=/initrd/mnt/dev_save/packages/gst-plugins-bad-1.18.1/tools
+gst-launch-1.0 filesrc location=in.mp4 ! qtdemux ! h264parse ! vaapih264dec ! myelement ! vaapih264enc ! h264parse ! mp4mux ! filesink location=out.mp4
 
 --> not linked
 --> j'essaie d'ajouter les elements un par un
@@ -37,23 +39,28 @@ bloque à partir de: vaapih264enc derrière myelement
 j'essaie d'ajouter queue : entre myelement et encodeur: non
 
 --> est ce que videorate à la place de mon element fonctionne?
-gst-launch-1.0 --gst-plugin-path=/initrd/mnt/dev_save/packages/gst-plugins-bad-1.18.1/tools filesrc location=in.mp4 ! qtdemux ! h264parse ! vaapih264dec ! videorate ! vaapih264enc ! h264parse ! mp4mux ! filesink location=out.mp4
+gst-launch-1.0 filesrc location=in.mp4 ! qtdemux ! h264parse ! vaapih264dec ! videorate ! vaapih264enc ! h264parse ! mp4mux ! filesink location=out.mp4
 oui
 
---> j'essaie -vvvv
-gst-launch-1.0 -vvvv --gst-plugin-path=/initrd/mnt/dev_save/packages/gst-plugins-bad-1.18.1/tools filesrc location=in.mp4 ! qtdemux ! h264parse ! vaapih264dec ! myelement ! vaapih264enc ! h264parse ! mp4mux ! filesink location=out.mp4
---> ne donne rien
+-->  -vvvv n'est pas informatif, je n'ai pas not negotiated
 
 --> est ce que le format qui sort de mon element convient à vaapih264enc?
---> je n'ai pas not negotiated
-
-
-
-
 
 --> j'essaie fakesrc ! myelement ! vaapih264enc ! fakesink
-gst-launch-1.0 -vvvv --gst-plugin-path=/initrd/mnt/dev_save/packages/gst-plugins-bad-1.18.1/tools fakesrc ! myelement ! vaapih264enc ! fakesink
+
+gst-launch-1.0 -vvvv fakesrc ! myelement ! vaapih264enc ! fakesink
+
 streaming stopped, reason not-negotiated (-4), et -vvvv ne montre rien
+
+
+
+gst-launch-1.0 videotestsrc is-live=true ! vaapih264enc ! fakesink
+--> OK
+
+gst-launch-1.0 fakesrc ! vaapih264enc ! fakesink
+--> streaming stopped, reason not-negotiated (-4)
+
+--> donc il ne semble ***pas utile d'essayer de mettre fakesrc en amont de vaapih264enc ça ne marchera pas***
 
 
 
@@ -65,47 +72,14 @@ mais visiblement c'est l'erreur "streaming stopped, reason not-linked (-1)" de l
 
 
 
-gst-launch-1.0 videotestsrc is-live=true ! vaapih264enc ! fakesink
---> OK
 
 
-gst-launch-1.0 fakesrc ! vaapih264enc ! fakesink
---> streaming stopped, reason not-negotiated (-4)
---> donc il ne semble ***pas utile d'essayer de mettre fakesrc en amont de vaapih264enc ça ne marchera pas***
+#Si j'essaie d'analyser une situation où le link avec qq chose qui linke en amont vaapih264enc fonctionne
 
-
-
-
-gst-launch-1.0 --gst-plugin-path=/initrd/mnt/dev_save/packages/gst-plugins-bad-1.18.1/tools videotestsrc is-live=true ! myelement ! fakesink
---> OK
-gst-launch-1.0 --gst-plugin-path=/initrd/mnt/dev_save/packages/gst-plugins-bad-1.18.1/tools videotestsrc is-live=true ! myelement ! vaapisink
-apparait ***vert*** je ne vois pas la mire: mauvais format? ou vide???
-
-
-
-
-gst-launch-1.0  videotestsrc is-live=true ! videorate ! vaapisink ou ximagesink
-	ou
-gst-launch-1.0  videotestsrc is-live=true ! videoconvert ! vaapisink ou ximagesink
-	je vois la mire
-
-si je remplace video[rate,convert] par mon element:
-
-gst-launch-1.0 -vvvv --gst-plugin-path=/initrd/mnt/dev_save/packages/gst-plugins-bad-1.18.1/tools videotestsrc is-live=true ! myelement ! vaapisink
-
--->apparait vert... mais avec la bonne taille, -vvvv me montre que le format négocié est:
--->video/x-raw, format=(string)I420, width=(int)320, height=(int)240, framerate=(fraction)30/1
-
-
-(par contre avec ximagesink --> reason not-negotiated (-4))
-
-
--Si j'essaie d'analyser une situation où le link avec qq chose qui linke en amont vaapih264enc fonctionne
-
-gst-launch-1.0 -vvvv --gst-plugin-path=/initrd/mnt/dev_save/packages/gst-plugins-bad-1.18.1/tools videotestsrc is-live=true ! myelement ! vaapih264enc ! fakesink
+gst-launch-1.0 -vvvv videotestsrc is-live=true ! myelement ! vaapih264enc ! fakesink
 --> Fail
 
-Si je mets un element qui marche à la place de mon élément:
+Si je mets un element qui marche à la place de mon élément, et que je cherche quel format négocié (avec -vvvv)
 
 gst-launch-1.0 -vvvv videotestsrc is-live=true ! videorate ! vaapih264enc ! fakesink
 
@@ -128,17 +102,17 @@ pas à vaapih264enc.
 
 -J'essaie de forcer un format avec un capsfilter entre videotestsrc et mon element
 
-gst-launch-1.0 -vvvv --gst-plugin-path=/initrd/mnt/dev_save/packages/gst-plugins-bad-1.18.1/tools videotestsrc is-live=true ! myelement ! fakesink
+gst-launch-1.0 -vvvv videotestsrc is-live=true ! myelement ! fakesink
 le format negocié entre videotestsrc et mon element: videotestsrc0.GstPad:src: caps = video/x-raw, format=(string)RGBA, width=(int)320, height=(int)240, framerate=(fraction)30/1, multiview-mode=(string)mono, pixel-aspect-ratio=(fraction)1/1, interlace-mode=(string)progressive
 
 j'essaie d'insérer un capsfilter:
 
 juste pour avoir la syntaxe:
 video/x-raw,format=RGBA,width=320,height=200
-gst-launch-1.0 -vvvv --gst-plugin-path=/initrd/mnt/dev_save/packages/gst-plugins-bad-1.18.1/tools videotestsrc is-live=true ! video/x-raw,format=RGBA,width=320,height=200 ! myelement ! fakesink
+gst-launch-1.0 -vvvv videotestsrc is-live=true ! video/x-raw,format=RGBA,width=320,height=200 ! myelement ! fakesink
 
 essai format I420
-gst-launch-1.0 -vvvv --gst-plugin-path=/initrd/mnt/dev_save/packages/gst-plugins-bad-1.18.1/tools videotestsrc is-live=true ! video/x-raw,format=I420,width=320,height=200 ! myelement ! fakesink
+gst-launch-1.0 -vvvv videotestsrc is-live=true ! video/x-raw,format=I420,width=320,height=200 ! myelement ! fakesink
 --> OK (et l'output verbose -vvvv montre bien le format demandé=I420)
 
 -Maintenant que j'ai un format qui, selon gst-inspect-1.0 vaapih264enc, devrait être compatible en entrée vaapih264enc, est ce que le link devient possible?
@@ -158,11 +132,11 @@ Si c'est bien le cas, normalement une conversion avant devrait marcher?
 
 videoconvert ! video/x-raw,format=NV12
 
-gst-launch-1.0 -vvvv --gst-plugin-path=/initrd/mnt/dev_save/packages/gst-plugins-bad-1.18.1/tools videotestsrc is-live=true ! myelement ! videoconvert ! video/x-raw,format=NV12 ! vaapih264enc ! fakesink
+gst-launch-1.0 -vvvv videotestsrc is-live=true ! myelement ! videoconvert ! video/x-raw,format=NV12 ! vaapih264enc ! fakesink
 
 --> OUI MARCHE
 
---> Donc la trouvaille ici c'est basé sur 2 notions "Mantras":
+--> Donc la trouvaille ici c'est basé sur 2 notions importantes ("Mantras"):
 	1-Un element perso fraichement créé à partir du template videofilter ne peut pas convertir d'un format à un autre (l'inverse aurait été étonnant, mais il m'a fallu du running espiguette pour le trouver...)
 	2-vaapih264enc, contrairement à ce qu'il advertise avec gst-inspect, ne prend que NV12 en entrée
 	
@@ -171,13 +145,37 @@ gst-launch-1.0 -vvvv --gst-plugin-path=/initrd/mnt/dev_save/packages/gst-plugins
 
 
 
-## J'essaie de comprendre ce qui sort de mon element: si vide, un fichier out.raw doit être quasi vide?
+## J'essaie de comprendre ce qui sort de mon element
+
+# si vide, un fichier out.raw doit être quasi vide?
 gst-launch-1.0  videotestsrc is-live=true ! videorate ! filesink location=out.raw
 je laisse 3s: 60 Mo
 
 gst-launch-1.0 --gst-plugin-path=/initrd/mnt/dev_save/packages/gst-plugins-bad-1.18.1/tools videotestsrc is-live=true ! myelement ! filesink location=out.raw
 je laisse 3s: 28Mo, donc n'est pas vide
 
+#A ranger
 
+
+gst-launch-1.0 videotestsrc is-live=true ! myelement ! fakesink
+--> OK
+gst-launch-1.0 videotestsrc is-live=true ! myelement ! vaapisink
+apparait ***vert*** je ne vois pas la mire: mauvais format? ou vide???
+
+
+gst-launch-1.0  videotestsrc is-live=true ! videorate ! vaapisink ou ximagesink
+	ou
+gst-launch-1.0  videotestsrc is-live=true ! videoconvert ! vaapisink ou ximagesink
+	je vois la mire
+
+si je remplace video[rate,convert] par mon element:
+
+gst-launch-1.0 -vvvv --gst-plugin-path=/initrd/mnt/dev_save/packages/gst-plugins-bad-1.18.1/tools videotestsrc is-live=true ! myelement ! vaapisink
+
+-->apparait vert... mais avec la bonne taille, -vvvv me montre que le format négocié est:
+-->video/x-raw, format=(string)I420, width=(int)320, height=(int)240, framerate=(fraction)30/1
+
+
+(par contre avec ximagesink --> reason not-negotiated (-4))
 
 

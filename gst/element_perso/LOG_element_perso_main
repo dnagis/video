@@ -24,7 +24,9 @@ gst-inspect-1.0 ./gstmyelement.so
 
 ##Tester l'élément sans avoir à copier le .so ailleurs:
 gst-launch-1.0 --gst-plugin-path=/initrd/mnt/dev_save/packages/gst-plugins-bad-1.18.1/tools videotestsrc is-live=true ! myelement ! fakesink
-
+ou
+export GST_PLUGIN_PATH=/initrd/mnt/dev_save/packages/gst-plugins-bad-1.18.1/tools
+gst-launch-1.0 videotestsrc is-live=true ! myelement ! fakesink
 
 
 ##Rebuilder le .so après modification du .c
