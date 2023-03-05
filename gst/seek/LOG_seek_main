@@ -20,12 +20,19 @@ debug: GST_DEBUG=*:WARN ./seek
 
 https://gstreamer.freedesktop.org/documentation/additional/design/seeking.html?gi-language=c
 
+reference de la fonction gst_event_new_seek():
+https://gstreamer.freedesktop.org/documentation/gstreamer/gstevent.html?gi-language=c#gst_event_new_seek
+
 il faudrait envoyer gst_event_new_seek() à une bin, donc ma pipeline?
 https://github.com/GStreamer/gst-docs/blob/master/examples/tutorials/basic-tutorial-13.c#L30
 
 si je gst_element_send_event() avant set_state() il ne se passe rien, si je le mets après au runtime plante
 
---> Il me faut la doc de reférence de gst_event_new_seek()
+Le format serait en nanosecondes?
+https://gstreamer.freedesktop.org/documentation/gstreamer/gstformat.html?gi-language=c#GstFormat
+
+Peut être partir de cet example:
+https://gstreamer.freedesktop.org/documentation/tutorials/basic/time-management.html?gi-language=c
 
 
 

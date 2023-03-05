@@ -22,29 +22,29 @@ main (int argc, char *argv[])
   gst_init (&argc, &argv);
 
   /* Build the pipeline */
-  pipeline =
-      gst_parse_launch
-      ("filesrc location=in.mp4 ! qtdemux ! h264parse ! vaapih264dec ! vaapih264enc ! h264parse ! mp4mux ! filesink location=out.mp4",
-      NULL);
+  //pipeline = gst_parse_launch("filesrc location=in.mp4 ! qtdemux ! h264parse ! vaapih264dec ! vaapih264enc ! h264parse ! mp4mux ! filesink location=out.mp4", NULL);
+  pipeline = gst_parse_launch("filesrc location=in.mp4 ! qtdemux ! h264parse ! vaapih264dec ! vaapisink", NULL);
 
   seek_event =
         gst_event_new_seek (1.0, GST_FORMAT_TIME, 
         GST_SEEK_FLAG_FLUSH | GST_SEEK_FLAG_ACCURATE, GST_SEEK_TYPE_SET,
-        1, GST_SEEK_TYPE_END, 0);
+        1 * GST_SECOND , GST_SEEK_TYPE_SET, 2 * GST_SECOND);
         
-  
+
         
   /* Start playing */
   gst_element_set_state (pipeline, GST_STATE_PLAYING);
   
+  //gst_element_send_event (pipeline, seek_event);  
   
-  gst_element_send_event (pipeline, seek_event);
+  gst_element_seek_simple (pipeline, GST_FORMAT_TIME, GST_SEEK_FLAG_FLUSH | GST_SEEK_FLAG_KEY_UNIT, 2 * GST_SECOND);
+
 
   /* Wait until error or EOS */
   bus = gst_element_get_bus (pipeline);
-  msg =
-      gst_bus_timed_pop_filtered (bus, GST_CLOCK_TIME_NONE,
-      GST_MESSAGE_ERROR | GST_MESSAGE_EOS);
+  msg = gst_bus_timed_pop_filtered (bus, GST_CLOCK_TIME_NONE, GST_MESSAGE_ERROR | GST_MESSAGE_EOS);
+  
+   
 
   /* See next tutorial for proper error message handling/parsing */
   if (GST_MESSAGE_TYPE (msg) == GST_MESSAGE_ERROR) {
