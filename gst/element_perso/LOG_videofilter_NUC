@@ -218,10 +218,10 @@ Si je fais la même chose avec du format NV12: le fichier n'est pas lisible (enf
 
 #Décodage -> .raw avec mon élément au milieu
 export GST_PLUGIN_PATH=/initrd/mnt/dev_save/packages/gst-plugins-bad-1.18.1/tools
-gst-launch-1.0 -vvvv filesrc location=in.mp4 ! qtdemux ! h264parse ! vaapih264dec ! "video/x-raw, width=320, height=240, format=I420, framerate=30/1" ! myelement ! filesink location=out.raw
+gst-launch-1.0 -vvvv filesrc location=in.mp4 ! qtdemux ! h264parse ! vaapih264dec ! video/x-raw, width=320, height=240, format=I420, framerate=30/1 ! myelement ! filesink location=out.raw
 
 #Lecture
-gst-launch-1.0 -vvvv filesrc location=out.raw ! queue ! "video/x-raw, width=320, height=240, format=I420, framerate=30/1" ! rawvideoparse use-sink-caps=true ! vaapisink
+gst-launch-1.0 -vvvv filesrc location=out.raw ! queue ! video/x-raw, width=320, height=240, format=I420, framerate=30/1 ! rawvideoparse use-sink-caps=true ! vaapisink
 
 --> Fait bien 3s, mais vert garbled
 
@@ -236,22 +236,48 @@ il faut arriver à faire passer les frames dans l'espace mémoire auquel je peux
 vaapi: quel élément pourrait transformer les frames en quelque chose d'utilisable?
 vaapipostproc?
 
-vaapipostproc ! "video/x-raw, width=320, height=240, format=I420" 
+vaapipostproc ! video/x-raw, width=320, height=240, format=I420
 
 #Création du .raw avec vaapipostproc en sortie de décodeur
-gst-launch-1.0 -vvvv filesrc location=in.mp4 ! qtdemux ! h264parse ! vaapih264dec ! vaapipostproc ! "video/x-raw, width=320, height=240, format=I420" ! filesink location=out.raw
+gst-launch-1.0 -vvvv filesrc location=in.mp4 ! qtdemux ! h264parse ! vaapih264dec ! vaapipostproc ! video/x-raw, width=320, height=240, format=I420 ! filesink location=out.raw
 
 #Lecture
-gst-launch-1.0 -vvvv filesrc location=out.raw ! queue ! "video/x-raw, width=320, height=240, format=I420, framerate=30/1" ! rawvideoparse use-sink-caps=true ! vaapisink
+gst-launch-1.0 -vvvv filesrc location=out.raw ! queue ! video/x-raw, width=320, height=240, format=I420, framerate=30/1 ! rawvideoparse use-sink-caps=true ! vaapisink
 
-OK
+--> OK
 
 #Ajout de mon élément
-gst-launch-1.0 -vvvv filesrc location=in.mp4 ! qtdemux ! h264parse ! vaapih264dec ! vaapipostproc ! "video/x-raw, width=320, height=240, format=I420" ! myelement ! filesink location=out.raw
+gst-launch-1.0 -vvvv filesrc location=in.mp4 ! qtdemux ! h264parse ! vaapih264dec ! vaapipostproc ! video/x-raw, width=320, height=240, format=I420 ! myelement ! filesink location=out.raw
 
 #Lecture
-gst-launch-1.0 -vvvv filesrc location=out.raw ! queue ! "video/x-raw, width=320, height=240, format=I420, framerate=30/1" ! rawvideoparse use-sink-caps=true ! vaapisink
+gst-launch-1.0 -vvvv filesrc location=out.raw ! queue ! video/x-raw, width=320, height=240, format=I420, framerate=30/1 ! rawvideoparse use-sink-caps=true ! vaapisink
+
 --> vert (complètement, pas garbled)
+
+# Si je remplace myelement par videorate?
+gst-launch-1.0 -vvvv filesrc location=in.mp4 ! qtdemux ! h264parse ! vaapih264dec ! video/x-raw, width=320, height=240, format=I420 ! videorate ! filesink location=out.raw
+
+gst-launch-1.0 -vvvv filesrc location=out.raw ! queue ! video/x-raw, width=320, height=240, format=I420, framerate=30/1 ! rawvideoparse use-sink-caps=true ! vaapisink
+
+--> lecture mire visible
+
+
+
+Donc: 
+videorate fait qq chose que mon élément ne fait pas, et ce quelque chose n'est pas nécessaire entre vaapih264dec et vaapisink
+Ce quelque chose pourrait être de faire passer un pointeur d'une VA Surface vers un espace mémoire
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
