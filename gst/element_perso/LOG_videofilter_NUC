@@ -10,6 +10,13 @@
 
 
 
+##Sticky pour ergonomie quotidienne
+export GST_PLUGIN_PATH=/initrd/mnt/dev_save/packages/gst-plugins-bad-1.18.1/tools
+
+GST_DEBUG=myelement:7 gst-launch-1.0 videotestsrc is-live=true ! myelement ! fakesink
+
+gcc -Wall -Werror -fPIC $(pkg-config --cflags gstreamer-1.0 gstreamer-video-1.0) -c -o gstmyelement.o gstmyelement.c
+gcc -shared -o gstmyelement.so gstmyelement.o $(pkg-config --libs gstreamer-1.0 gstreamer-video-1.0)
 
 
 ##LOG
@@ -232,10 +239,9 @@ gst-launch-1.0 -vvvv filesrc location=in.mp4 ! qtdemux ! h264parse ! vaapih264de
 --> Hypothèse:
 https://gstreamer.freedesktop.org/documentation/vaapi/vaapih264dec.html?gi-language=c#vaapih264dec-page
 les éléments vaapi intel travaillent avec un espace mémoire VASurface et pas des frames gstreamer "classiques"
-il faut arriver à faire passer les frames dans l'espace mémoire auquel je peux accéder.
+il faut arriver à faire passer les frames dans l'espace mémoire auquel je peux accéder via le code
 vaapi: quel élément pourrait transformer les frames en quelque chose d'utilisable?
 vaapipostproc?
-
 vaapipostproc ! video/x-raw, width=320, height=240, format=I420
 
 #Création du .raw avec vaapipostproc en sortie de décodeur
@@ -284,36 +290,7 @@ Ce quelque chose pourrait être de faire passer un pointeur d'une VA Surface ver
 
 
 
-#Essais initiaux avec videotestsrc et pas filesrc, à ranger ou jeter???
 
-gst-launch-1.0 videotestsrc is-live=true ! myelement ! fakesink
---> OK (tourne)
-gst-launch-1.0 videotestsrc is-live=true ! myelement ! vaapisink
-apparait ***vert*** je ne vois pas la mire: mauvais format? ou vide???
-
-
-gst-launch-1.0  videotestsrc is-live=true ! videorate ! vaapisink ou ximagesink
-	ou
-gst-launch-1.0  videotestsrc is-live=true ! videoconvert ! vaapisink ou ximagesink
-	je vois la mire
-
-si je remplace video[rate,convert] par mon element:
-
-gst-launch-1.0 -vvvv videotestsrc is-live=true ! myelement ! vaapisink
-
--->apparait vert... mais avec la bonne taille, -vvvv me montre que le format négocié est:
--->video/x-raw, format=(string)I420, width=(int)320, height=(int)240, framerate=(fraction)30/1
-
-
-(par contre avec ximagesink --> reason not-negotiated (-4))
-
-
--si vide, un fichier out.raw doit être quasi vide?
-gst-launch-1.0  videotestsrc is-live=true ! videorate ! filesink location=out.raw
-je laisse 3s: 60 Mo
-
-gst-launch-1.0  videotestsrc is-live=true ! myelement ! filesink location=out.raw
-je laisse 3s: 28Mo, donc n'est pas vide
 
 
 
