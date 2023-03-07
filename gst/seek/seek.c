@@ -17,17 +17,19 @@ main (int argc, char *argv[])
   GstBus *bus;
   GstMessage *msg;
   GstEvent *seek_event;
-  gboolean terminated;
+  gboolean terminate;
+  gboolean seek_done;
   
-  terminated=FALSE;
+  terminate=FALSE;
+  seek_done=FALSE;
 
   /* Initialize GStreamer */
   gst_init (&argc, &argv);
 
   /* Build the pipeline */
-  //pipeline = gst_parse_launch("filesrc location=in.mp4 ! qtdemux ! h264parse ! vaapih264dec ! vaapih264enc ! h264parse ! mp4mux ! filesink location=out.mp4", NULL);
+  pipeline = gst_parse_launch("filesrc location=in.mp4 ! qtdemux ! h264parse ! vaapih264dec ! vaapih264enc ! h264parse ! mp4mux ! filesink location=out.mp4", NULL);
   //pipeline = gst_parse_launch("filesrc location=in.mp4 ! qtdemux ! h264parse ! vaapih264dec ! vaapisink", NULL);
-  pipeline = gst_parse_launch("playbin uri=file:///root/in.mp4", NULL);
+  //pipeline = gst_parse_launch("playbin uri=file:///root/in.mp4", NULL);
 
   seek_event =
         gst_event_new_seek (1.0, GST_FORMAT_TIME, 
@@ -64,11 +66,43 @@ main (int argc, char *argv[])
     if (msg != NULL) {
       
       
-      g_print(gst_message_type_get_name(msg->type));
+      g_print("msg=%s\n",gst_message_type_get_name(msg->type));
+      
+		switch (GST_MESSAGE_TYPE (msg)) {
+        case GST_MESSAGE_EOS:
+          g_print ("End-Of-Stream reached.\n");
+          terminate = TRUE;
+          break;
+        case GST_MESSAGE_STATE_CHANGED:
+			          /* We are only interested in state-changed messages from the pipeline */
+          if (GST_MESSAGE_SRC (msg) == GST_OBJECT (pipeline)) {
+            GstState old_state, new_state, pending_state;
+            gst_message_parse_state_changed (msg, &old_state, &new_state, &pending_state);
+            g_print ("Pipeline state changed from %s to %s:\n",
+                gst_element_state_get_name (old_state), gst_element_state_get_name (new_state));
+                
+           if ( old_state == GST_STATE_PAUSED && new_state == GST_STATE_PLAYING && seek_done == FALSE ) {
+			   g_print ("On a detecte Pipeline state changed from PAUSED to PLAYING on lance un seek\n");
+			   //gst_element_seek_simple (pipeline, GST_FORMAT_TIME, GST_SEEK_FLAG_FLUSH | GST_SEEK_FLAG_KEY_UNIT, 2 * GST_SECOND);
+			   gst_element_send_event (pipeline, seek_event); 
+			   seek_done=TRUE;
+			   }
+          }
+          break;
+        default:
+          /* We should not reach here */
+          g_printerr ("Unexpected message received.\n");
+          break;
+          
+		  
+	  }
+      
+      
       
       
     } 
-  } while (!terminated);
+     
+  } while (!terminate);
   
   
    

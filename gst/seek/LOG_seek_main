@@ -43,6 +43,12 @@ Ref fonctions pour écouter bus
 https://gstreamer.freedesktop.org/documentation/gstreamer/gstbus.html?gi-language=c#gst_bus_pop
 
 
+#Ma0703
+
+J'arrive à déclencher mon premier seek en me placant à la réception d'un msg qui dit que state passé de pause à playing
+Fonctionne en pipeline parse_launch et playbin, par contre fichier n'est pas lisible (fait penser à une capture forced stop)
+Le loop pour écouter le msg bus fait tourner le CPU... 
+
 
 
 
