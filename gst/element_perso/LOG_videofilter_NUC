@@ -274,6 +274,13 @@ videorate fait qq chose que mon élément ne fait pas, et ce quelque chose n'est
 Ce quelque chose pourrait être de faire passer un pointeur d'une VA Surface vers un espace mémoire
 
 
+# Ma0703
+j'essaie dans videofilter dans
+gst_my_element_transform_frame (GstVideoFilter * filter, GstVideoFrame * inframe, GstVideoFrame * outframe)
+
+outframe = inframe;
+
+avec vaapisink xvimagesink, en comparaison de videorate, pas de différence (semble blocage)
 
 
 
