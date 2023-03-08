@@ -5,31 +5,31 @@
 https://gstreamer.freedesktop.org/documentation/plugin-development/basics/index.html?gi-language=c
 
 
-##gst-element-maker
-#Script création stub à partir de templates: 
+##gst-element-maker = script de création stubs à partir de templates
+
 gst-plugins-bad-1.18.1/tools/gst-element-maker
 
-##Prereqs
-il vaut mieux avoir le sed officiel sinon les noms des fichiers sont foireux (le script gst-element-maker utilise sed)
+#Prereqs
+il vaut mieux avoir le sed officiel et pas le busybox sinon les noms des fichiers sont foireux (le script gst-element-maker utilise sed)
 https://ftp.gnu.org/gnu/sed/sed-4.9.tar.xz
 configure classique, le symlink vers busybox est en /bin/sed
 
-##Créer les fichiers sources et un .so (arg2: un des templates du dir element/templates)
+#Créer les fichiers sources et un .so (arg2 = un des templates du dir element/templates)
 ./gst-element-maker my_element videofilter
 
-##gst-inspect peut voir l'élément sur place
+#gst-inspect peut voir l'élément sur place
 gst-inspect-1.0 ./gstmyelement.so
 
-##gst-inspect le trouve si je copie le .so dans /usr/lib64/gstreamer-1.0/
+#gst-inspect le trouve si je copie le .so dans /usr/lib64/gstreamer-1.0/
 
-##Tester l'élément sans avoir à copier le .so ailleurs:
+#Tester l'élément sans avoir à copier le .so ailleurs:
 gst-launch-1.0 --gst-plugin-path=/initrd/mnt/dev_save/packages/gst-plugins-bad-1.18.1/tools videotestsrc is-live=true ! myelement ! fakesink
 ou
 export GST_PLUGIN_PATH=/initrd/mnt/dev_save/packages/gst-plugins-bad-1.18.1/tools
 gst-launch-1.0 videotestsrc is-live=true ! myelement ! fakesink
 
 
-##Rebuilder le .so après modification du .c
+#Rebuilder le .so après modification du .c
 #Pour ça j'utilise les deux lignes gcc ... de la fin du script gst-plugins-bad-1.18.1/tools/gst-element-maker, je regarde quelles sont les variables
 #pour le template videofilter les deux lignes sont:
 
@@ -38,10 +38,10 @@ gcc -shared -o gstmyelement.so gstmyelement.o $(pkg-config --libs gstreamer-1.0 
 
 
 
-##Afficher du debug:
+#Afficher du debug de cet élément:
 comme je vois dans le .c: GST_DEBUG_CATEGORY_INIT (gst_my_element_debug_category, "myelement", 0, "debug category for myelement element"));
 je peux voir du debug avec:
-GST_DEBUG=myelement:7 gst-launch-1.0 --gst-plugin-path=/initrd/mnt/dev_save/packages/gst-plugins-bad-1.18.1/tools videotestsrc is-live=true ! myelement ! fakesink
+GST_DEBUG=myelement:7 gst-launch-1.0 videotestsrc is-live=true ! myelement ! fakesink
 
 si je modifie la string = arg 2 d'un GST_DEBUG_OBJECT (myelement, "transform_frame_ip");
 la compilation est possible, et je vois la modification au runtime
@@ -57,9 +57,10 @@ aarch64-linux-gnu-gcc -shared -o gstmyelement.so gstmyelement.o $(pkg-config --l
 
 gstmyelement.so est bien du ARM aarch64
 
-#Runtime, sur mon OS
+#Runtime, sur mon OS (pas raspiOS)
 GST_DEBUG=myelement:7 gst-launch-1.0 --gst-plugin-path=/root videotestsrc is-live=true ! myelement ! fakesink
---> OK fonctionne
+
+--> fonctionne (ne plante pas), je n'ai pas testé plus loin
 
 
 

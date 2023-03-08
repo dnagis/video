@@ -1,9 +1,10 @@
-###Objectif de départ: un element fait à partir du template videofilter pour aller vers videorate
+###Objectif de départ: un element fait à partir du template videofilter pour aller vers videorate (pour drop frames)
 ##(avec la notion que videofilter et videorate héritent d'une classe basetransform)
 
 
 
 ##Stratégie initiale:
+
 #Créer un element perso à partir du template videofilter
 #Le faire fonctionner entre un décodeur et un encodeur pour qu'il traite les frames en raw une par une
 #Essai Piste: valeur retournée par videorate dans la fonction gst_video_rate_transform_ip() GST_BASE_TRANSFORM_FLOW_DROPPED
@@ -15,8 +16,13 @@ export GST_PLUGIN_PATH=/initrd/mnt/dev_save/packages/gst-plugins-bad-1.18.1/tool
 
 GST_DEBUG=myelement:7 gst-launch-1.0 videotestsrc is-live=true ! myelement ! fakesink
 
-gcc -Wall -Werror -fPIC $(pkg-config --cflags gstreamer-1.0 gstreamer-video-1.0) -c -o gstmyelement.o gstmyelement.c
+gcc -Wall -Werror -fPIC $(pkg-config --cflags gstreamer-1.0 gstreamer-video-1.0) -c -o gstmyelement.o gstmyelement.c && \
 gcc -shared -o gstmyelement.so gstmyelement.o $(pkg-config --libs gstreamer-1.0 gstreamer-video-1.0)
+
+Création fichier video avec 100 buffers
+gst-launch-1.0 videotestsrc num-buffers=100 ! vaapih264enc ! h264parse ! mp4mux ! filesink location=in.mp4
+
+gst-launch-1.0 filesrc location=in.mp4 ! qtdemux ! h264parse ! vaapih264dec ! myelement ! videoconvert ! video/x-raw,format=NV12 ! vaapih264enc ! h264parse ! mp4mux ! filesink location=out.mp4
 
 
 ##LOG
@@ -27,6 +33,7 @@ gcc -shared -o gstmyelement.so gstmyelement.o $(pkg-config --libs gstreamer-1.0 
 export GST_PLUGIN_PATH=/initrd/mnt/dev_save/packages/gst-plugins-bad-1.18.1/tools
 gst-launch-1.0 videotestsrc is-live=true ! myelement ! fakesink
 
+
 ## Le faire fonctionner entre un décodeur et un encodeur pour qu'il traite les raw frames une par une
 
 -Créer un fichier video avec 300 buffers
@@ -36,24 +43,22 @@ gst-launch-1.0 videotestsrc num-buffers=100 ! vaapih264enc ! h264parse ! mp4mux 
 gst-launch-1.0 filesrc location=in.mp4 ! qtdemux ! h264parse ! vaapih264dec ! vaapih264enc ! h264parse ! mp4mux ! filesink location=out.mp4
 
 -La même pipeline avec mon element au milieu
-export GST_PLUGIN_PATH=/initrd/mnt/dev_save/packages/gst-plugins-bad-1.18.1/tools
 gst-launch-1.0 filesrc location=in.mp4 ! qtdemux ! h264parse ! vaapih264dec ! myelement ! vaapih264enc ! h264parse ! mp4mux ! filesink location=out.mp4
 
 --> not linked
 --> j'essaie d'ajouter les elements un par un
 bloque à partir de: vaapih264enc derrière myelement
 
-j'essaie d'ajouter queue : entre myelement et encodeur: non
+-->  -vvvv n'est pas informatif, je n'ai pas not negotiated
+
+j'essaie d'ajouter queue entre myelement et vaapih264enc: non
 
 --> est ce que videorate à la place de mon element fonctionne?
 gst-launch-1.0 filesrc location=in.mp4 ! qtdemux ! h264parse ! vaapih264dec ! videorate ! vaapih264enc ! h264parse ! mp4mux ! filesink location=out.mp4
-oui
+--> oui
 
--->  -vvvv n'est pas informatif, je n'ai pas not negotiated
 
 --> est ce que le format qui sort de mon element convient à vaapih264enc?
-
---> j'essaie fakesrc ! myelement ! vaapih264enc ! fakesink
 
 gst-launch-1.0 -vvvv fakesrc ! myelement ! vaapih264enc ! fakesink
 
@@ -66,10 +71,11 @@ gst-launch-1.0 videotestsrc is-live=true ! vaapih264enc ! fakesink
 
 gst-launch-1.0 fakesrc ! vaapih264enc ! fakesink
 --> streaming stopped, reason not-negotiated (-4)
-
 --> donc il ne semble ***pas utile d'essayer de mettre fakesrc en amont de vaapih264enc ça ne marchera pas***
 
 
+gst-launch-1.0 videotestsrc is-live=true ! myelement ! vaapih264enc ! fakesink
+--> streaming stopped, reason not-negotiated (-4)
 
 
 --> ce serait donc un problème entre mon element et vaapih264enc, un queue qq part n'amènera rien (la première erreur aurait pu laisser supposer que queue qq part aiderait: 
@@ -95,7 +101,7 @@ video/x-raw, width=(int)320, height=(int)240, framerate=(fraction)30/1, format=(
 
 
 Est ce qu'un videoconvert règle le pb de link mon element - vaapih264enc?
-gst-launch-1.0 --gst-plugin-path=/initrd/mnt/dev_save/packages/gst-plugins-bad-1.18.1/tools fakesrc ! myelement ! videoconvert ! vaapih264enc ! fakesink
+gst-launch-1.0 ! myelement ! videoconvert ! vaapih264enc ! fakesink
 --> non --> streaming stopped, reason not-negotiated (-4)
 
 -Formats: compatibilité?
@@ -146,41 +152,59 @@ gst-launch-1.0 -vvvv videotestsrc is-live=true ! myelement ! videoconvert ! vide
 --> Donc la trouvaille ici c'est basé sur 2 notions importantes ("Mantras"):
 	1-Un element perso fraichement créé à partir du template videofilter ne peut pas convertir d'un format à un autre (l'inverse aurait été étonnant, mais il m'a fallu du running espiguette pour le trouver...)
 	2-vaapih264enc, contrairement à ce qu'il advertise avec gst-inspect, ne prend que NV12 en entrée
+
+
+
+--> Si je reprends depuis le début: décodage puis encodage, maintenant que je sais qu'il faut du NV12 absolument à l'encodeur:
+
+
+gst-launch-1.0 filesrc location=in.mp4 ! qtdemux ! h264parse ! vaapih264dec ! myelement ! videoconvert ! video/x-raw,format=NV12 ! vaapih264enc ! h264parse ! mp4mux ! filesink location=out.mp4
+
+--> J'obtiens un out.mp4 qui fait la bonne taille, la bonne duration (3s), mais est vert
+
+
+
 	
---> Maintenant il faut essayer de construire la pipeline avec décodage et encodage
 
 
 
 
-## J'essaie de comprendre ce qui sort de mon element
+### J'essaie de comprendre ce qui sort de mon element
 
 #Si j'essaie avec videotestsrc j'ai des choses bizarres, écran vert, mais ce que je veux c'est partir d'un decode donc:
 
 #decode ! myelement ! vaapisink 
 gst-launch-1.0 -vvvv filesrc location=in.mp4 ! qtdemux ! h264parse ! vaapih264dec ! myelement ! vaapisink
 --> je vois la mire
+
+--> Note secondaire: voir la mire à ce moment est un VRAI PROBLEME! Ca rend difficile de réaliser que mon élément bloque les frames car il ne les copie pas. La raison
+	qui explique que je vois les frames, à mon avis, est que vaapisink lit dans un espace mémoire VAsurface, et vaapih264dec met ce qu'il décode dans le même espace mémoire
+
 --> le format négocié à partir de la sortie du décodeur = I420
 
+
 #decode ! myelement ! convertir en NV12 ! filesink
-gst-launch-1.0 -vvvv filesrc location=in.mp4 ! qtdemux ! h264parse ! vaapih264dec ! myelement ! videoconvert ! video/x-raw,format=NV12 ! vaapih264enc ! filesink location=out.mp4
+gst-launch-1.0 -vvvv filesrc location=in.mp4 ! qtdemux ! h264parse ! vaapih264dec ! myelement ! videoconvert ! video/x-raw,format=NV12 ! vaapih264enc ! h264parse ! mp4mux ! filesink location=out.mp4
 --> ne plante pas
 --> out.mp4 pèse 2.5K (in.mp4 pèse 361.2K)
 --> lecture gst-play: vert
-vaapidecode_h264-0.GstPad:src: caps = video/x-raw, format=(string)I420,
 
+
+
+
+
+
+## Note secondaire pour le bloc qui suit: J'ai eu le pb de l'information trompeuse = vaapisink affiche car VAsurface. J'ai cherché à avoir myelement qui laisse passer les frames, alors que
+	par défaut il est logique qu'il ne les laisse pas passer
+
+vaapidecode_h264-0.GstPad:src: caps = video/x-raw, format=(string)I420,
 myelement0.GstPad:sink: caps = video/x-raw, format=(string)I420,
 myelement0.GstPad:src: caps = video/x-raw, format=(string)I420
-
 videoconvert0.GstPad:sink: caps = video/x-raw, format=(string)I420, 
 --> videoconvert.src le format est à la fin
 videoconvert0.GstPad:src: caps = video/x-raw, width=(int)320, height=(int)240, interlace-mode=(string)progressive, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, pixel-aspect-ratio=(fraction)1/1, framerate=(fraction)30/1, format=(string)NV12
 
-#Ce qui sort de myelement est affichable en vaapisink, mais si à la place de vaapisink je fais de la conversion et de l'encode j'ai du vert à la sortie de l'encodage
-
-#Si derrière le decode ! myelement je sors du raw, est ce que je peux le lire?
-
 gst-launch-1.0 -vvvv filesrc location=in.mp4 ! qtdemux ! h264parse ! vaapih264dec ! myelement ! filesink location=out.raw
-
 out.raw --> 11 Mo
 l'output donne:
 video/x-raw, format=(string)I420, width=(int)320, height=(int)240
@@ -188,107 +212,116 @@ video/x-raw, format=(string)I420, width=(int)320, height=(int)240
 gst-launch-1.0 -vvvv filesrc location=out.raw ! rawvideoparse use-sink-caps=false width=320 height=240 format=i420 ! vaapisink
 ou
 gst-launch-1.0 -vvvv filesrc location=out.raw ! queue ! "video/x-raw, width=320, height=240, format=I420, framerate=30/1" ! rawvideoparse use-sink-caps=true ! vaapisink
---> vert
+--> vert à la lecture
 
-si j'essaie de forcer le plus possible le format à la création du raw?
 gst-launch-1.0 -vvvv filesrc location=in.mp4 ! qtdemux ! h264parse ! vaapih264dec ! video/x-raw,format=I420 ! myelement ! video/x-raw,format=I420 ! filesink location=out.raw
 --> vert à la lecture
 
 Piste des caps autres que format width height: le -vvvv à la lecture en vaapisink montre d'autres propriétés 
 interlace-mode=(string)progressive, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, pixel-aspect-ratio=(fraction)1/1, chroma-site=(string)jpeg, colorimetry=(string)bt601, framerate=(fraction)30/1
-
 Quand je crée le .raw j'ai:
 caps = video/x-raw, format=(string)I420, width=(int)320, height=(int)240, interlace-mode=(string)progressive, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, pixel-aspect-ratio=(fraction)1/1, chroma-site=(string)jpeg, colorimetry=(string)bt601, framerate=(fraction)30/1
-
 Quand j'essaie de le lire je vois:
 src: caps = video/x-raw, format=(string)I420, width=(int)320, height=(int)240, interlace-mode=(string)progressive, pixel-aspect-ratio=(fraction)1/1, chroma-site=(string)jpeg, colorimetry=(string)bt601, framerate=(fraction)0/1
-
 Donc déjà il faut le bon framerate
-
 gst-launch-1.0 -vvvv filesrc location=out.raw ! queue ! "video/x-raw, width=320, height=240, format=I420, framerate=30/1" ! rawvideoparse use-sink-caps=true ! vaapisink
-
 j'essaie un autre format: pareil
 
 
-## Dim 0503 je sors du raw de vaapih264dec que j'arrive à lire, pour l'instant sans mon element, en forçant I420 à la sortie:
 
+
+
+
+
+
+## Dim 0503 j'obtiens du raw de vaapih264dec que j'arrive à lire, pour l'instant sans mon element, en forçant I420 à la sortie:
 #Décodage -> .raw
 gst-launch-1.0 -vvvv filesrc location=in.mp4 ! qtdemux ! h264parse ! vaapih264dec ! "video/x-raw, width=320, height=240, format=I420, framerate=30/1" ! filesink location=out.raw
-
 #Lecture
 gst-launch-1.0 -vvvv filesrc location=out.raw ! queue ! "video/x-raw, width=320, height=240, format=I420, framerate=30/1" ! rawvideoparse use-sink-caps=true ! vaapisink
-
 Si je fais la même chose avec du format NV12: le fichier n'est pas lisible (enfin: lisible garbled en I420, et erreurs vaapisink/xvimagesink en lecture NV12)
 
 
-## Lun 0603 est ce que je peux mettre mon élément entre de décodage et le filesink?
 
+
+
+
+
+
+## Lun 0603 est ce que je peux mettre mon élément entre le décodage et filesink?
 #Décodage -> .raw avec mon élément au milieu
-export GST_PLUGIN_PATH=/initrd/mnt/dev_save/packages/gst-plugins-bad-1.18.1/tools
 gst-launch-1.0 -vvvv filesrc location=in.mp4 ! qtdemux ! h264parse ! vaapih264dec ! video/x-raw, width=320, height=240, format=I420, framerate=30/1 ! myelement ! filesink location=out.raw
-
 #Lecture
 gst-launch-1.0 -vvvv filesrc location=out.raw ! queue ! video/x-raw, width=320, height=240, format=I420, framerate=30/1 ! rawvideoparse use-sink-caps=true ! vaapisink
-
 --> Fait bien 3s, mais vert garbled
-
 #Le cas où mon élément laisse passer des frames visibles.
 gst-launch-1.0 -vvvv filesrc location=in.mp4 ! qtdemux ! h264parse ! vaapih264dec ! myelement ! vaapisink
 
 
---> Hypothèse:
+
+
+--> Hypothèse (note secondaire: VASurface semble vrai):
 https://gstreamer.freedesktop.org/documentation/vaapi/vaapih264dec.html?gi-language=c#vaapih264dec-page
-les éléments vaapi intel travaillent avec un espace mémoire VASurface et pas des frames gstreamer "classiques"
+les éléments vaapi Intel travaillent avec un espace mémoire VASurface et pas des frames gstreamer "classiques"
+
+(Note secondaire pour cette partie: j'étais braqué dans l'optique: il faut absolument faire passer les frames, alors qu'il semble logique que mon element ne les laisse pas passer dans la version
+par défaut)
 il faut arriver à faire passer les frames dans l'espace mémoire auquel je peux accéder via le code
-vaapi: quel élément pourrait transformer les frames en quelque chose d'utilisable?
+vaapi: quel élément pourrait transformer les frames en quelque chose d'utilisable? (Note secondaire: j'étais pas loin, il fallait juste que je sois plus confiant dans mon hypothèse "VASurface
+explique l'artefact vaapisink affiche les frames alors que myelement bloque les frames dans la pipeline"
 vaapipostproc?
 vaapipostproc ! video/x-raw, width=320, height=240, format=I420
 
 #Création du .raw avec vaapipostproc en sortie de décodeur
 gst-launch-1.0 -vvvv filesrc location=in.mp4 ! qtdemux ! h264parse ! vaapih264dec ! vaapipostproc ! video/x-raw, width=320, height=240, format=I420 ! filesink location=out.raw
-
 #Lecture
 gst-launch-1.0 -vvvv filesrc location=out.raw ! queue ! video/x-raw, width=320, height=240, format=I420, framerate=30/1 ! rawvideoparse use-sink-caps=true ! vaapisink
-
 --> OK
-
 #Ajout de mon élément
 gst-launch-1.0 -vvvv filesrc location=in.mp4 ! qtdemux ! h264parse ! vaapih264dec ! vaapipostproc ! video/x-raw, width=320, height=240, format=I420 ! myelement ! filesink location=out.raw
-
 #Lecture
 gst-launch-1.0 -vvvv filesrc location=out.raw ! queue ! video/x-raw, width=320, height=240, format=I420, framerate=30/1 ! rawvideoparse use-sink-caps=true ! vaapisink
-
 --> vert (complètement, pas garbled)
-
 # Si je remplace myelement par videorate?
 gst-launch-1.0 -vvvv filesrc location=in.mp4 ! qtdemux ! h264parse ! vaapih264dec ! video/x-raw, width=320, height=240, format=I420 ! videorate ! filesink location=out.raw
-
 gst-launch-1.0 -vvvv filesrc location=out.raw ! queue ! video/x-raw, width=320, height=240, format=I420, framerate=30/1 ! rawvideoparse use-sink-caps=true ! vaapisink
-
 --> lecture mire visible
-
-
-
 Donc: 
 videorate fait qq chose que mon élément ne fait pas, et ce quelque chose n'est pas nécessaire entre vaapih264dec et vaapisink
 Ce quelque chose pourrait être de faire passer un pointeur d'une VA Surface vers un espace mémoire
 
 
-# Ma0703
+## 070323 premier passage de frames conditionnel
 dans gstmyelement.c dans
+
 gst_my_element_transform_frame (GstVideoFilter * filter, GstVideoFrame * inframe, GstVideoFrame * outframe)
 
-
+je copie les frames avec:
 gst_video_frame_copy (outframe, inframe); //Selon la Doc GstVideoFrame https://gstreamer.freedesktop.org/documentation/video/video-frame.html?gi-language=c
-
-
 
 GST_DEBUG=myelement:7 gst-launch-1.0 videotestsrc is-live=true ! myelement ! vaapisink
 
-
-
 --> je vois les frames, sans gst_video_frame_copy() c'est vert
 
+
+## 080323 
+
+Objectif: ne laisser passer qu'une partie des frames (entre n=start et n=stop), avec une écriture de fichier à la fin
+
+Je fais une copie dans ce dir du code de l'element: mydropframes.c (copie de gstmyelement.c) 
+
+Les modifications:
+dans gst_my_element_transform_frame ajout gst_video_frame_copy (outframe, inframe);
+conditionné par un int qui s'increment à chaquue passage
+
+vérification du nombre de passages par rapport au nombre de buffers: OK (avec num-buffers=100 je passe 100X dans la fonction gst_my_element_transform_frame)
+
+Les valeurs GstFlowReturn possibles
+https://gstreamer.freedesktop.org/documentation/gstreamer/gstpad.html?gi-language=c#GstFlowReturn
+
+Je conditionne avant / après une valeur, le in contient 100 buffers:
+
+avec une condition copy (1), l'autre non (0), et dans les deux cas je retourne GST_FLOW_OK, j'ai du vert quand 0 et les frames attendues dans 1
 
 
 
