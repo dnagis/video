@@ -27,7 +27,10 @@ main (int argc, char *argv[])
   gst_init (&argc, &argv);
 
   /* Build the pipeline */
-  pipeline = gst_parse_launch("filesrc location=in.mp4 ! qtdemux ! h264parse ! vaapih264dec ! vaapih264enc ! h264parse ! mp4mux ! filesink location=out.mp4", NULL);
+  //pipeline = gst_parse_launch("filesrc location=in.mp4 ! qtdemux ! h264parse ! vaapih264dec ! vaapih264enc ! h264parse ! mp4mux ! filesink location=out.mp4", NULL);
+  pipeline = gst_parse_launch("filesrc location=in.mp4 ! qtdemux ! h264parse ! vaapih264dec ! vaapih264enc ! filesink location=out.h264", NULL);
+ 
+ 
   //pipeline = gst_parse_launch("filesrc location=in.mp4 ! qtdemux ! h264parse ! vaapih264dec ! vaapisink", NULL);
   //pipeline = gst_parse_launch("playbin uri=file:///root/in.mp4", NULL);
 

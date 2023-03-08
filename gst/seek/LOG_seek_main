@@ -8,7 +8,7 @@ gst-launch-1.0 videotestsrc num-buffers=100 ! timeoverlay ! vaapih264enc ! h264p
 
 ## Appli qui lit le fichier, décode, encode et filesink un fichier
 
-Une pipeline qui fasse le même job:
+Une pipeline qui fasse ce job:
 gst-launch-1.0 filesrc location=in.mp4 ! qtdemux ! h264parse ! vaapih264dec ! vaapih264enc ! h264parse ! mp4mux ! filesink location=out.mp4
 
 # Création de la pipeline à partir d'une string type gst-launch (gst_parse_launch) basé sur hello_world
@@ -23,19 +23,16 @@ https://gstreamer.freedesktop.org/documentation/additional/design/seeking.html?g
 reference de la fonction gst_event_new_seek():
 https://gstreamer.freedesktop.org/documentation/gstreamer/gstevent.html?gi-language=c#gst_event_new_seek
 
-il faudrait envoyer gst_event_new_seek() à une bin?
+il faudrait envoyer gst_event_new_seek() à une bin:
 https://github.com/GStreamer/gst-docs/blob/master/examples/tutorials/basic-tutorial-13.c#L30
 
-si je gst_element_send_event() avant set_state() il ne se passe rien, si je le mets après au runtime plante
+si je gst_element_send_event() avant set_state() il ne se passe rien, si je le mets après plante
 
 Le format serait en nanosecondes?
 https://gstreamer.freedesktop.org/documentation/gstreamer/gstformat.html?gi-language=c#GstFormat
 
 
-
-#Lun0603
-
-Essayer d'avoir une boucle d'écoute du bus comme dans les examples ci dessous car je ne vois que dans ces boucles un appel de seek
+# A ce stade je n'ai aucun effet de ma demande de seek, où que je la place, mon hypothèse est qu'il faut une boucle d'écoute du bus comme dans:
 
 https://gstreamer.freedesktop.org/documentation/tutorials/basic/time-management.html?gi-language=c
 
@@ -43,12 +40,22 @@ Ref fonctions pour écouter bus
 https://gstreamer.freedesktop.org/documentation/gstreamer/gstbus.html?gi-language=c#gst_bus_pop
 
 
-#Ma0703
+J'arrive à déclencher mon premier seek en placant gst_element_send_event() à la réception d'un msg qui dit que state passé de PAUSED à PLAYING
 
-J'arrive à déclencher mon premier seek en me placant à la réception d'un msg qui dit que state passé de pause à playing
-Fonctionne en pipeline parse_launch et playbin, par contre fichier n'est pas lisible (fait penser à une capture forced stop)
-Le loop pour écouter le msg bus fait tourner le CPU... 
+Fonctionne sur une playbin (comme dans les exemples), et sur une pipeline (string classique) passée à gst_parse_launch() 
+
+Pb1: fichier mp4 illisible (fait penser à une capture forced stop donc un pb d'encapsulation)
+
+Pb2: Le loop pour écouter le msg bus fait tourner le CPU... Pas envie de régler ce problème tant que le problème principal n'est pas résolu.
+
+Pb1: Fichier out illisible, si c'est bien un pb d'encapsulation, la taille doit augmenter si je demande une durée plus grande
+
+Si je demande 1s, 115Ko si je demande 2s j'ai 225Ko --> OK ça sent le pb d'encapsulation
 
 
+pipeline sans encapsuler (du .h264)
 
+filesrc location=in.mp4 ! qtdemux ! h264parse ! vaapih264dec ! vaapih264enc ! filesink location=out.h264
+
+--> OK
 
