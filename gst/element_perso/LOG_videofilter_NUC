@@ -1,28 +1,35 @@
-###Objectif de départ: un element fait à partir du template videofilter pour aller vers videorate (pour drop frames)
-##(avec la notion que videofilter et videorate héritent d'une classe basetransform)
-
-
+###Objectif de départ: un element fait à partir du template videofilter pour drop frames (equivalent cut ges-launch)
 
 ##Stratégie initiale:
 
-#Créer un element perso à partir du template videofilter
-#Le faire fonctionner entre un décodeur et un encodeur pour qu'il traite les frames en raw une par une
-#Essai Piste: valeur retournée par videorate dans la fonction gst_video_rate_transform_ip() GST_BASE_TRANSFORM_FLOW_DROPPED
+# Videorate est un bon espoir car fait du drop frames
+# videofilter et videorate héritent d'une classe basetransform
 
 
+# Créer un element perso à partir du template videofilter, 
+# Le faire fonctionner entre un décodeur et un encodeur pour qu'il traite les frames en raw une par une
 
-##Sticky pour ergonomie quotidienne
+# Une  Piste: valeur retournée par videorate dans la fonction gst_video_rate_transform_ip() GST_BASE_TRANSFORM_FLOW_DROPPED
+
+
+##Sticky ergonomie utilisation quotidienne
+
+# Création fichier video avec 100 buffers
+gst-launch-1.0 videotestsrc num-buffers=100 ! vaapih264enc ! h264parse ! mp4mux ! filesink location=in.mp4
+
 export GST_PLUGIN_PATH=/initrd/mnt/dev_save/packages/gst-plugins-bad-1.18.1/tools
 
-GST_DEBUG=myelement:7 gst-launch-1.0 videotestsrc is-live=true ! myelement ! fakesink
-
+# Re-compil de l'élément
+cd $GST_PLUGIN_PATH
 gcc -Wall -Werror -fPIC $(pkg-config --cflags gstreamer-1.0 gstreamer-video-1.0) -c -o gstmyelement.o gstmyelement.c && \
 gcc -shared -o gstmyelement.so gstmyelement.o $(pkg-config --libs gstreamer-1.0 gstreamer-video-1.0)
 
-Création fichier video avec 100 buffers
-gst-launch-1.0 videotestsrc num-buffers=100 ! vaapih264enc ! h264parse ! mp4mux ! filesink location=in.mp4
 
-gst-launch-1.0 filesrc location=in.mp4 ! qtdemux ! h264parse ! vaapih264dec ! myelement ! videoconvert ! video/x-raw,format=NV12 ! vaapih264enc ! h264parse ! mp4mux ! filesink location=out.mp4
+GST_DEBUG=myelement:7 gst-launch-1.0 filesrc location=in.mp4 ! qtdemux ! h264parse ! vaapih264dec ! myelement \
+! videoconvert ! video/x-raw,format=NV12 ! vaapih264enc ! h264parse ! mp4mux ! filesink location=out.mp4
+
+
+
 
 
 ##LOG
@@ -304,7 +311,7 @@ GST_DEBUG=myelement:7 gst-launch-1.0 videotestsrc is-live=true ! myelement ! vaa
 --> je vois les frames, sans gst_video_frame_copy() c'est vert
 
 
-## 080323 
+## Début des essais dans gst_my_element_transform_frame()
 
 Objectif: ne laisser passer qu'une partie des frames (entre n=start et n=stop), avec une écriture de fichier à la fin
 
@@ -322,6 +329,25 @@ https://gstreamer.freedesktop.org/documentation/gstreamer/gstpad.html?gi-languag
 Je conditionne avant / après une valeur, le in contient 100 buffers:
 
 avec une condition copy (1), l'autre non (0), et dans les deux cas je retourne GST_FLOW_OK, j'ai du vert quand 0 et les frames attendues dans 1
+
+
+# Si dans la condition "0" je ne copie pas et je retourne GST_FLOW_NOT_LINKED ou GST_FLOW_ERROR
+--> on passe une seule fois dans gst_my_element_transform_frame(), j'ai une erreur: qtdemux0: Internal data stream error streaming stopped, reason not-linked (-1) 
+et out.mp4 fait taille 0
+
+--> Je me dis que peut être c'est ce que je veux, et que le problème est qu'en aval de mon element aucun buffer ne passe
+et que la pipeline n'aime pas ça. J'essaie donc de remplacer la totalité de l'aval par fakesink:
+
+GST_DEBUG=myelement:7 gst-launch-1.0 filesrc location=in.mp4 ! qtdemux ! h264parse ! vaapih264dec ! myelement ! fakesink
+--> idem, donc ça pose pb en amont
+
+Je me dis que peut être il faut de la 'slack' en terme d'arrivée de buffers: j'essaie de rajouter une queue à différents endroits
+GST_DEBUG=myelement:7 gst-launch-1.0 filesrc location=in.mp4 ! qtdemux ! h264parse ! vaapih264dec ! queue ! myelement ! fakesink
+GST_DEBUG=myelement:7 gst-launch-1.0 filesrc location=in.mp4 ! qtdemux ! h264parse ! queue ! vaapih264dec ! myelement ! fakesink
+GST_DEBUG=myelement:7 gst-launch-1.0 filesrc location=in.mp4 ! qtdemux ! queue ! h264parse ! vaapih264dec ! myelement ! fakesink
+GST_DEBUG=myelement:7 gst-launch-1.0 filesrc location=in.mp4 ! queue ! qtdemux ! h264parse ! vaapih264dec ! myelement ! fakesink
+--> dans tous ces cas ce n'est plus qtdemux mais queue qui renvoie Internal data stream error
+
 
 
 
