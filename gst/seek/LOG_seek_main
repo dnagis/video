@@ -59,3 +59,23 @@ filesrc location=in.mp4 ! qtdemux ! h264parse ! vaapih264dec ! vaapih264enc ! fi
 
 --> OK
 
+
+##Cross - compil
+
+export PATH=$PATH:/initrd/mnt/dev_save/rpi/cross/bin/
+export PKG_CONFIG_LIBDIR=/initrd/mnt/dev_save/rpi/cross/aarch64-linux-gnu/lib/pkgconfig
+export PKG_CONFIG_SYSROOT_DIR=/initrd/mnt/dev_save/rpi/cross/aarch64-linux-gnu
+
+sur le hello_world.c dans le dir above, avec une pipeline simple videotestsrc ! encode ! mp4
+
+
+gst_parse_launch("videotestsrc num-buffers=100 ! v4l2h264enc ! video/x-h264,level=(string)3 ! h264parse ! mp4mux ! filesink location=test_in_app.mp4
+
+***attention avec  v4l2h264enc ! 'video/x-h264,level=(string)3' ! h264parse ! ...*** ---> plante au runtime (uri invalid)
+
+aarch64-linux-gnu-gcc hello_world.c -o hello_world `pkg-config --cflags --libs gstreamer-1.0`
+
+
+
+
+
