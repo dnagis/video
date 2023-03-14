@@ -224,9 +224,10 @@ gst_my_element_transform_frame (GstVideoFilter * filter, GstVideoFrame * inframe
   /* vvnx */
   buffCount ++;
     
-  gint16 buffLimit = 50;
+  gint16 start = 30;
+  gint16 end = 70;
   
-  if (buffCount < buffLimit) {
+  if ((buffCount < start) || (buffCount > end)) {
 	  GST_DEBUG_OBJECT (myelement, "condition OFF = block drop frame");
 	  //return GST_FLOW_OK;
 	  return GST_BASE_TRANSFORM_FLOW_DROPPED;
