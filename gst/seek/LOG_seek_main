@@ -3,6 +3,7 @@
 
 ## Création d'une video avec timeoverlay
 
+NUC avec timeoverlay
 gst-launch-1.0 videotestsrc num-buffers=100 ! timeoverlay ! vaapih264enc ! h264parse ! mp4mux ! filesink location=in.mp4
 
 
@@ -73,9 +74,19 @@ gst_parse_launch("videotestsrc num-buffers=100 ! v4l2h264enc ! video/x-h264,leve
 
 ***attention avec  v4l2h264enc ! 'video/x-h264,level=(string)3' ! h264parse ! ...*** ---> plante au runtime (uri invalid)
 
-aarch64-linux-gnu-gcc hello_world.c -o hello_world `pkg-config --cflags --libs gstreamer-1.0`
+aarch64-linux-gnu-gcc seek.c -o seek `pkg-config --cflags --libs gstreamer-1.0`
 
 
 
 
 
+#Recherche d'une pipeline qui lit decode et réencode sur le RPi pour l'intégrer dans l'app
+
+voir LOG_v4l2h264dec (format pas RGB sinon décodeur plante)
+gst-launch-1.0 videotestsrc num-buffers=100 ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! h264parse ! mp4mux ! filesink location=video.mp4
+
+#décode + réencode
+gst-launch-1.0 filesrc location=video.mp4 ! qtdemux ! h264parse ! v4l2h264dec ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! h264parse ! mp4mux ! filesink location=out.mp4
+
+
+--> seek.c avec cette pipeline intégrée plante
