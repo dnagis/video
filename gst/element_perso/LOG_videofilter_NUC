@@ -15,7 +15,7 @@
 ##Sticky ergonomie utilisation quotidienne
 
 # Création fichier video avec 100 buffers
-gst-launch-1.0 videotestsrc num-buffers=100 ! vaapih264enc ! h264parse ! mp4mux ! filesink location=in.mp4
+gst-launch-1.0 videotestsrc num-buffers=100 ! timeoverlay ! vaapih264enc ! h264parse ! mp4mux ! filesink location=in.mp4
 
 export GST_PLUGIN_PATH=/initrd/mnt/dev_save/packages/gst-plugins-bad-1.18.1/tools
 
