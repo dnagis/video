@@ -331,7 +331,10 @@ Je conditionne avant / après une valeur, le in contient 100 buffers:
 avec une condition copy (1), l'autre non (0), et dans les deux cas je retourne GST_FLOW_OK, j'ai du vert quand 0 et les frames attendues dans 1
 
 
-# Si dans la condition "0" je ne copie pas et je retourne GST_FLOW_NOT_LINKED ou GST_FLOW_ERROR
+### Si dans la condition "0" je ne copie pas la frame et:
+
+# je return GST_FLOW_NOT_LINKED ou GST_FLOW_ERROR
+
 --> on passe une seule fois dans gst_my_element_transform_frame(), j'ai une erreur: qtdemux0: Internal data stream error streaming stopped, reason not-linked (-1) 
 et out.mp4 fait taille 0
 
@@ -348,6 +351,12 @@ GST_DEBUG=myelement:7 gst-launch-1.0 filesrc location=in.mp4 ! qtdemux ! queue !
 GST_DEBUG=myelement:7 gst-launch-1.0 filesrc location=in.mp4 ! queue ! qtdemux ! h264parse ! vaapih264dec ! myelement ! fakesink
 --> dans tous ces cas ce n'est plus qtdemux mais queue qui renvoie Internal data stream error
 
+
+# je return GST_BASE_TRANSFORM_FLOW_DROPPED; (https://stackoverflow.com/questions/65171901/drop-buffers-in-gstreamer)
+
+J'ai le comportement désiré: i.e. seules les frames désirées passent, je n'ai que les frames souhaitées à la sortie
+
+Pour l'instant j'ai condition = (buffCount > buffLimit) ou (buffCount < buffLimit)
 
 
 

@@ -227,10 +227,11 @@ gst_my_element_transform_frame (GstVideoFilter * filter, GstVideoFrame * inframe
   gint16 buffLimit = 50;
   
   if (buffCount < buffLimit) {
-	  GST_DEBUG_OBJECT (myelement, "avant buffLimit");
-	  return GST_FLOW_OK;
+	  GST_DEBUG_OBJECT (myelement, "condition OFF = block drop frame");
+	  //return GST_FLOW_OK;
+	  return GST_BASE_TRANSFORM_FLOW_DROPPED;
   } else { 
-	  GST_DEBUG_OBJECT (myelement, "après buffLimit");
+	  GST_DEBUG_OBJECT (myelement, "condition ON = copy frame");
 	  gst_video_frame_copy (outframe, inframe);
 	  return GST_FLOW_OK;
   };
