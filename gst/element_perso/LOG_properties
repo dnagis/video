@@ -1,0 +1,68 @@
+#### Pouvoir passer des properties dans mon élément à partir de la pipeline en command line de la même manière que 'filesrc location='
+
+
+
+## Doc Gstreamer writing a plugin 'Adding Properties'
+
+https://gstreamer.freedesktop.org/documentation/plugin-development/basics/args.html?gi-language=c
+
+
+
+## Je me base sur le template videofilter, je veux une property type int qui me servira par exple de start-frame
+
+#Créer l'élément à partir du template
+./gst-element-maker my_element videofilter
+
+## Modifications dans le .h: 
+
+#ajouter une variable type gint16 à l'objet GstMyElement: dans la struct _GstMyElement ajouter:
+gint16 start_frame;
+
+## 4 modifications dans le .c
+
+# Ajout PROP_START_FRAME dans la enum déclarée au début
+
+enum
+{
+  PROP_0,
+  PROP_START_FRAME 
+};
+
+
+# Installer la property dans gst_my_element_class_init()
+
+	//https://developer-old.gnome.org/gobject/stable/gobject-Standard-Parameter-and-Value-Types.html#g-param-spec-int
+	//copié sur base -->gsturidecodebin.c 
+	//Attention quand j'essaie de mettre un underscore dans l'arg1 de g_param_spec_int () au runtime j'ai erreur g_param_spec_internal: assertion '!(flags & G_PARAM_STATIC_NAME) || is_canonical (name)' failed
+	  g_object_class_install_property (gobject_class, PROP_START_FRAME, g_param_spec_int ("start-frame", "Du texte 1", "Du texte 2",
+		  0, G_MAXINT, 0, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+	
+# Assigner la variable interne à la propriété passée: dans gst_my_element_set_property()
+
+dans le switch (property_id) {} ajouter un case:
+
+	case PROP_START_FRAME:
+	myelement->start_frame = g_value_get_int (value);
+	g_print ("start-frame argument was changed to %i\n", myelement->start_frame);
+	break;
+      
+# Mettre du debug là où je vais avoir vraiment besoin d'accéder à la variable, i.e. dans gst_my_element_transform_frame ()
+
+	GST_DEBUG_OBJECT (myelement, "transform_frame et la valeur de start frame = %i", myelement->start_frame);
+    
+    
+    
+      
+## Compiler
+
+gcc -Wall -Werror -fPIC $(pkg-config --cflags gstreamer-1.0 gstreamer-video-1.0) -c -o gstmyelement.o gstmyelement.c
+gcc -shared -o gstmyelement.so gstmyelement.o $(pkg-config --libs gstreamer-1.0 gstreamer-video-1.0)
+
+
+
+
+## Runtime avec debug pour vérification
+
+export GST_PLUGIN_PATH=/initrd/mnt/dev_save/packages/gst-plugins-bad-1.18.1/tools
+GST_DEBUG=myelement:7 gst-launch-1.0 videotestsrc num-buffers=5 ! myelement start-frame=18 ! fakesink
+
