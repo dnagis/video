@@ -1,0 +1,7 @@
+## RPi
+
+#Génerer un fichier 
+gst-launch-1.0 videotestsrc num-buffers=100 ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! h264parse ! mp4mux ! filesink location=in.mp4
+
+#Decode + réencode
+gst-launch-1.0 filesrc location=in.mp4 ! qtdemux ! h264parse ! v4l2h264dec ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! h264parse ! mp4mux ! filesink location=out.mp4
