@@ -58,7 +58,12 @@ aarch64-linux-gnu-gcc -shared -o gstmyelement.so gstmyelement.o $(pkg-config --l
 gstmyelement.so est bien du ARM aarch64
 
 #Runtime, sur mon OS (pas raspiOS)
+
 GST_DEBUG=myelement:7 gst-launch-1.0 --gst-plugin-path=/root videotestsrc is-live=true ! myelement ! fakesink
+ou
+scp gstmyelement.so p:/lib/gstreamer-1.0/
+GST_DEBUG=myelement:7 gst-launch-1.0 videotestsrc is-live=true ! myelement ! fakesink
+
 
 --> fonctionne (ne plante pas), je n'ai pas testé plus loin
 

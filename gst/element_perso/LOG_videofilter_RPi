@@ -5,3 +5,10 @@ gst-launch-1.0 videotestsrc num-buffers=100 ! v4l2h264enc ! 'video/x-h264,level=
 
 #Decode + réencode
 gst-launch-1.0 filesrc location=in.mp4 ! qtdemux ! h264parse ! v4l2h264dec ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! h264parse ! mp4mux ! filesink location=out.mp4
+
+#Recette génération du .so est dans LOG_element_perso_main
+
+#Je place mon element entre le decodeur et l'encodeur
+gst-launch-1.0 filesrc location=in.mp4 ! qtdemux ! h264parse ! v4l2h264dec ! myelement ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! h264parse ! mp4mux ! filesink location=out.mp4
+
+Génèreun fichier out.mp4, de la bonne taille, vert (vide) car je n'ai pas copié les frames. OK
