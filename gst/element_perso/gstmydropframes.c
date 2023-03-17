@@ -17,14 +17,14 @@
  * Boston, MA 02110-1335, USA.
  */
 /**
- * SECTION:element-gstmyelement
+ * SECTION:element-gstmydropframes
  *
- * The myelement element does FIXME stuff.
+ * The mydropframes element does FIXME stuff.
  *
  * <refsect2>
  * <title>Example launch line</title>
  * |[
- * gst-launch-1.0 -v fakesrc ! myelement ! FIXME ! fakesink
+ * gst-launch-1.0 -v fakesrc ! mydropframes ! FIXME ! fakesink
  * ]|
  * FIXME Describe what the pipeline does.
  * </refsect2>
@@ -37,34 +37,31 @@
 #include <gst/gst.h>
 #include <gst/video/video.h>
 #include <gst/video/gstvideofilter.h>
-#include "gstmyelement.h"
+#include "gstmydropframes.h"
 
-GST_DEBUG_CATEGORY_STATIC (gst_my_element_debug_category);
-#define GST_CAT_DEFAULT gst_my_element_debug_category
-
+GST_DEBUG_CATEGORY_STATIC (gst_my_drop_frames_debug_category);
+#define GST_CAT_DEFAULT gst_my_drop_frames_debug_category
 
 /* vvnx */
-
-
 gint16 buffCount;
 
 /* prototypes */
 
 
-static void gst_my_element_set_property (GObject * object,
+static void gst_my_drop_frames_set_property (GObject * object,
     guint property_id, const GValue * value, GParamSpec * pspec);
-static void gst_my_element_get_property (GObject * object,
+static void gst_my_drop_frames_get_property (GObject * object,
     guint property_id, GValue * value, GParamSpec * pspec);
-static void gst_my_element_dispose (GObject * object);
-static void gst_my_element_finalize (GObject * object);
+static void gst_my_drop_frames_dispose (GObject * object);
+static void gst_my_drop_frames_finalize (GObject * object);
 
-static gboolean gst_my_element_start (GstBaseTransform * trans);
-static gboolean gst_my_element_stop (GstBaseTransform * trans);
-static gboolean gst_my_element_set_info (GstVideoFilter * filter, GstCaps * incaps,
+static gboolean gst_my_drop_frames_start (GstBaseTransform * trans);
+static gboolean gst_my_drop_frames_stop (GstBaseTransform * trans);
+static gboolean gst_my_drop_frames_set_info (GstVideoFilter * filter, GstCaps * incaps,
     GstVideoInfo * in_info, GstCaps * outcaps, GstVideoInfo * out_info);
-static GstFlowReturn gst_my_element_transform_frame (GstVideoFilter * filter,
+static GstFlowReturn gst_my_drop_frames_transform_frame (GstVideoFilter * filter,
     GstVideoFrame * inframe, GstVideoFrame * outframe);
-static GstFlowReturn gst_my_element_transform_frame_ip (GstVideoFilter * filter,
+static GstFlowReturn gst_my_drop_frames_transform_frame_ip (GstVideoFilter * filter,
     GstVideoFrame * frame);
 
 enum
@@ -85,12 +82,12 @@ enum
 
 /* class initialization */
 
-G_DEFINE_TYPE_WITH_CODE (GstMyElement, gst_my_element, GST_TYPE_VIDEO_FILTER,
-  GST_DEBUG_CATEGORY_INIT (gst_my_element_debug_category, "myelement", 0,
-  "debug category for myelement element"));
+G_DEFINE_TYPE_WITH_CODE (GstMyDropFrames, gst_my_drop_frames, GST_TYPE_VIDEO_FILTER,
+  GST_DEBUG_CATEGORY_INIT (gst_my_drop_frames_debug_category, "mydropframes", 0,
+  "debug category for mydropframes element"));
 
 static void
-gst_my_element_class_init (GstMyElementClass * klass)
+gst_my_drop_frames_class_init (GstMyDropFramesClass * klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
   GstBaseTransformClass *base_transform_class = GST_BASE_TRANSFORM_CLASS (klass);
@@ -109,30 +106,30 @@ gst_my_element_class_init (GstMyElementClass * klass)
       "FIXME Long name", "Generic", "FIXME Description",
       "FIXME <fixme@example.com>");
 
-  gobject_class->set_property = gst_my_element_set_property;
-  gobject_class->get_property = gst_my_element_get_property;
-  gobject_class->dispose = gst_my_element_dispose;
-  gobject_class->finalize = gst_my_element_finalize;
-  base_transform_class->start = GST_DEBUG_FUNCPTR (gst_my_element_start);
-  base_transform_class->stop = GST_DEBUG_FUNCPTR (gst_my_element_stop);
-  video_filter_class->set_info = GST_DEBUG_FUNCPTR (gst_my_element_set_info);
-  video_filter_class->transform_frame = GST_DEBUG_FUNCPTR (gst_my_element_transform_frame);
-  video_filter_class->transform_frame_ip = GST_DEBUG_FUNCPTR (gst_my_element_transform_frame_ip);
+  gobject_class->set_property = gst_my_drop_frames_set_property;
+  gobject_class->get_property = gst_my_drop_frames_get_property;
+  gobject_class->dispose = gst_my_drop_frames_dispose;
+  gobject_class->finalize = gst_my_drop_frames_finalize;
+  base_transform_class->start = GST_DEBUG_FUNCPTR (gst_my_drop_frames_start);
+  base_transform_class->stop = GST_DEBUG_FUNCPTR (gst_my_drop_frames_stop);
+  video_filter_class->set_info = GST_DEBUG_FUNCPTR (gst_my_drop_frames_set_info);
+  video_filter_class->transform_frame = GST_DEBUG_FUNCPTR (gst_my_drop_frames_transform_frame);
+  video_filter_class->transform_frame_ip = GST_DEBUG_FUNCPTR (gst_my_drop_frames_transform_frame_ip);
 
 }
 
 static void
-gst_my_element_init (GstMyElement *myelement)
+gst_my_drop_frames_init (GstMyDropFrames *mydropframes)
 {
 }
 
 void
-gst_my_element_set_property (GObject * object, guint property_id,
+gst_my_drop_frames_set_property (GObject * object, guint property_id,
     const GValue * value, GParamSpec * pspec)
 {
-  GstMyElement *myelement = GST_MY_ELEMENT (object);
+  GstMyDropFrames *mydropframes = GST_MY_DROP_FRAMES (object);
 
-  GST_DEBUG_OBJECT (myelement, "set_property");
+  GST_DEBUG_OBJECT (mydropframes, "set_property");
 
   switch (property_id) {
     default:
@@ -142,12 +139,12 @@ gst_my_element_set_property (GObject * object, guint property_id,
 }
 
 void
-gst_my_element_get_property (GObject * object, guint property_id,
+gst_my_drop_frames_get_property (GObject * object, guint property_id,
     GValue * value, GParamSpec * pspec)
 {
-  GstMyElement *myelement = GST_MY_ELEMENT (object);
+  GstMyDropFrames *mydropframes = GST_MY_DROP_FRAMES (object);
 
-  GST_DEBUG_OBJECT (myelement, "get_property");
+  GST_DEBUG_OBJECT (mydropframes, "get_property");
 
   switch (property_id) {
     default:
@@ -157,69 +154,70 @@ gst_my_element_get_property (GObject * object, guint property_id,
 }
 
 void
-gst_my_element_dispose (GObject * object)
+gst_my_drop_frames_dispose (GObject * object)
 {
-  GstMyElement *myelement = GST_MY_ELEMENT (object);
+  GstMyDropFrames *mydropframes = GST_MY_DROP_FRAMES (object);
 
-  GST_DEBUG_OBJECT (myelement, "dispose");
+  GST_DEBUG_OBJECT (mydropframes, "dispose");
 
   /* clean up as possible.  may be called multiple times */
 
-  G_OBJECT_CLASS (gst_my_element_parent_class)->dispose (object);
+  G_OBJECT_CLASS (gst_my_drop_frames_parent_class)->dispose (object);
 }
 
 void
-gst_my_element_finalize (GObject * object)
+gst_my_drop_frames_finalize (GObject * object)
 {
-  GstMyElement *myelement = GST_MY_ELEMENT (object);
+  GstMyDropFrames *mydropframes = GST_MY_DROP_FRAMES (object);
 
-  GST_DEBUG_OBJECT (myelement, "finalize");
+  GST_DEBUG_OBJECT (mydropframes, "finalize");
 
   /* clean up object here */
 
-  G_OBJECT_CLASS (gst_my_element_parent_class)->finalize (object);
+  G_OBJECT_CLASS (gst_my_drop_frames_parent_class)->finalize (object);
 }
 
 static gboolean
-gst_my_element_start (GstBaseTransform * trans)
+gst_my_drop_frames_start (GstBaseTransform * trans)
 {
-  GstMyElement *myelement = GST_MY_ELEMENT (trans);
+  GstMyDropFrames *mydropframes = GST_MY_DROP_FRAMES (trans);
 
-  GST_DEBUG_OBJECT (myelement, "start");
+  GST_DEBUG_OBJECT (mydropframes, "start");
 
   return TRUE;
 }
 
 static gboolean
-gst_my_element_stop (GstBaseTransform * trans)
+gst_my_drop_frames_stop (GstBaseTransform * trans)
 {
-  GstMyElement *myelement = GST_MY_ELEMENT (trans);
+  GstMyDropFrames *mydropframes = GST_MY_DROP_FRAMES (trans);
 
-  GST_DEBUG_OBJECT (myelement, "stop");
+  GST_DEBUG_OBJECT (mydropframes, "stop");
 
   return TRUE;
 }
 
 static gboolean
-gst_my_element_set_info (GstVideoFilter * filter, GstCaps * incaps,
+gst_my_drop_frames_set_info (GstVideoFilter * filter, GstCaps * incaps,
     GstVideoInfo * in_info, GstCaps * outcaps, GstVideoInfo * out_info)
 {
-  GstMyElement *myelement = GST_MY_ELEMENT (filter);
+  GstMyDropFrames *mydropframes = GST_MY_DROP_FRAMES (filter);
 
-  GST_DEBUG_OBJECT (myelement, "set_info");
+  GST_DEBUG_OBJECT (mydropframes, "set_info");
 
   return TRUE;
 }
 
 /* transform */
 static GstFlowReturn
-gst_my_element_transform_frame (GstVideoFilter * filter, GstVideoFrame * inframe,
+gst_my_drop_frames_transform_frame (GstVideoFilter * filter, GstVideoFrame * inframe,
     GstVideoFrame * outframe)
 {
-  GstMyElement *myelement = GST_MY_ELEMENT (filter);
+  GstMyDropFrames *mydropframes = GST_MY_DROP_FRAMES (filter);
 
-  //GST_DEBUG_OBJECT (myelement, "transform_frame buffCount=%i", buffCount);
-  
+  GST_DEBUG_OBJECT (mydropframes, "transform_frame");
+
+  //return GST_FLOW_OK;
   
   /* vvnx */
   buffCount ++;
@@ -228,25 +226,27 @@ gst_my_element_transform_frame (GstVideoFilter * filter, GstVideoFrame * inframe
   gint16 end = 70;
   
   if ((buffCount < start) || (buffCount > end)) {
-	  GST_DEBUG_OBJECT (myelement, "condition OFF = block drop frame");
+	  GST_DEBUG_OBJECT (mydropframes, "condition OFF = block drop frame");
 	  //return GST_FLOW_OK;
 	  return GST_BASE_TRANSFORM_FLOW_DROPPED;
   } else { 
-	  GST_DEBUG_OBJECT (myelement, "condition ON = copy frame");
+	  GST_DEBUG_OBJECT (mydropframes, "condition ON = copy frame");
 	  gst_video_frame_copy (outframe, inframe);
 	  return GST_FLOW_OK;
   };
   
-
+  
+  
+  
   
 }
 
 static GstFlowReturn
-gst_my_element_transform_frame_ip (GstVideoFilter * filter, GstVideoFrame * frame)
+gst_my_drop_frames_transform_frame_ip (GstVideoFilter * filter, GstVideoFrame * frame)
 {
-  GstMyElement *myelement = GST_MY_ELEMENT (filter);
+  GstMyDropFrames *mydropframes = GST_MY_DROP_FRAMES (filter);
 
-  GST_DEBUG_OBJECT (myelement, "transform_frame_ip");
+  GST_DEBUG_OBJECT (mydropframes, "transform_frame_ip");
 
   return GST_FLOW_OK;
 }
@@ -257,8 +257,8 @@ plugin_init (GstPlugin * plugin)
 
   /* FIXME Remember to set the rank if it's an element that is meant
      to be autoplugged by decodebin. */
-  return gst_element_register (plugin, "myelement", GST_RANK_NONE,
-      GST_TYPE_MY_ELEMENT);
+  return gst_element_register (plugin, "mydropframes", GST_RANK_NONE,
+      GST_TYPE_MY_DROP_FRAMES);
 }
 
 /* FIXME: these are normally defined by the GStreamer build system.
@@ -280,7 +280,7 @@ plugin_init (GstPlugin * plugin)
 
 GST_PLUGIN_DEFINE (GST_VERSION_MAJOR,
     GST_VERSION_MINOR,
-    myelement,
+    mydropframes,
     "FIXME plugin description",
     plugin_init, VERSION, "LGPL", PACKAGE_NAME, GST_PACKAGE_ORIGIN)
 

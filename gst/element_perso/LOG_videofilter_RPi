@@ -6,9 +6,29 @@ gst-launch-1.0 videotestsrc num-buffers=100 ! v4l2h264enc ! 'video/x-h264,level=
 #Decode + réencode
 gst-launch-1.0 filesrc location=in.mp4 ! qtdemux ! h264parse ! v4l2h264dec ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! h264parse ! mp4mux ! filesink location=out.mp4
 
-#Recette génération du .so est dans LOG_element_perso_main
+#Recette génération du .so initial
+cd /initrd/mnt/dev_save/packages/gst-plugins-bad-1.18.1/tools/
+./gst-element-maker my_drop_frames videofilter
+
+--> gstmydropframes.[c,h] symlinks depuis github video/gst/element_perso/
+
+# X compil
+export PATH=$PATH:/initrd/mnt/dev_save/rpi/cross/bin/
+export PKG_CONFIG_LIBDIR=/initrd/mnt/dev_save/rpi/cross/aarch64-linux-gnu/lib/pkgconfig
+export PKG_CONFIG_SYSROOT_DIR=/initrd/mnt/dev_save/rpi/cross/aarch64-linux-gnu
+
+aarch64-linux-gnu-gcc -Wall -Werror -fPIC $(pkg-config --cflags gstreamer-1.0 gstreamer-video-1.0) -c -o gstmydropframes.o gstmydropframes.c
+aarch64-linux-gnu-gcc -shared -o gstmydropframes.so gstmydropframes.o $(pkg-config --libs gstreamer-1.0 gstreamer-video-1.0)
+
+
+#push vers le RPi
+scp gstmydropframes.so p:/lib/gstreamer-1.0/
+
 
 #Je place mon element entre le decodeur et l'encodeur
-gst-launch-1.0 filesrc location=in.mp4 ! qtdemux ! h264parse ! v4l2h264dec ! myelement ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! h264parse ! mp4mux ! filesink location=out.mp4
+GST_DEBUG=mydropframes:7
+gst-launch-1.0 filesrc location=in.mp4 ! qtdemux ! h264parse ! v4l2h264dec ! mydropframes ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! h264parse ! mp4mux ! filesink location=out.mp4
 
-Génèreun fichier out.mp4, de la bonne taille, vert (vide) car je n'ai pas copié les frames. OK
+
+
+Génère un fichier out.mp4, de la bonne taille, vert (vide) quand je ne copy pas les frames. 
