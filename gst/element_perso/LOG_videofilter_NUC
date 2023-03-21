@@ -3,7 +3,9 @@
 ##Sticky ergonomie utilisation quotidienne
 
 # Création fichier videotestsrc 
+
 gst-launch-1.0 videotestsrc num-buffers=100 ! timeoverlay ! vaapih264enc ! h264parse ! mp4mux ! filesink location=in.mp4
+gst-launch-1.0 videotestsrc num-buffers=100 ! video/x-raw,width=640,height=480 ! timeoverlay ! vaapih264enc ! h264parse ! mp4mux ! filesink location=in.mp4
 
 # Re-compil de l'élément une fois qu'il a été créé
 
@@ -18,7 +20,7 @@ gcc -Wall -Werror -fPIC $(pkg-config --cflags gstreamer-1.0 gstreamer-video-1.0)
 gcc -shared -o gstmyelement.so gstmyelement.o $(pkg-config --libs gstreamer-1.0 gstreamer-video-1.0)
 
 
-# Runtime 
+# Runtime drop frames
 
 GST_DEBUG=myelement:7 gst-launch-1.0 filesrc location=in.mp4 ! qtdemux ! h264parse ! vaapih264dec ! mydropframes start-frame=30 end-frame=70 \
 ! videoconvert ! video/x-raw,format=NV12 ! vaapih264enc ! h264parse ! mp4mux ! filesink location=out.mp4
