@@ -37,6 +37,10 @@ typedef struct _GstMyDropFramesClass GstMyDropFramesClass;
 struct _GstMyDropFrames
 {
   GstVideoFilter base_mydropframes;
+  
+  //vvnx
+  gint16 start_frame;
+  gint16 end_frame;
 
 };
 

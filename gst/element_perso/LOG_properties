@@ -29,11 +29,12 @@ enum
 };
 
 
-# Installer la property dans gst_my_element_class_init()
+# Installer la property: à la fin gst_my_element_class_init()
 
 	//https://developer-old.gnome.org/gobject/stable/gobject-Standard-Parameter-and-Value-Types.html#g-param-spec-int
 	//copié sur base -->gsturidecodebin.c 
-	//Attention quand j'essaie de mettre un underscore dans l'arg1 de g_param_spec_int () au runtime j'ai erreur g_param_spec_internal: assertion '!(flags & G_PARAM_STATIC_NAME) || is_canonical (name)' failed
+	//Attention 1 quand j'essaie de mettre un underscore dans l'arg1 de g_param_spec_int () au runtime j'ai erreur g_param_spec_internal: assertion '!(flags & G_PARAM_STATIC_NAME) || is_canonical (name)' failed
+	//Attention 2 si je lance cette fonction pas à la fin je peux avoir erreur runtime = GLib-GObject-CRITICAL **: 01:15:29.063: validate_and_install_class_property: assertion 'class->set_property != NULL' failed
 	  g_object_class_install_property (gobject_class, PROP_START_FRAME, g_param_spec_int ("start-frame", "Du texte 1", "Du texte 2",
 		  0, G_MAXINT, 0, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 	

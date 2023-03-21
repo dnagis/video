@@ -26,9 +26,10 @@ scp gstmydropframes.so p:/lib/gstreamer-1.0/
 
 
 #Je place mon element entre le decodeur et l'encodeur
-GST_DEBUG=mydropframes:7
-gst-launch-1.0 filesrc location=in.mp4 ! qtdemux ! h264parse ! v4l2h264dec ! mydropframes ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! h264parse ! mp4mux ! filesink location=out.mp4
-
-
+GST_DEBUG=mydropframes:7 gst-launch-1.0 filesrc location=in.mp4 ! qtdemux ! h264parse ! v4l2h264dec ! mydropframes ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! h264parse ! mp4mux ! filesink location=out.mp4
 
 Génère un fichier out.mp4, de la bonne taille, vert (vide) quand je ne copy pas les frames. 
+
+#La pipeline pour l'élément avec les properties start-frame et end-frame set
+GST_DEBUG=mydropframes:7 gst-launch-1.0 filesrc location=in.mp4 ! qtdemux ! h264parse ! v4l2h264dec ! mydropframes start-frame=30 end-frame=70 \
+! v4l2h264enc ! 'video/x-h264,level=(string)3' ! h264parse ! mp4mux ! filesink location=out.mp4

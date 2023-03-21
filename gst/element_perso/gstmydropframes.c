@@ -66,7 +66,9 @@ static GstFlowReturn gst_my_drop_frames_transform_frame_ip (GstVideoFilter * fil
 
 enum
 {
-  PROP_0
+  PROP_0,
+  PROP_START_FRAME, /* vvnx */
+  PROP_END_FRAME /* vvnx */
 };
 
 /* pad templates */
@@ -105,6 +107,8 @@ gst_my_drop_frames_class_init (GstMyDropFramesClass * klass)
   gst_element_class_set_static_metadata (GST_ELEMENT_CLASS(klass),
       "FIXME Long name", "Generic", "FIXME Description",
       "FIXME <fixme@example.com>");
+  
+
 
   gobject_class->set_property = gst_my_drop_frames_set_property;
   gobject_class->get_property = gst_my_drop_frames_get_property;
@@ -115,6 +119,10 @@ gst_my_drop_frames_class_init (GstMyDropFramesClass * klass)
   video_filter_class->set_info = GST_DEBUG_FUNCPTR (gst_my_drop_frames_set_info);
   video_filter_class->transform_frame = GST_DEBUG_FUNCPTR (gst_my_drop_frames_transform_frame);
   video_filter_class->transform_frame_ip = GST_DEBUG_FUNCPTR (gst_my_drop_frames_transform_frame_ip);
+
+  //vvnx    
+  g_object_class_install_property (gobject_class, PROP_START_FRAME, g_param_spec_int ("start-frame", "Du texte 1", "Du texte 2", 0, G_MAXINT, 0, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+  g_object_class_install_property (gobject_class, PROP_END_FRAME, g_param_spec_int ("end-frame", "Du texte 1", "Du texte 2", 0, G_MAXINT, 0, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
 }
 
@@ -132,6 +140,14 @@ gst_my_drop_frames_set_property (GObject * object, guint property_id,
   GST_DEBUG_OBJECT (mydropframes, "set_property");
 
   switch (property_id) {
+	case PROP_START_FRAME:
+		mydropframes->start_frame = g_value_get_int (value);
+		g_print ("start-frame argument was changed to %i\n", mydropframes->start_frame);
+		break;
+	case PROP_END_FRAME:
+		mydropframes->end_frame = g_value_get_int (value);
+		g_print ("start-frame argument was changed to %i\n", mydropframes->end_frame);
+		break;	  
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
       break;
@@ -215,22 +231,22 @@ gst_my_drop_frames_transform_frame (GstVideoFilter * filter, GstVideoFrame * inf
 {
   GstMyDropFrames *mydropframes = GST_MY_DROP_FRAMES (filter);
 
-  GST_DEBUG_OBJECT (mydropframes, "transform_frame");
+  GST_DEBUG_OBJECT (mydropframes, "transform_frame et la valeur de start frame = %i", mydropframes->start_frame);
+  GST_DEBUG_OBJECT (mydropframes, "transform_frame et la valeur de end frame = %i", mydropframes->end_frame);
 
   //return GST_FLOW_OK;
-  
-  /* vvnx */
+ 
   buffCount ++;
     
-  gint16 start = 30;
-  gint16 end = 70;
+  // gint16 start = 30;
+  // gint16 end = 70;
   
-  if ((buffCount < start) || (buffCount > end)) {
-	  GST_DEBUG_OBJECT (mydropframes, "condition OFF = block drop frame");
+  if ((buffCount < mydropframes->start_frame) || (buffCount > mydropframes->end_frame)) {
+	  GST_DEBUG_OBJECT (mydropframes, "Condition OFF = block drop frame");
 	  //return GST_FLOW_OK;
 	  return GST_BASE_TRANSFORM_FLOW_DROPPED;
   } else { 
-	  GST_DEBUG_OBJECT (mydropframes, "condition ON = copy frame");
+	  GST_DEBUG_OBJECT (mydropframes, "Condition ON = copy frame");
 	  gst_video_frame_copy (outframe, inframe);
 	  return GST_FLOW_OK;
   };
