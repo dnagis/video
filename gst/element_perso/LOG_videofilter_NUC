@@ -1,31 +1,26 @@
-###Objectif de départ: un element fait à partir du template videofilter pour drop frames (equivalent cut ges-launch)
-
-##Stratégie initiale:
-
-# Videorate est un bon espoir car fait du drop frames
-# videofilter et videorate héritent d'une classe basetransform
-
-
-# Créer un element perso à partir du template videofilter, 
-# Le faire fonctionner entre un décodeur et un encodeur pour qu'il traite les frames en raw une par une
-
-# Une  Piste: valeur retournée par videorate dans la fonction gst_video_rate_transform_ip() GST_BASE_TRANSFORM_FLOW_DROPPED
-
+### Element qui droppe frames, sur le NUC
 
 ##Sticky ergonomie utilisation quotidienne
 
-# Création fichier video avec 100 buffers
+# Création fichier videotestsrc 
 gst-launch-1.0 videotestsrc num-buffers=100 ! timeoverlay ! vaapih264enc ! h264parse ! mp4mux ! filesink location=in.mp4
 
-export GST_PLUGIN_PATH=/initrd/mnt/dev_save/packages/gst-plugins-bad-1.18.1/tools
+# Re-compil de l'élément une fois qu'il a été créé
 
-# Re-compil de l'élément
+gcc -Wall -Werror -fPIC $(pkg-config --cflags gstreamer-1.0 gstreamer-video-1.0) -c -o gstmydropframes.o gstmydropframes.c && \
+gcc -shared -o gstmydropframes.so gstmydropframes.o $(pkg-config --libs gstreamer-1.0 gstreamer-video-1.0) && \
+cp gstmydropframes.so /usr/lib64/gstreamer-1.0/
+
+-old style
+export GST_PLUGIN_PATH=/initrd/mnt/dev_save/packages/gst-plugins-bad-1.18.1/tools
 cd $GST_PLUGIN_PATH
 gcc -Wall -Werror -fPIC $(pkg-config --cflags gstreamer-1.0 gstreamer-video-1.0) -c -o gstmyelement.o gstmyelement.c && \
 gcc -shared -o gstmyelement.so gstmyelement.o $(pkg-config --libs gstreamer-1.0 gstreamer-video-1.0)
 
 
-GST_DEBUG=myelement:7 gst-launch-1.0 filesrc location=in.mp4 ! qtdemux ! h264parse ! vaapih264dec ! myelement \
+# Runtime 
+
+GST_DEBUG=myelement:7 gst-launch-1.0 filesrc location=in.mp4 ! qtdemux ! h264parse ! vaapih264dec ! mydropframes start-frame=30 end-frame=70 \
 ! videoconvert ! video/x-raw,format=NV12 ! vaapih264enc ! h264parse ! mp4mux ! filesink location=out.mp4
 
 
