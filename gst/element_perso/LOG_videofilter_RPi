@@ -6,16 +6,21 @@
 # Caractéristiques par défaut
 gst-launch-1.0 videotestsrc num-buffers=100 ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! h264parse ! mp4mux ! filesink location=in.mp4
 
-# 640x480 (attention a déjà planté une fois, je suppose que l'encodeur a du mal à suivre, si se renouvelle tenter is-live
+# 640x480 (attention a déjà planté une fois, je suppose que l'encodeur a du mal à suivre sans is-live
 gst-launch-1.0 videotestsrc num-buffers=100 ! video/x-raw,width=640,height=480 ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! h264parse ! mp4mux ! filesink location=in.mp4
 
-#Decode + réencode
+gst-launch-1.0 videotestsrc num-buffers=2000 ! video/x-raw,width=640,height=480 ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! h264parse ! mp4mux ! filesink location=in.mp4
+
+
+
+
+
+
+## Decode + réencode dans élément
 gst-launch-1.0 filesrc location=in.mp4 ! qtdemux ! h264parse ! v4l2h264dec ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! h264parse ! mp4mux ! filesink location=out.mp4
 
 
-
-
-## Recette génération du .so initial
+## Recette initiale de génération de l'élément (un .so) 
 cd /initrd/mnt/dev_save/packages/gst-plugins-bad-1.18.1/tools/
 ./gst-element-maker my_drop_frames videofilter
 
