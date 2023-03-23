@@ -11,18 +11,43 @@ gst-launch-1.0 -vvvv videotestsrc num-buffers=100 ! 'video/x-raw,width=640,heigh
 gst-launch-1.0 -vvvv filesrc location=capture.mp4 ! qtdemux ! queue ! h264parse ! v4l2h264dec ! fakesink
 --> erreur (pas d'erreur dans dmesg donc pas un pb de kernel à priori)
 
-#Par contre le fichier est lisible sur le NUC avec gst-play, et le décodage sur le NUC est possible:
-gst-launch-1.0 -vvvv filesrc location=capture.mp4 ! qtdemux ! queue ! h264parse ! vaapih264dec ! vaapisink
 
-#J'essaie le conteneur matroska
-gst-launch-1.0 -vvvv videotestsrc num-buffers=100 ! 'video/x-raw,width=640,height=480,format=BGR' ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! h264parse ! matroskamux ! filesink location=capture.mkv
+##Sans encapsulation (fichiers .h264)
 
-#idem que pour mp4 à la tentative de décodage avec:
-gst-launch-1.0 -vvvv filesrc location=capture.mkv ! matroskademux ! queue ! h264parse ! v4l2h264dec ! fakesink
+#Création d'un .h264 sans aucun capsfilter (format et taille par défaut)
+gst-launch-1.0 videotestsrc num-buffers=100 ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! filesink location=in.h264
+
+#Décodage + réencodage le plus simple donne une erreur
+gst-launch-1.0 filesrc location=in.h264 ! h264parse ! v4l2h264dec ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! filesink location=out.h264
+--> non negotiated, pas d'erreur kernel, origine difficile à voir même avec debug v4l2
+
+#Décodage + réencodage avec videoconvert entre v4l2h264dec et v4l2h264enc = solution
+gst-launch-1.0 filesrc location=in.h264 ! h264parse ! v4l2h264dec ! videoconvert ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! filesink location=out.h264
+--> OK
+
+#Décodage + réencodage vers un fichier encapsulé
+gst-launch-1.0 filesrc location=in.h264 ! h264parse ! v4l2h264dec ! videoconvert ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! h264parse ! mp4mux ! filesink location=out.mp4
 
 
-##Format: avant l'encodage à la sortie de la source video je ne force pas BGR dans le capsfilter
+
+#format=BGR et 640x480
+
 #Création du fichier encodé
+gst-launch-1.0 videotestsrc num-buffers=100 ! 'video/x-raw,width=640,height=480,format=BGR' ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! filesink location=in.h264
+
+#Décodage + réencodage avec videoconvert entre v4l2h264dec et v4l2h264enc 
+gst-launch-1.0 filesrc location=in.h264 ! h264parse ! v4l2h264dec ! videoconvert ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! h264parse ! mp4mux ! filesink location=out.mp4
+
+--> OK, les deux lisibles gst-play après passage sur le NUC, donc sans encapsulation je peux avoir décode + encode avec BGR 640x480
+
+
+
+
+
+
+
+### Travail où j'essayai de garder encapsulation sur fichier original à éditer:
+#avant l'encodage à la sortie de la source video je ne force pas BGR dans le capsfilter
 gst-launch-1.0 -vvvv videotestsrc num-buffers=100 ! 'video/x-raw,width=640,height=480' ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! h264parse ! mp4mux ! filesink location=nofmt.mp4 
 --> le format utilisé est YUY2
 
@@ -31,36 +56,6 @@ gst-launch-1.0 -vvvv filesrc location=nofmt.mp4 ! qtdemux ! queue ! h264parse ! 
 
 #Mais ges-launch n'arrive pas à le cut (erreur kernel)
 ges-launch-1.0 +clip nofmt.mp4 inpoint=1 duration=1 -o tmp.mp4 -f "video/quicktime:video/x-h264"
-
-
-
-##Sans encapsulation (fichiers .h264)
-
-#Création d'un .h264 sans aucun capsfilter
-gst-launch-1.0 videotestsrc num-buffers=100 ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! filesink location=test.h264
-
-#Décodage + réencodage le plus simple donne une erreur
-gst-launch-1.0 filesrc location=test.h264 ! h264parse ! v4l2h264dec ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! filesink location=out.h264
---> non negotiated, pas d'erreur kernel, origine difficile à voir même avec debug v4l2
-
-#Décodage + réencodage avec videoconvert entre v4l2h264dec et v4l2h264enc = solution
-gst-launch-1.0 filesrc location=in.h264 ! h264parse ! v4l2h264dec ! videoconvert ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! filesink location=out.h264
-
---> OK, les deux lisibles gst-play après passage sur le NUC
-
-
-#Création d'un .h264 avec capsfilter format=BGR et 640x480
-
-#Création du fichier encodé
-gst-launch-1.0 videotestsrc num-buffers=100 ! 'video/x-raw,width=640,height=480,format=BGR' ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! filesink location=in.h264
-
-#Décodage + réencodage avec videoconvert entre v4l2h264dec et v4l2h264enc 
-gst-launch-1.0 filesrc location=in.h264 ! h264parse ! v4l2h264dec ! videoconvert ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! filesink location=out.h264
-
---> OK, les deux lisibles gst-play après passage sur le NUC, donc sans encapsulation je peux avoir décode + encode avec BGR 640x480
-
-
-
 
 
 #Passage par un fichier RAW: est ce que décodage sur le pi vers raw donne qq chose de lisible?
