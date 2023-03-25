@@ -1,0 +1,50 @@
+###
+
+## Savoir si un element est disponible
+android-tutorial-2.c
+li. 170 data->pipeline = gst_parse_launch("ZOB ! autoaudiosink", &error);
+
+--> L'UI affiche "Unable to build pipeline: no element "ZOB""
+
+
+## Recherche si elements disponibles: 
+
+#tcpclientsrc
+
+dans android-tutorial-2.c li. 170 data->pipeline = gst_parse_launch("tcpclientsrc ! autoaudiosink", &error);
+
+"no element tcpclientsrc"
+
+pourtant dans GSTREAMER_ROOT il y a les libs: arm64/lib/gstreamer-1.0/libgsttcp.a   libgsttcp.la 
+je suspecte que dans jni/Android.mk il faut autre chose
+
+
+
+
+
+dans le tuto 2:
+GSTREAMER_PLUGINS         := $(GSTREAMER_PLUGINS_CORE) $(GSTREAMER_PLUGINS_SYS)
+
+dans le tuto 4:
+GSTREAMER_PLUGINS         := $(GSTREAMER_PLUGINS_CORE) $(GSTREAMER_PLUGINS_PLAYBACK) $(GSTREAMER_PLUGINS_CODECS) $(GSTREAMER_PLUGINS_NET) $(GSTREAMER_PLUGINS_SYS)
+
+Si j'ajoute: $(GSTREAMER_PLUGINS_NET) à GSTREAMER_PLUGINS:
+GSTREAMER_PLUGINS         := $(GSTREAMER_PLUGINS_CORE) $(GSTREAMER_PLUGINS_NET) $(GSTREAMER_PLUGINS_SYS) 
+
+et que je remake le projet (je veux augmenter les chances qu'il prenne icone marteau en haut, juste à gauche du menu déroulant avec le nom du projet)
+
+
+le build fails (à la fin j'ai clang++: error: linker command failed with exit code 1 (use -v to see invocation))
+
+
+
+j'essaie d'ajouter -landroid (je copie sur tuto4)
+LOCAL_LDLIBS := -llog -landroid
+
+
+--> non
+
+j'essaie
+G_IO_MODULES              := openssl
+
+pas mieux
