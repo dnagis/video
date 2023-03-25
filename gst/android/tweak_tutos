@@ -1,26 +1,28 @@
 ###
 
-## Savoir si un element est disponible
+### Savoir si un element est disponible
 android-tutorial-2.c
 li. 170 data->pipeline = gst_parse_launch("ZOB ! autoaudiosink", &error);
 
 --> L'UI affiche "Unable to build pipeline: no element "ZOB""
 
 
-## Recherche si elements disponibles: 
+### Recherche d'elements helpful: 
 
-#tcpclientsrc
+##tcpclientsrc
 
+#Le tuto 4 va sur internet fetcher un fichier video donc est plus likely d'avoir des éléments "NET"
+si je bricole la pipeline qui ne contient que playbin et que je mets tcpclientsrc, l'élément est fabriqué donc possible de l'avoir
+
+
+
+#Initialement j'étais parti sur le tuto 2
 dans android-tutorial-2.c li. 170 data->pipeline = gst_parse_launch("tcpclientsrc ! autoaudiosink", &error);
 
 "no element tcpclientsrc"
 
 pourtant dans GSTREAMER_ROOT il y a les libs: arm64/lib/gstreamer-1.0/libgsttcp.a   libgsttcp.la 
 je suspecte que dans jni/Android.mk il faut autre chose
-
-
-
-
 
 dans le tuto 2:
 GSTREAMER_PLUGINS         := $(GSTREAMER_PLUGINS_CORE) $(GSTREAMER_PLUGINS_SYS)
