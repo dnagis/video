@@ -1,0 +1,573 @@
+
+ ____  _             _ _         ____   ___ ____  _____ 
+/ ___|| |_ _   _  __| (_) ___   |___ \ / _ \___ \|___ / 
+\___ \| __| | | |/ _` | |/ _ \    __) | | | |__) | |_ \ 
+ ___) | |_| |_| | (_| | | (_) |  / __/| |_| / __/ ___) |
+|____/ \__|\__,_|\__,_|_|\___/  |_____|\___/_____|____/ 
+                                                        
+
+## start 180323, a marché
+
+# Install Studio le plus récent à ce jour: Android Studio Electric Eel | 2022.1.1 Patch 2
+
+
+# Un des exemples Android Gstreamer qui utilise un fichier build.gradle avec une variable qui ressemble à GSTREAMER_ROOT_ANDROID
+https://gitlab.freedesktop.org/gstreamer/gst-docs/-/tree/master/examples/tutorials/android/android-tutorial-1
+git clone https://gitlab.freedesktop.org/gstreamer/gst-docs.git #20Mo
+--> pb de ce repo: dernier update 3/4y ago
+
+# Le post SO hyper long avec des screenshots qui s'attaque au problème de la doc android gstreamer outdated: 
+https://stackoverflow.com/questions/45044210/gstreamer-examples-in-android-studio/46223465#46223465
+
+
+# Repo = GStreamer "mono repository" car plus récent et donc espoir compatibilité gradle actuel
+FAQ monorepo
+https://gstreamer.freedesktop.org/documentation/frequently-asked-questions/mono-repository.html?gi-language=c
+
+https://gitlab.freedesktop.org/gstreamer/gstreamer
+https://gitlab.freedesktop.org/gstreamer/gstreamer/-/tree/main/subprojects/gst-docs
+https://gitlab.freedesktop.org/gstreamer/gstreamer/-/tree/main/subprojects/gst-docs/examples/tutorials/android
+
+Le git clone veut télécharger l'intégralité de gstreamer,
+solution: je vais dans subprojects/gst-docs/ et je fais download (icones à gche de clone) --> this dir --> tar.gz (6Mo)
+
+
+
+#Import dans studio
+Astuce: marche avec le topdir, je suis pas sûr que marche avec les sous dirs de chaque tuto (n1 à 5)
+
+Studio: File > New > Import Project --> choisir: /initrd/mnt/dev_save/android/studio/AndroidStudioProjects/gst-docs/examples/tutorials/android
+
+
+# Set gstAndroidRoot:
+créer gradle.properties dans le topdir (i.e. AndroidStudioProjects/gst-docs/examples/tutorials/android/
+qui ne contient que la ligne suivante: 
+gstAndroidRoot=/initrd/mnt/dev_save/android/gstand
+
+gstand/ contient gstreamer-1.0-android-universal-1.20.3.tar.xz unpacké soit 4 dirs : arm64   armv7   x86     x86_64
+
+
+
+--> Tuto 1 à 4 build + run à partir de Studio = OK
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#########Ci dessous: 2022: Sans studio
+
+
+
+
+
+
+  __ _           _ _                 
+ / _(_)_ __   __| (_)_ __   __ _ ___ 
+| |_| | '_ \ / _` | | '_ \ / _` / __|
+|  _| | | | | (_| | | | | | (_| \__ \
+|_| |_|_| |_|\__,_|_|_| |_|\__, |___/
+                           |___/     
+
+
+#versions repo Lineage = "android_development" https://github.com/LineageOS/android_development
+https://github.com/LineageOS/android_development/tree/lineage-18.1/samples/SimpleJNI
+https://github.com/LineageOS/android_development/blob/lineage-17.1/samples/SimpleJNI
+
+#outil "Android code search" permet de chercher des fichiers: https://cs.android.com/
+
+#dans stackoverflow chercher les questions taggées [android-source] filtre bien les réponses interessantes
+
+#Lien doc gstreamer instructions install https://gstreamer.freedesktop.org/documentation/installing/for-android-development.html?gi-language=c
+
+#jni/Application.mk (ABI surtout) est nécessaire au ndk-build mais à priori ignoré par l'AOSP build system
+
+#debug d'une variable dans une makefile: $(info  ****VINCENT****LOCAL_PATH is $(LOCAL_PATH))
+
+#outil pour grep toutes les makefiles: mgrep:      Greps on all local Makefiles files. (build/envsetup.sh --> hmm)
+
+#help interne en html: file:///initrd/mnt/dev_save/android/lineageOS/sources/build/make/core/build-system.html
+
+#outil pour transformer makefiles en blueprint (bp): androidmk, compilé soit par m -j blueprint_tools soit par m androidmk
+	--> out/soong/host/linux-x86/bin/androidmk
+
+#Erreur compil au premier gros pitfall:
+stratégie: builder libgstreamer_android puis make SimpleJNI avec include $(CLEAR_VARS); LOCAL_MODULE := gstreamer_android; LOCAL_SRC_FILES := libgstreamer_android.so
+ et include $(PREBUILT_SHARED_LIBRARY)
+error: "libsimplejni (SHARED_LIBRARIES android-arm64) missing gstreamer_android (SHARED_LIBRARIES android-arm64)"
+error: "libsimplejni (SHARED_LIBRARIES android-arm) missing gstreamer_android (SHARED_LIBRARIES android-arm)"
+
+#Command line tools: aucune idée de ce que ça peut faire, je garde lien au cas où:
+commandlinetools-linux-8512546_latest.zip 100Mo
+https://stackoverflow.com/questions/37505709/how-do-i-download-the-android-sdk-without-downloading-android-studio
+https://developer.android.com/studio/index.html#command-tools
+
+
+
+
+
+
+
+
+
+
+ _             
+| | ___   __ _ 
+| |/ _ \ / _` |
+| | (_) | (_| |
+|_|\___/ \__, |
+         |___/ 
+ 
+
+####Stratégie débutée L050922
+-Reprendre à zero le build des .so gstreamer avec le NDK en vue d'avoir ce qui correspond à l'erreur: arm et arm64 (readelf?)
+Avoir un endroit dans ce LOG avec la recette au propre et bien séparée du reste, et éviter d'avoir des bouts de recette partout
+DONE
+
+-Suivre la recette SO de "ZeitGeist" (voir run du 0209) avec Android.bp
+https://stackoverflow.com/questions/48578960/how-to-include-prebuilt-library-in-android-bp-file
+--> le Ma0609
+
+
+
+-Rédiger pour reddit lineage, pour xda, pour gstreamer
+
+-Suivre l'erreur dans les scripts dans build/make
+
+
+
+####Run du V020922
+https://developer.android.com/ndk/guides/prebuilts
+--> dit que le NDK supporte l'utilisation de prebuilt libraries, static and shared (première ligne)
+
+Est ce que c'est possible avec l'AOSP dans development samples?
+
+Quels posts supposent que c'est possible?
+
+Les posts doivent probablement contenir:
+PREBUILT_SHARED_LIBRARY or PREBUILT_STATIC_LIBRARY
+
+je google 'PREBUILT_SHARED_LIBRARY lineageos' --> https://forum.xda-developers.com/t/i-encountered-a-problem-when-building-lineageos-16-0-please-help-solve-it.3869026/
+
+dans stackoverflow je cherche dans les questions taggées [android-source]:
+"PREBUILT_SHARED_LIBRARY [android-source]"
+-->
+https://stackoverflow.com/questions/40712837/how-to-add-some-third-party-so-files-in-android-mk/41025383#41025383
+
+#Posts avec Android.bp, découverte du tool androidmk qui transforme makefile en bp
+https://stackoverflow.com/questions/48578960/how-to-include-prebuilt-library-in-android-bp-file
+
+https://www.appsloveworld.com/cplus/100/150/how-to-include-prebuilt-library-in-android-bp-file
+
+au final au 0209:
+-je pense qu'il faut deux dirs avec deux librairies, maintenant est il nécessaire qu'elles soient de bonne ABI???
+-j'ai la recette avec bp file
+-le posteur SO "ZeitGeist" a posté en mai 2022 ce qui me plait plus que des posts de 2013
+
+####Premier run
+Stratégie globale: 
+1-je builde la librairie gstreamer avec le NDK (où que je soie ne change pas grand chose à priori). J'ai buildé seulement la arm64 lors de ce run.
+2-Je tente le build de samples/SimpleJNI en version makefile, avec include $(PREBUILT_SHARED_LIBRARY) qui prend LOCAL_SRC_FILES := libgstreamer_android.so
+(essentiellement inspiré de https://developer.android.com/ndk/guides/prebuilts, 
+
+#Avec une tentative de build de la libraire dans l'AOSP en même temps que libsimpleJNI:
+si j'essaie de builder le projet gstreamer en appelant ndk-build dans l'environnement AOSP
+error: build/make/core/build-module.mk: No such file or directory
+https://cs.android.com/ --> build-module.mk n'est que dans le ndk
+
+Je suppose que le build system AOSP a lu SimpleJNI/jni/Android.mk et qu'il essaie de builder les librairies
+Mais comme ce n'est pas ndk-build du NDK officiel qui lance, l'environnement ne sait pas trouver le NDK.
+
+Deux pistes possibles:
+#"LINK"-Après succesful compil via NDK de la libgstreamer
+j'essaie LOCAL_SHARED_LIBRARIES := gstreamer_android et LOCAL_LDLIBS := -llog -lgstreamer_android --> fail
+
+Inspiré de https://developer.android.com/ndk/guides/prebuilts
+
+LOCAL_PATH := $(call my-dir)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := gstreamer_android
+LOCAL_SRC_FILES := libgstreamer_android.so
+include $(PREBUILT_SHARED_LIBRARY)
+
+donc à priori j'ai maintenant un module 'gstreamer_android'
+ensuite pour l'utiliser ce serait:
+
+LOCAL_SHARED_LIBRARIES := gstreamer_android
+dans SimpleJNI/jni/Android.mk
+
+l'erreur sent l'ABI qui va pas:
+error: "libsimplejni (SHARED_LIBRARIES android-arm64) missing gstreamer_android (SHARED_LIBRARIES android-arm64)"
+error: "libsimplejni (SHARED_LIBRARIES android-arm) missing gstreamer_android (SHARED_LIBRARIES android-arm)"
+
+
+
+
+
+
+           _ _      _           _ _     _ 
+ _ __   __| | | __ | |__  _   _(_) | __| |
+| '_ \ / _` | |/ / | '_ \| | | | | |/ _` |
+| | | | (_| |   <  | |_) | |_| | | | (_| |
+|_| |_|\__,_|_|\_\ |_.__/ \__,_|_|_|\__,_|
+ 
+
+
+
+#NDK: https://developer.android.com/ndk/downloads --> android-ndk-r25b-linux.zip 530Mo
+
+#Prebuilt Binaries (400Mo) dont dir sera le GSTREAMER_ROOT_ANDROID des examples gst
+***ATTENTION UNTAR IL FAUT CREER UN DIR*** (packages/gstreamer)
+https://gstreamer.freedesktop.org/data/pkg/android/1.20.3/gstreamer-1.0-android-universal-1.20.3.tar.xz
+untar crée 4 dirs pour 4 ABI: arm64/   armv7/   x86/     x86_64/
+ne contient pas de .so, les librairies sont sous la forme d'archives
+dans arm64/ les executable binaries sont ARM aarch64,  dans armv7/ ELF 32-bit LSB shared object, ARM, EABI5 version 1
+je prends un executable au hasard dans out/ c'est du ELF 64-bit LSB shared object, ARM aarch64, version 1 (SYSV)
+--> donc il me faut ce qui est dans arm64/
+
+#Samples Gstreamer: gst-docs 
+git clone --depth 1 https://github.com/GStreamer/gst-docs.git #18Mo
+gst-docs/examples/tutorials/android
+
+#Builder les .so
+cd /initrd/mnt/dev_save/packages/gst-docs/examples/tutorials/android/android-tutorial-1
+export GSTREAMER_ROOT_ANDROID=/initrd/mnt/dev_save/packages/gstreamer
+/initrd/mnt/dev_save/packages/android-ndk-r25b/ndk-build
+
+-erreur 1: armeabi ABI is no longer supported
+Android NDK: The armeabi ABI is no longer supported. Use armeabi-v7a.    
+Android NDK: NDK Application 'local' targets unknown ABI(s): armeabi    
+Android NDK: Please fix the APP_ABI definition in ./jni/Application.mk 
+
+--> dans jni/Application.mk la ligne APP_ABI ne laisser que: armeabi-v7a arm64-v8a
+
+
+-erreur 2: clang++: error: invalid linker name in argument '-fuse-ld=gold'
+à faire pour chaque ABI
+GStreamer      : [LINK] => gst-build-armeabi-v7a/libgstreamer_android.so
+clang++: error: invalid linker name in argument '-fuse-ld=gold'
+make: *** [/initrd/mnt/dev_save/packages/gstreamer/armv7/share/gst-android/ndk-build//gstreamer-1.0.mk:234: buildsharedlibrary_armeabi-v7a] Error 1
+dans $GSTREAMER_ROOT_ANDROID/armv7/share/gst-android/ndk-build/gstreamer-1.0.mk je modifie la ligne qui contient gold (->ld):
+GSTREAMER_LD                  := -fuse-ld=ld -Wl,-soname,lib$(GSTREAMER_ANDROID_MODULE_NAME).so
+
+--> produit:
+[armeabi-v7a] Install        : libgstreamer_android.so => libs/armeabi-v7a/libgstreamer_android.so
+[armeabi-v7a] Install        : libtutorial-1.so => libs/armeabi-v7a/libtutorial-1.so
+[armeabi-v7a] Install        : libc++_shared.so => libs/armeabi-v7a/libc++_shared.so
+
+[arm64-v8a] Install        : libgstreamer_android.so => libs/arm64-v8a/libgstreamer_android.so
+[arm64-v8a] Install        : libtutorial-1.so => libs/arm64-v8a/libtutorial-1.so
+[arm64-v8a] Install        : libc++_shared.so => libs/arm64-v8a/libc++_shared.so
+
+
+# file libs/armeabi-v7a/libgstreamer_android.so
+libs/armeabi-v7a/libgstreamer_android.so: ELF 32-bit LSB shared object, ARM, EABI5 version 1 (SYSV), statically linked, stripped
+# file libs/arm64-v8a/libgstreamer_android.so 
+libs/arm64-v8a/libgstreamer_android.so: ELF 64-bit LSB shared object, ARM aarch64, version 1 (SYSV), statically linked, stripped
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ _   _ ____  _  __
+| \ | |  _ \| |/ /
+|  \| | | | | ' / 
+| |\  | |_| | . \ 
+|_| \_|____/|_|\_\
+  
+
+###Liens
+Page officielle google: https://developer.android.com/ndk --> le guide utilise Studio.
+https://developer.android.com/ndk/samples/sample_hellojni --> This sample guides you through hello-jni, a minimal C/C++ application built with the NDK
+https://github.com/android/ndk-samples/tree/android-mk --> contient des hello worlds NDK
+NDK: https://developer.android.com/ndk/downloads --> android-ndk-r25b-linux.zip 530Mo
+
+
+###Essai build hello world
+samples dont hello-jni/ --> git clone --depth=1 https://github.com/android/ndk-samples.git #100Mo
+
+#env up to date
+cd /initrd/mnt/dev_save/packages/ndk/ndk-samples/hello-jni
+export JAVA_HOME=/initrd/mnt/dev_save/packages/jdk-11 
+export PATH=/initrd/mnt/dev_save/packages/jdk-11/bin:/initrd/mnt/dev_save/android/cmdline-tools/bin:$PATH
+export ANDROID_SDK_ROOT=/initrd/mnt/dev_save/android/cmdline-tools
+./gradlew build
+
+
+
+#LOG
+./gradlew 
+ERROR: JAVA_HOME is not set and no 'java' command could be found in your PATH
+---> Je ressors le travail fait lors de l'unlock Xiaomi (mtox/Android)
+wget https://download.java.net/openjdk/jdk11/ri/openjdk-11+28_linux-x64_bin.tar.gz #180Mo
+export JAVA_HOME=/initrd/mnt/dev_save/packages/jdk-11 
+
+export PATH=/initrd/mnt/dev_save/packages/jdk-11/bin:$PATH
+
+com.android.builder.errors.EvalIssueException: SDK location not found. Define location with an ANDROID_SDK_ROOT environment variable or by setting the sdk.dir path in your project's local properties file at '/initrd/mnt/dev_save/packages/ndk/ndk-samples/hello-jni/local.properties'.
+
+google "android sdk" > page studio > en bas il y a "commandline tools" commandlinetools-linux-8512546_latest.zip
+export ANDROID_SDK_ROOT=/initrd/mnt/dev_save/android/cmdline-tools
+./gradlew --> problème de license à accepter
+
+sdkmanager --help
+sdkmanager --licenses
+
+Error: Could not determine SDK root
+
+
+sdkmanager --licenses --sdk_root=/initrd/mnt/dev_save/android/cmdline-tools
+
+
+
+
+
+
+
+
+-le NDK de chez lineageOS (ancienne version: r7 et actuellement on est en r25...)
+https://github.com/LineageOS qui contient 2500 repos dont android_ndk: https://github.com/LineageOS/android_ndk
+git clone --depth=1 https://github.com/LineageOS/android_ndk.git #37Mo
+ouvrir la doc html incluse dedans
+file:///initrd/mnt/dev_save/packages/android_ndk/documentation.html --> NDK changes laisse supposer que version=r7, on est loin de 25
+
+
+
+
+                _       _ 
+ ___  ___   ___(_) __ _| |
+/ __|/ _ \ / __| |/ _` | |
+\__ \ (_) | (__| | (_| | |
+|___/\___/ \___|_|\__,_|_|
+ 
+ 
+###Pour lineage (reddit et xda)
+
+gstreamer library, NDK, lineageOS sources
+
+My goal: 
+Use libgstreamer library from an app (java frontend -> JNI -> link to native code)
+
+I somehow got used to the LOS-AOSP build system and have been using it from some time now. I would really not go back to studio / gradle..
+I usually start from projects in development/samples/
+
+I now need to access video/graphic features that, as I found documented on the web, are only available as native code.
+
+I use gstreamer a lot on intel boards, raspberries, so I would like to give it a shot on Android
+
+Gstreamer has a page on how to build a simple example using their android library:
+https://gstreamer.freedesktop.org/documentation/installing/for-android-development.html?gi-language=c
+The "hello world" is in their gst-docs package --> gst-docs/examples/tutorials/android/android-tutorial-1
+
+I assumed, based on the "Creating new project" part of their page, that this hello world 
+could be mixed to LOS's (and AOSP) development/samples/SimpleJNI and be built within the LOS-AOSP build system
+
+what I did was:
+I modified LOS's development/samples/SimpleJNI/ makefiles (I switched back to 17.1 to get Android.mk instead of Android.bp) according to gstreamer's page
+I modified jni/Android.mk (correcting a call to include $(GSTREAMER_NDK_BUILD_PATH)/gstreamer.mk --> gstreamer-1.0.mk
+I added jni/Application.mk from their project, leaving two APP_ABIs: APP_ABI = armeabi-v7a arm64-v8a
+I exported the right path within the GSTREAMER_ROOT_ANDROID variable
+
+Trying to build the project:
+
+make SimpleJNI
+In file included from build/make/core/package.mk:78:
+In file included from development/samples/SimpleJNI/Android.mk:46:
+In file included from development/samples/SimpleJNI/jni/Android.mk:61:
+In file included from /initrd/mnt/dev_save/packages/gstreamer/arm64//share/gst-android/ndk-build//gstreamer-1.0.mk:118:
+/initrd/mnt/dev_save/packages/gstreamer/arm64//share/gst-android/ndk-build/gstreamer_prebuilt.mk:64: error: build/make/core/build-module.mk: No such file or directory
+
+
+I searched LOS's sources (on my computer) for this 'build-module.mk' script and did not find it
+
+so I searched using google's code search tool (https://cs.android.com/) and found that it belongs to the NDK (I tend to believe in the recent versions only)
+
+Now, when I use the NDK (android-ndk-r25b) without LOS, I can build gstreamer's example. But this is not what I am looking for: I want to stick to LOS.
+
+
+
+
+
+So my main question is:
+In LOS's build system, starting from development/samples/SimpleJNI how do I work my way towards a project that relies on the NDK, like gstreamer?
+
+
+
+
+
+I found the prebuilts/ndk/ directory, but what it contains does not seem to be helpful in my case (it contains no build script)...
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+build an app, using lineageOS's build system, with a java-coded UI frontend, and a native binding to gstreamer's android binaries
+
+
+The binding to native code uses JNI. However, their build recipe relies on the Android NDK.
+
+I searched LOS's sources (my repo was downloaded a few months ago) for a way to build gstreamer's library, but found none.
+###Mettre comment on lance le build de gstreamer, je pense qu'il faut lancer le script ndk-build, et je ne l'ai pas trouvé dans les sources
+
+So I used the NDK (r25 ###inclure le lien) to build their example, and it yields shared objects:
+libgstreamer_android.so
+
+You can select the build architecture using Application.mk
+I went for:
+###mettre les ABI ici
+
+
+I then tried to build a simple example: based on development/samples/SimpleJNI/.
+
+I placed the arm and the arm64 versions of the library respectively:
+lib/libgstreamer_android.so
+lib64/libgstreamer_android.so
+
+
+and used a recipe found on stack overflow, using the cc_prebuilt_library_shared {} directive in Android.bp (see last post, may 12th, author = "zeitgeist")
+https://stackoverflow.com/questions/48578960/how-to-include-prebuilt-library-in-android-bp-file
+
+cc_prebuilt_library_shared {
+    name: "libgstreamer",
+    proprietary : true,
+    target: {
+        android_arm: {
+            srcs: ["lib/libgstreamer_android.so"],
+        },
+        android_arm64: {
+            srcs: ["lib64/libgstreamer_android.so"],
+        },
+    },
+    strip: { none:true, },
+}
+
+
+android_app {
+    name: "SimpleJNI",
+    srcs: ["**/*.java"],
+    jni_libs: ["libsimplejni", "libgstreamer"],
+    optimize: {
+        enabled: false,
+    },
+    sdk_version: "current",
+    dex_preopt: {
+        enabled: false,
+    },
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+  
+
+
+
+
+
+
+
