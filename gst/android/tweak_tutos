@@ -46,7 +46,7 @@ je laisse en indenté
 
 # "Each Android tutorial builds on top of the previous one and adds progressively more functionality,"
 la page où c'est écrit: https://gstreamer.freedesktop.org/documentation/tutorials/android/index.html?gi-language=c
-
+ce qui m'intrigue c'est que dans le topdir le fichier settings.gradle include du 1 au 5 les uns après les autres
 
 # La doc sur l'intégration des éléments
 https://gstreamer.freedesktop.org/documentation/installing/for-android-development.html?gi-language=c#creating-new-projects
@@ -56,8 +56,30 @@ Cette page de la doc Gstreamer donne:
 
 
 ## Essai sur tuto 4 
+
+#Essai création pipeline
 Rx dans tutorial-4.c
 data->pipeline = gst_parse_launch ("tcpclientsrc port=8888 host=192.168.1.12 ! gdpdepay ! rtph264depay ! decodebin ! videoconvert ! autovideosink", &error);
 
 Tx depuis NUC
 gst-launch-1.0 videotestsrc ! vaapih264enc ! h264parse ! queue ! rtph264pay config-interval=1 ! gdppay ! tcpserversink port=8888 host=0.0.0.0
+
+--> A l'air de recevoir qq chose en log debug, mais bien sûr pas d'affichage. Que se passe t il dans une playbin qui marche?
+
+#Essai de s'adapter à playbin
+
+serait possible en udp:
+https://gstreamer-devel.narkive.com/iovguBP6/how-to-play-rtp-stream-with-playbin
+
+Tx depuis NUC
+gst-launch-1.0 videotestsrc ! decodebin ! videoconvert ! vaapih264enc ! rtph264pay ! udpsink host=0.0.0.0 port=8888
+
+Modif dans le .java:
+private final String defaultMediaUri = "udp://192.168.1.12:8888";
+
+--> Erreur sur l'UI: "Error received from element source: Could not gst/set settings from/on resource"
+
+Sur le NUC:
+gst-launch-1.0 playbin uri=udp://192.168.1.12:8888
+--> pas d'affichage non plus, 
+
