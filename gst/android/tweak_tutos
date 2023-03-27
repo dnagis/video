@@ -1,4 +1,6 @@
-###
+##### Tutos : https://gitlab.freedesktop.org/gstreamer/gstreamer/-/tree/main/subprojects/gst-docs/examples/tutorials/android
+
+Mars 2023
 
 ### Savoir si un element est disponible
 android-tutorial-2.c
@@ -7,46 +9,47 @@ li. 170 data->pipeline = gst_parse_launch("ZOB ! autoaudiosink", &error);
 --> L'UI affiche "Unable to build pipeline: no element "ZOB""
 
 
-### Recherche d'elements helpful: 
 
-##tcpclientsrc
-
-#Le tuto 4 va sur internet fetcher un fichier video donc est plus likely d'avoir des éléments "NET"
-si je bricole la pipeline qui ne contient que playbin et que je mets tcpclientsrc, l'élément est fabriqué donc possible de l'avoir
+### Comment intégrer les éléments qui m'interessent, en particulier pour commencer tcpclientsrc: 
 
 
-
-#Initialement j'étais parti sur le tuto 2
-dans android-tutorial-2.c li. 170 data->pipeline = gst_parse_launch("tcpclientsrc ! autoaudiosink", &error);
-
-"no element tcpclientsrc"
-
-pourtant dans GSTREAMER_ROOT il y a les libs: arm64/lib/gstreamer-1.0/libgsttcp.a   libgsttcp.la 
-je suspecte que dans jni/Android.mk il faut autre chose
-
-dans le tuto 2:
-GSTREAMER_PLUGINS         := $(GSTREAMER_PLUGINS_CORE) $(GSTREAMER_PLUGINS_SYS)
-
-dans le tuto 4:
-GSTREAMER_PLUGINS         := $(GSTREAMER_PLUGINS_CORE) $(GSTREAMER_PLUGINS_PLAYBACK) $(GSTREAMER_PLUGINS_CODECS) $(GSTREAMER_PLUGINS_NET) $(GSTREAMER_PLUGINS_SYS)
-
-Si j'ajoute: $(GSTREAMER_PLUGINS_NET) à GSTREAMER_PLUGINS:
-GSTREAMER_PLUGINS         := $(GSTREAMER_PLUGINS_CORE) $(GSTREAMER_PLUGINS_NET) $(GSTREAMER_PLUGINS_SYS) 
-
-et que je remake le projet (je veux augmenter les chances qu'il prenne icone marteau en haut, juste à gauche du menu déroulant avec le nom du projet)
-
-
-le build fails (à la fin j'ai clang++: error: linker command failed with exit code 1 (use -v to see invocation))
+# J'essaie de créer une pipeline contenant tcpclientsrc dans le tuto 4 car il va sur internet fetcher un fichier video donc est plus likely d'avoir accès à des éléments "NET"
+--> si je bricole la pipeline qui ne contient que playbin et que je mets tcpclientsrc, l'élément est fabriqué + pas d'erreur "no element" donc possible de l'avoir
 
 
 
-j'essaie d'ajouter -landroid (je copie sur tuto4)
-LOCAL_LDLIBS := -llog -landroid
+# tcpclientsrc dans le tuto 2, tenté initialement car c'est un exemple simple d'affichage donc serait plus compréhensible de construire sur cette base
+
+modif li. 170 data->pipeline = gst_parse_launch("tcpclientsrc ! autoaudiosink", &error);
+
+--> "no element tcpclientsrc"
+
+à partir de là j'ai essayé sans y arriver de pouvoir obtenir cet élément dans le tuto 2 en modifiant les fichiers de config du build pour qu'ils collent au tuto 4,
+je laisse en indenté
+
+	jni/Android.mk 
+	dans le tuto 2:
+	GSTREAMER_PLUGINS         := $(GSTREAMER_PLUGINS_CORE) $(GSTREAMER_PLUGINS_SYS)
+	dans le tuto 4:
+	GSTREAMER_PLUGINS         := $(GSTREAMER_PLUGINS_CORE) $(GSTREAMER_PLUGINS_PLAYBACK) $(GSTREAMER_PLUGINS_CODECS) $(GSTREAMER_PLUGINS_NET) $(GSTREAMER_PLUGINS_SYS)
+	Si j'ajoute: $(GSTREAMER_PLUGINS_NET) à GSTREAMER_PLUGINS:
+	GSTREAMER_PLUGINS         := $(GSTREAMER_PLUGINS_CORE) $(GSTREAMER_PLUGINS_NET) $(GSTREAMER_PLUGINS_SYS) 
+	et que je remake le projet (je veux augmenter les chances qu'il prenne icone marteau en haut, juste à gauche du menu déroulant avec le nom du projet)
+	le build fails (à la fin j'ai clang++: error: linker command failed with exit code 1 (use -v to see invocation))
+	j'essaie d'ajouter -landroid (je copie sur tuto4)
+	LOCAL_LDLIBS := -llog -landroid
+	--> non
+	j'essaie
+	G_IO_MODULES              := openssl
+	--> non plus
 
 
---> non
+# "Each Android tutorial builds on top of the previous one and adds progressively more functionality,"
+la page où c'est écrit: https://gstreamer.freedesktop.org/documentation/tutorials/android/index.html?gi-language=c
 
-j'essaie
-G_IO_MODULES              := openssl
 
-pas mieux
+# La doc sur l'intégration des éléments
+https://gstreamer.freedesktop.org/documentation/installing/for-android-development.html?gi-language=c#creating-new-projects
+Cette page de la doc Gstreamer donne:
+	dans le chapitre "Creating New Projects" les modifications de jni/Android.mk nécessaires
+	dans le chapitre "List of categories and included plugins" la liste des éléments / plugins et la catégorie à mettre dans les makefiles
