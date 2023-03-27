@@ -53,3 +53,11 @@ https://gstreamer.freedesktop.org/documentation/installing/for-android-developme
 Cette page de la doc Gstreamer donne:
 	dans le chapitre "Creating New Projects" les modifications de jni/Android.mk nécessaires
 	dans le chapitre "List of categories and included plugins" la liste des éléments / plugins et la catégorie à mettre dans les makefiles
+
+
+## Essai sur tuto 4 
+Rx dans tutorial-4.c
+data->pipeline = gst_parse_launch ("tcpclientsrc port=8888 host=192.168.1.12 ! gdpdepay ! rtph264depay ! decodebin ! videoconvert ! autovideosink", &error);
+
+Tx depuis NUC
+gst-launch-1.0 videotestsrc ! vaapih264enc ! h264parse ! queue ! rtph264pay config-interval=1 ! gdppay ! tcpserversink port=8888 host=0.0.0.0
