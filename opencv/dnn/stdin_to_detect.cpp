@@ -7,10 +7,12 @@
  * ***pour les threads la compil nécessite un flag particulier: -pthread***
  * 	Hello world threads trouvé avec recherche 'c++ threads': https://cplusplus.com/reference/thread/thread/
  * 
- * Compil:
- * 
+ * # Compil native: 
  * g++ -pthread stdin_to_detect.cpp -o stdin_to_detect `pkg-config --cflags --libs opencv4`
- *  
+ * 
+ * # X-Compil:
+ * export PKG_CONFIG_LIBDIR=/initrd/mnt/dev_save/packages/opencv-4.6.0/platforms/linux/build/install/lib/pkgconfig/
+ * export PATH=$PATH:/initrd/mnt/dev_save/rpi/cross/bin/ 
  * aarch64-linux-gnu-g++ -pthread stdin_to_detect.cpp -o stdin_to_detect `pkg-config --cflags --libs opencv4`
  * 
  * La partie détection yolo vient de:
@@ -21,7 +23,7 @@
  * 
  * Pipeline simple pour tests
  * **ATTENTION avec videotestsrc sans is-live=true on est bien au dessus de 30 fps, bien que le capsfilter contienne framerate=30/1***
- * gst-launch-1.0 --quiet videotestsrc is-live=true ! video/x-raw,width=640,height=480,format=BGR,framerate=30/1 ! fdsink | ./stdin_to_detect
+ * gst-launch-1.0 --quiet videotestsrc is-live=true ! video/x-raw,width=640,height=480,format=BGR,framerate=30/1 ! fdsink | ./stdin_to_detect po 0.7
  * 
  * kill -s SIGINT `pidof gst-launch-1.0`
  * 
