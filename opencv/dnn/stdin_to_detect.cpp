@@ -200,7 +200,7 @@ int main(int argc, char *argv[])
 	
 	
 	
-	results_file.open("results.txt");
+	results_file.open("/root/results.txt");
 	
 	//Création d'une Mat img qui va recevoir la frame passée à read_stdin via stdin
 	img.create(IMAGE_HEIGHT, IMAGE_WIDTH, CV_8UC3);	
