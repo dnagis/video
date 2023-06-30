@@ -73,7 +73,7 @@ ofstream results_file;
 //dnn
 double confThreshold;
 //la classe recherchée, cf object_detection_classes_yolov3.txt, 0 = person, 14 = bird
-int searched_class_id = 14; 
+int searched_class_id = 0; 
 
 int inpWidth = 416;
 int inpHeight = 416;
