@@ -1,17 +1,37 @@
 #include <dirent.h>
-
 #include <iostream>
 #include <fstream>
 #include <string>
 
-int SearchProc() {
+
+//Cherche si le fichier /proc/<PID>/cmdline contient "stdin_to_detect"
+int parseCmdline(std::string filestr)
+{
+  std::ifstream file(filestr);
   
-  const char *procName = "/proc/";
+  std::string str((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+
+  str.c_str();
+  
+  std::size_t found = str.find("stdin_to_detect");
+
+  if (found!=std::string::npos)
+	{
+		//std::cout << "found at: " << found << '\n';
+		return 0;
+	}	
+	
+  return 1;
+}
+
+
+int iterateProcEntries() {
+  
+  const char *procDirName = "/proc/";
   struct dirent *entry;
   DIR *dp;
 
-
-  dp = ::opendir(procName);
+  dp = ::opendir(procDirName);
   if (dp == NULL) {
     perror("opendir: Path does not exist or could not be read.");
     return -1;
@@ -21,26 +41,13 @@ int SearchProc() {
 	
 	//d_type == 0x4 : directory
     if (entry->d_type == 0x4) {
+
+		std::string cmdline_file = "/proc/"+std::string(entry->d_name)+"/cmdline";
 		
-		//std::cout << entry->d_name << std::endl;
-		
-		std::fstream my_file;
-		
-		std::cout << "/proc/"+std::string(entry->d_name)+"/cmdline" << std::endl;
-		
-		my_file.open("/proc/"+std::string(entry->d_name)+"/cmdline", std::ios::in);
-		
-		
-		if (!my_file) {
-			std::cout << "File not accessed!" << std::endl;
-		}	
-		else {
-			std::cout << "File accessed!" << std::endl;
-			my_file.close(); 
+		if (parseCmdline(cmdline_file) == 0) {
+			std::cout << "found stdin_to_detect for pid:" << entry->d_name << std::endl;
+			return atoi(entry->d_name);
 		}
-		
-		
-		
 	}
     
   }
@@ -51,6 +58,6 @@ int SearchProc() {
 
 int main (int argc, char *argv[]) {
 
-  SearchProc();
+  iterateProcEntries();
   return 0;
 }
