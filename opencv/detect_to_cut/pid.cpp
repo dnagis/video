@@ -3,8 +3,10 @@
 #include <fstream>
 #include <string>
 
+const char *process_name = "stdin_to_detect";
 
-//Cherche si le fichier /proc/<PID>/cmdline contient "stdin_to_detect"
+
+//Cherche si le fichier /proc/<PID>/cmdline contient <process_name> ("stdin_to_detect")
 int parseCmdline(std::string filestr)
 {
   std::ifstream file(filestr);
@@ -13,7 +15,7 @@ int parseCmdline(std::string filestr)
 
   str.c_str();
   
-  std::size_t found = str.find("stdin_to_detect");
+  std::size_t found = str.find(process_name);
 
   if (found!=std::string::npos)
 	{
@@ -24,7 +26,7 @@ int parseCmdline(std::string filestr)
   return 1;
 }
 
-
+//iterate pour chaque dir/fichier dans /proc/, conditionne sur is directory, le cas échéant appelle parseCmdLine()
 int iterateProcEntries() {
   
   const char *procDirName = "/proc/";
@@ -45,7 +47,7 @@ int iterateProcEntries() {
 		std::string cmdline_file = "/proc/"+std::string(entry->d_name)+"/cmdline";
 		
 		if (parseCmdline(cmdline_file) == 0) {
-			std::cout << "found stdin_to_detect for pid:" << entry->d_name << std::endl;
+			
 			return atoi(entry->d_name);
 		}
 	}
@@ -53,11 +55,16 @@ int iterateProcEntries() {
   }
 
   ::closedir(dp);
-  return 0;
+  return -1;
 }
 
 int main (int argc, char *argv[]) {
 
-  iterateProcEntries();
+  int pid;
+  pid = iterateProcEntries();
+  
+  std::cout << "result recherche pid pour string: " << process_name << ": " << pid << std::endl;
+  
+
   return 0;
 }
