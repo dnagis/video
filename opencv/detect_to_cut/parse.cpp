@@ -9,7 +9,7 @@ std::vector<int> detect_vector{};
 
 int N_TAIL = 30; //n detections à analyser à la fin (tail)
 int MAX_GAP = 3; //longueur d'une sequence de non detection qui signe la fin d'une séquence et pas un gap de detect
-int MIN_SIZE = 5; //taille en dessous de laquelle on estime que séquence pas assez longue
+int MIN_LENGTH = 5; //taille en dessous de laquelle on estime que séquence pas assez longue
 
 //Overloading << Operator juste pour imprimer les vectors avec un simple std::cout << detect_vector;
 //https://www.techiedelight.com/print-vector-cpp/
@@ -136,11 +136,33 @@ int main (int argc, char *argv[]) {
 
   int start_index = findStart(tail_detect);
   
-  std::cout << "Start:" << start_index << std::endl;
+  
   
   if (start_index != -1) {
+	std::cout << "Found a start: " << start_index << std::endl;
 	int end_index = findEnd(tail_detect, start_index);  
-	std::cout << "End: " << end_index << std::endl;
+	
+	if (start_index != -1) {
+		std::cout << "Found an end: " << end_index << std::endl;
+		int seq_length = end_index - start_index;
+		std::cout << "Length: " << seq_length << std::endl;
+		if (seq_length > MIN_LENGTH) {
+			 std::cout << "On a une séquence..." << std::endl;
+			}
+			//Déduction des indexes de frame start et end
+			
+			//	déduction des indexes start et end dans le vecteur total
+			int index_start_tot = detect_vector.size() - tail_detect.size() + start_index;
+			int index_end_tot = detect_vector.size() - tail_detect.size() + end_index;
+			//std::cout << "Indexes dans le vector total: start: " << index_start_tot << " end: " << index_end_tot << std::endl;
+			
+			//	déduction des frames correspondantes
+			int frame_start=frames_vector[index_start_tot];
+			int frame_end=frames_vector[index_end_tot];
+			
+			std::cout << "frame start: " << frame_start << " end frame:" << frame_end << std::endl;
+			 
+		}
 	
 	
 	
