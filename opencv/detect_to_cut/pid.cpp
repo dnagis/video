@@ -42,7 +42,7 @@ int searchPid(std::string process_name) {
     return -1;
   }
 
-  //iterate pour chaque dir/fichier dans /proc/, conditionne sur is directory, le cas échéant appelle parseCmdLine()
+  //iterate pour chaque dir/fichier dans /proc/, conditionne sur is directory, le cas échéant appelle parseCmdlineFile()
   while ((entry = ::readdir(dp))) {
 	
 	//d_type == 0x4 : directory
