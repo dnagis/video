@@ -165,6 +165,13 @@ int parseResults() {
   results_file.close();
   
   
+  
+  if (detect_vector.size() < N_TAIL) {
+    std::cout << "Pas encore " << N_TAIL << " detections --> break" << std::endl;
+    return -1;
+  }  
+  
+  
   std::vector<int> tail_detect = getTail(detect_vector);
   
   std::cout << "Tail_detect:" << tail_detect << std::endl;

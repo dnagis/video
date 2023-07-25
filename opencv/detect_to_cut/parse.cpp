@@ -80,10 +80,8 @@ std::vector<int> getTail(std::vector<int> detections) {
 	
 }
 
-//Ouvre le fichier /root/results.txt, getline sur chaque ligne, regex qq chose type 634 0, 
-//Je ne peux pas renvoyer deux vectors pour frames et detection donc wide scope variables
-void parseResults() {
-	
+
+int parseResults() {
 	
   std::ifstream results_file("/root/results.txt");
   
@@ -113,30 +111,21 @@ void parseResults() {
     }
   }
   results_file.close();
-	
-}
-
-
-
-
-
-int main (int argc, char *argv[]) {
-
-  parseResults(); //doit remplir detect_vector
   
-  //std::cout << frames_vector;
-  //std::cout << detect_vector;
   
-  //std::cout << " taille de detect_vector après parseResults:" << detect_vector.size() << std::endl;
+  if (detect_vector.size() < N_TAIL) {
+	  std::cout << "Pas encore " << N_TAIL << " detections --> break" << std::endl;
+	  return -1;
+	}  
+
+
+  
   
   std::vector<int> tail_detect = getTail(detect_vector);
-  
-  std::cout << "Tail_detect size:" << tail_detect.size() << std::endl;
-  std::cout << tail_detect << std::endl;
+ 
+  std::cout << "Tail_detect:" << tail_detect << std::endl;
 
   int start_index = findStart(tail_detect);
-  
-  
   
   if (start_index != -1) {
 	std::cout << "Found a start: " << start_index << std::endl;
@@ -161,13 +150,24 @@ int main (int argc, char *argv[]) {
 			int frame_end=frames_vector[index_end_tot];
 			
 			std::cout << "frame start: " << frame_start << " end frame:" << frame_end << std::endl;
-			 
+			return 0;
 		}
-	
-	
-	
-	
 	}
+  
+  return -1;
+	
+}
+
+
+
+
+
+int main (int argc, char *argv[]) {
+
+  int result_parse = parseResults(); 
+  
+  std::cout << "Resultat parse results:" << result_parse << std::endl;
+
   
   return 0;
 }
