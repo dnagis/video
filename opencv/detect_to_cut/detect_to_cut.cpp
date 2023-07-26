@@ -11,8 +11,7 @@ int N_TAIL = 30; //n detections à analyser à la fin (tail)
 int MAX_GAP = 3; //longueur d'une sequence de non detection qui signe la fin d'une séquence et pas un gap de detect
 int MIN_LENGTH = 5; //taille en dessous de laquelle on estime que séquence pas assez longue
 
-std::vector<int> frames_vector{};
-std::vector<int> detect_vector{};
+
 
 //Overloading << Operator juste pour imprimer les vectors avec un simple std::cout << detect_vector;
 //https://www.techiedelight.com/print-vector-cpp/
@@ -135,6 +134,9 @@ std::vector<int> getTail(std::vector<int> detections) {
 
 int parseResults() {
 	
+  std::vector<int> frames_vector{};
+  std::vector<int> detect_vector{};
+  
   std::ifstream results_file("/root/results.txt");
   
   if (!results_file.is_open()) {
@@ -167,7 +169,7 @@ int parseResults() {
   
   
   if (detect_vector.size() < N_TAIL) {
-    std::cout << "Pas encore " << N_TAIL << " detections --> break" << std::endl;
+    std::cout << "Taille detect_vector: " << detect_vector.size() << " Pas encore " << N_TAIL << " detections --> break" << std::endl;
     return -1;
   }  
   
@@ -182,7 +184,7 @@ int parseResults() {
 	std::cout << "Found a start: " << start_index << std::endl;
 	int end_index = findEnd(tail_detect, start_index);  
 	
-	if (start_index != -1) {
+	if (end_index != -1) {
 		std::cout << "Found an end: " << end_index << std::endl;
 		int seq_length = end_index - start_index;
 		std::cout << "Length: " << seq_length << std::endl;
@@ -200,7 +202,19 @@ int parseResults() {
 			int frame_start=frames_vector[index_start_tot];
 			int frame_end=frames_vector[index_end_tot];
 			
-			std::cout << "frame start: " << frame_start << " end frame:" << frame_end << std::endl;
+			std::cout << "sequence frame start: " << frame_start << " end frame:" << frame_end << std::endl;
+			
+			
+			//Kill sigint
+			std::cout << "kill gst-launch" << std::endl;			
+			system("kill -s SIGINT `pidof gst-launch-1.0`");
+			
+			//Construction de la commande de cut
+			char cmd[200];
+			snprintf(cmd, sizeof cmd,  "/path/to gst blah blah element perso cut %i %i", frame_start, frame_end);
+			std::cout << "construction de la commande de cut:" << cmd << std::endl;
+			//system(cmd);
+			
 			return 0;
 		}
 	}
