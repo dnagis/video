@@ -210,10 +210,10 @@ int parseResults() {
 			system("kill -s SIGINT `pidof gst-launch-1.0`");
 			
 			//Construction de la commande de cut
-			char cmd[200];
-			snprintf(cmd, sizeof cmd,  "/path/to gst blah blah element perso cut %i %i", frame_start, frame_end);
-			std::cout << "construction de la commande de cut:" << cmd << std::endl;
-			//system(cmd);
+			char cmd[400];
+			snprintf(cmd, sizeof cmd, "gst-launch-1.0 filesrc location=/root/capture.h264 ! h264parse ! v4l2h264dec ! mydropframes start-frame=%i end-frame=%i ! videoconvert ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! h264parse ! mp4mux ! filesink location=cut.mp4", frame_start, frame_end);
+			std::cout << "Commande de cut:" << cmd << std::endl;
+			system(cmd);
 			
 			return 0;
 		}
