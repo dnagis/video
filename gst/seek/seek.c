@@ -31,8 +31,10 @@ main (int argc, char *argv[])
   //pipeline = gst_parse_launch("filesrc location=in.mp4 ! qtdemux ! h264parse ! vaapih264dec ! vaapih264enc ! h264parse ! mp4mux ! filesink location=out.mp4", NULL);
   //pipeline = gst_parse_launch("filesrc location=in.mp4 ! qtdemux ! h264parse ! vaapih264dec ! vaapih264enc ! filesink location=out.h264", NULL);
   
+  pipeline = gst_parse_launch("filesrc location=in.mp4 ! qtdemux ! h264parse ! mp4mux ! filesink location=out.mp4", NULL);
+  
   //video.mp4 créé avec: gst-launch-1.0 videotestsrc num-buffers=100 ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! h264parse ! mp4mux ! filesink location=video.mp4
-  pipeline = gst_parse_launch("filesrc location=video.mp4 ! qtdemux ! h264parse ! v4l2h264dec ! v4l2h264enc ! video/x-h264,level=(string)3 ! h264parse ! mp4mux ! filesink location=out.mp4", NULL);
+  //pipeline = gst_parse_launch("filesrc location=video.mp4 ! qtdemux ! h264parse ! v4l2h264dec ! v4l2h264enc ! video/x-h264,level=(string)3 ! h264parse ! mp4mux ! filesink location=out.mp4", NULL);
  
   //pipeline = gst_parse_launch("filesrc location=in.mp4 ! qtdemux ! h264parse ! vaapih264dec ! vaapisink", NULL);
   //pipeline = gst_parse_launch("playbin uri=file:///root/in.mp4", NULL);
