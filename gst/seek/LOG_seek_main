@@ -1,10 +1,15 @@
 ### Objectif: utiliser le seek pour ne garder qu'une portion d'une video en input
 
 
-## Création d'une video avec timeoverlay
+## Création d'une video 
 
-NUC avec timeoverlay
+#x86_64 (avec timeoverlay)
 gst-launch-1.0 videotestsrc num-buffers=100 ! timeoverlay ! vaapih264enc ! h264parse ! mp4mux ! filesink location=in.mp4
+
+#Aarch64
+gst-launch-1.0 videotestsrc num-buffers=100 ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! h264parse ! mp4mux ! filesink location=in.mp4
+
+
 
 
 ## Appli qui lit le fichier, décode, encode et filesink un fichier
@@ -69,7 +74,6 @@ export PKG_CONFIG_SYSROOT_DIR=/initrd/mnt/dev_save/rpi/cross/aarch64-linux-gnu
 
 sur le hello_world.c dans le dir above, avec une pipeline simple videotestsrc ! encode ! mp4
 
-
 gst_parse_launch("videotestsrc num-buffers=100 ! v4l2h264enc ! video/x-h264,level=(string)3 ! h264parse ! mp4mux ! filesink location=test_in_app.mp4
 
 ***attention avec  v4l2h264enc ! 'video/x-h264,level=(string)3' ! h264parse ! ...*** ---> plante au runtime (uri invalid)
@@ -78,9 +82,7 @@ aarch64-linux-gnu-gcc seek.c -o seek `pkg-config --cflags --libs gstreamer-1.0`
 
 
 
-
-
-#Recherche d'une pipeline qui lit decode et réencode sur le RPi pour l'intégrer dans l'app
+#Une pipeline qui lit decode et réencode sur le RPi pour l'intégrer dans l'app
 
 voir LOG_v4l2h264dec (format pas RGB sinon décodeur plante)
 gst-launch-1.0 videotestsrc num-buffers=100 ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! h264parse ! mp4mux ! filesink location=video.mp4
@@ -88,5 +90,21 @@ gst-launch-1.0 videotestsrc num-buffers=100 ! v4l2h264enc ! 'video/x-h264,level=
 #décode + réencode
 gst-launch-1.0 filesrc location=video.mp4 ! qtdemux ! h264parse ! v4l2h264dec ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! h264parse ! mp4mux ! filesink location=out.mp4
 
-
 --> seek.c avec cette pipeline intégrée plante
+
+
+ ##Break plusieurs mois (elementPerso marchait, je suis passé à d'autres sujets)
+
+
+#Une pipeline qui ne transcode pas:
+filesrc location=in.mp4 ! qtdemux ! h264parse ! mp4mux ! filesink location=out.mp4
+
+En appli:
+génère un produit dont la taille a l'air de répondre au seek(), en x86_64 et sur le RPi, mais non lisible (could not determine type of stream).
+
+Différence: sur le RPi j'ai une erreur qui ne bloque pas l'execution mais aboutit quand même à la génération d'un produit
+que ce soit à partir d'un in.mp4 généré sur le NUC ou sur le RPi c'est pareil
+(seek:218): GStreamer-CRITICAL **: 01:47:43.701: gst_segment_do_seek: assertion 'segment->format == format' failed
+au lancement gst_element_send_event (pipeline, seek_event); 
+
+

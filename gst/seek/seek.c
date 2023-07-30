@@ -3,6 +3,10 @@
  * https://gstreamer.freedesktop.org/documentation/tutorials/basic/hello-world.html?gi-language=c
  * 
  * gcc seek.c -o seek `pkg-config --cflags --libs gstreamer-1.0`
+ * 
+ * export PATH=$PATH:/initrd/mnt/dev_save/rpi/cross/bin/
+ * export PKG_CONFIG_LIBDIR=/initrd/mnt/dev_save/rpi/cross/aarch64-linux-gnu/lib/pkgconfig
+ * export PKG_CONFIG_SYSROOT_DIR=/initrd/mnt/dev_save/rpi/cross/aarch64-linux-gnu
  * aarch64-linux-gnu-gcc seek.c -o seek `pkg-config --cflags --libs gstreamer-1.0`
  * 
  **/
@@ -28,12 +32,14 @@ main (int argc, char *argv[])
   gst_init (&argc, &argv);
 
   /* Build the pipeline */
+  
+  //création des fichiers videos pour l'input cf au début de LOG_seek_main
+  
   //pipeline = gst_parse_launch("filesrc location=in.mp4 ! qtdemux ! h264parse ! vaapih264dec ! vaapih264enc ! h264parse ! mp4mux ! filesink location=out.mp4", NULL);
   //pipeline = gst_parse_launch("filesrc location=in.mp4 ! qtdemux ! h264parse ! vaapih264dec ! vaapih264enc ! filesink location=out.h264", NULL);
   
   pipeline = gst_parse_launch("filesrc location=in.mp4 ! qtdemux ! h264parse ! mp4mux ! filesink location=out.mp4", NULL);
   
-  //video.mp4 créé avec: gst-launch-1.0 videotestsrc num-buffers=100 ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! h264parse ! mp4mux ! filesink location=video.mp4
   //pipeline = gst_parse_launch("filesrc location=video.mp4 ! qtdemux ! h264parse ! v4l2h264dec ! v4l2h264enc ! video/x-h264,level=(string)3 ! h264parse ! mp4mux ! filesink location=out.mp4", NULL);
  
   //pipeline = gst_parse_launch("filesrc location=in.mp4 ! qtdemux ! h264parse ! vaapih264dec ! vaapisink", NULL);
@@ -61,7 +67,7 @@ main (int argc, char *argv[])
   
   
   
-  //Espoir: de placer un seek dans la boucle ci dessou
+  //Espoir: de placer un seek dans la boucle ci dessous
   //gst_element_send_event (pipeline, seek_event);  
   //gst_element_seek_simple (pipeline, GST_FORMAT_TIME, GST_SEEK_FLAG_FLUSH | GST_SEEK_FLAG_KEY_UNIT, 2 * GST_SECOND);
   
