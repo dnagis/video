@@ -71,6 +71,7 @@ filesrc location=in.mp4 ! qtdemux ! h264parse ! vaapih264dec ! vaapih264enc ! fi
 export PATH=$PATH:/initrd/mnt/dev_save/rpi/cross/bin/
 export PKG_CONFIG_LIBDIR=/initrd/mnt/dev_save/rpi/cross/aarch64-linux-gnu/lib/pkgconfig
 export PKG_CONFIG_SYSROOT_DIR=/initrd/mnt/dev_save/rpi/cross/aarch64-linux-gnu
+aarch64-linux-gnu-gcc seek.c -o seek `pkg-config --cflags --libs gstreamer-1.0`
 
 sur le hello_world.c dans le dir above, avec une pipeline simple videotestsrc ! encode ! mp4
 
@@ -82,21 +83,38 @@ aarch64-linux-gnu-gcc seek.c -o seek `pkg-config --cflags --libs gstreamer-1.0`
 
 
 
-#Une pipeline qui lit decode et réencode sur le RPi pour l'intégrer dans l'app
+### Une pipeline qui lit decode et réencode sur le RPi
 
 voir LOG_v4l2h264dec (format pas RGB sinon décodeur plante)
-gst-launch-1.0 videotestsrc num-buffers=100 ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! h264parse ! mp4mux ! filesink location=video.mp4
+gst-launch-1.0 videotestsrc num-buffers=100 ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! h264parse ! mp4mux ! filesink location=in.mp4
 
-#décode + réencode
-gst-launch-1.0 filesrc location=video.mp4 ! qtdemux ! h264parse ! v4l2h264dec ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! h264parse ! mp4mux ! filesink location=out.mp4
+#décode + réencode en gst-launch-1.0:
+gst-launch-1.0 filesrc location=in.mp4 ! qtdemux ! h264parse ! v4l2h264dec ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! h264parse ! mp4mux ! filesink location=out.mp4
 
---> seek.c avec cette pipeline intégrée plante
+#seek.c avec cette pipeline intégrée: comportement inconstant, mais le plus souvent bloque avec erreur kernel.
+
+J'essaie sans encapsuler:
+
+gst-launch-1.0 filesrc location=in.mp4 ! qtdemux ! h264parse ! v4l2h264dec ! v4l2h264enc ! 'video/x-h264,level=(string)3' ! filesink location=out.h264
+-> gst-discoverer-1.0 OK
+
+seek.c avec cette pipeline intégrée: bloque avec erreur kernel
 
 
- ##Break plusieurs mois (elementPerso marchait, je suis passé à d'autres sujets)
+dans l'app j'enlève le call gst_element_send_event (pipeline, seek_event); --> j'ai un fonctionnement comme avec gst-launch
 
 
-#Une pipeline qui ne transcode pas:
+
+
+
+
+
+
+
+
+
+
+#Essai d'une pipeline qui ne transcode pas:
 filesrc location=in.mp4 ! qtdemux ! h264parse ! mp4mux ! filesink location=out.mp4
 
 En appli:

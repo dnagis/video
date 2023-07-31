@@ -35,20 +35,25 @@ main (int argc, char *argv[])
   
   //création des fichiers videos pour l'input cf au début de LOG_seek_main
   
+  pipeline = gst_parse_launch("filesrc location=in.mp4 ! qtdemux ! h264parse ! v4l2h264dec ! v4l2h264enc ! video/x-h264,level=(string)3 ! filesink location=out.h264", NULL); 
+  
+  //pipeline = gst_parse_launch("filesrc location=in.mp4 ! qtdemux ! h264parse ! v4l2h264dec ! v4l2h264enc ! video/x-h264,level=(string)3 ! h264parse ! mp4mux ! filesink location=out.mp4", NULL);    
+  
   //pipeline = gst_parse_launch("filesrc location=in.mp4 ! qtdemux ! h264parse ! vaapih264dec ! vaapih264enc ! h264parse ! mp4mux ! filesink location=out.mp4", NULL);
   
   //pipeline = gst_parse_launch("filesrc location=in.mp4 ! qtdemux ! h264parse ! vaapih264dec ! vaapih264enc ! filesink location=out.h264", NULL);
   
+  
+  
   //pipeline = gst_parse_launch("filesrc location=in.mp4 ! qtdemux ! h264parse ! mp4mux ! filesink location=out.mp4", NULL);
   
-  pipeline = gst_parse_launch("filesrc location=in.mp4 ! qtdemux ! h264parse ! filesink location=out.h264", NULL);
+  //pipeline = gst_parse_launch("filesrc location=in.mp4 ! qtdemux ! h264parse ! filesink location=out.h264", NULL);
   
-  
-  
-  //pipeline = gst_parse_launch("filesrc location=video.mp4 ! qtdemux ! h264parse ! v4l2h264dec ! v4l2h264enc ! video/x-h264,level=(string)3 ! h264parse ! mp4mux ! filesink location=out.mp4", NULL);
- 
   //pipeline = gst_parse_launch("filesrc location=in.mp4 ! qtdemux ! h264parse ! vaapih264dec ! vaapisink", NULL);
   //pipeline = gst_parse_launch("playbin uri=file:///root/in.mp4", NULL);
+
+
+
 
   seek_event =
         gst_event_new_seek (1.0, GST_FORMAT_TIME, 
@@ -101,10 +106,10 @@ main (int argc, char *argv[])
                 gst_element_state_get_name (old_state), gst_element_state_get_name (new_state));
                 
            if ( old_state == GST_STATE_PAUSED && new_state == GST_STATE_PLAYING && seek_done == FALSE ) {
-			   g_print ("On a detecte Pipeline state changed from PAUSED to PLAYING on lance un seek\n");
-			   //gst_element_seek_simple (pipeline, GST_FORMAT_TIME, GST_SEEK_FLAG_FLUSH | GST_SEEK_FLAG_KEY_UNIT, 2 * GST_SECOND);
-			   gst_element_send_event (pipeline, seek_event); 
-			   seek_done=TRUE;
+			   g_print ("On a detecte Pipeline state changed from PAUSED to PLAYING\n");
+
+			   //gst_element_send_event (pipeline, seek_event); 
+			   //seek_done=TRUE;
 			   }
           }
           break;
