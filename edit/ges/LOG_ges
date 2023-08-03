@@ -8,7 +8,7 @@ ges-launch-1.0 help --> une aide plus sympa que --help
 ges-launch-1.0 +clip in.mp4 inpoint=60 duration=15 -o out.mp4 -f "video/quicktime:video/x-h264"
 
 ###Extract frame à pos=30s d'un fichier RPiCam:
-ges-launch-1.0 +clip capture.mp4 inpoint=30 duration=1 -o tmp.mp4 -f "video/quicktime:video/x-h264"
+ges-launch-1.0 +clip capture.mp4 inpoint=30.0 duration=1.0 -o tmp.mp4 -f "video/quicktime:video/x-h264"
 gst-launch-1.0 filesrc location=tmp.mp4 ! qtdemux ! vaapih264dec ! videorate ! videoconvert ! video/x-raw,format=NV12,framerate=1/10 ! vaapijpegenc ! multifilesink location=frame.jpg
 
 
@@ -45,7 +45,7 @@ gst-launch-1.0 filesrc location=video.mp4 ! qtdemux ! vaapidecodebin ! vaapipost
 
 
 #Crop (l'effet videocrop en fait c'est un element gstreamer, donc pour voir les properties: gst-inspect et prepend set-)
-ges-launch-1.0 -v ximagesink +clip samedi.mp4 inpoint=1809 duration=15 +effect "videocrop" set-right 300 set-left 100
+ges-launch-1.0 -v ximagesink +clip samedi.mp4 inpoint=1809.0 duration=15.0 +effect "videocrop" set-right 300 set-left 100
 
 
 
@@ -53,7 +53,7 @@ ges-launch-1.0 -v ximagesink +clip samedi.mp4 inpoint=1809 duration=15 +effect "
 
 
 #lignes en vrac (à ranger???)
-ges-launch-1.0 +test-clip smpte duration=5
+ges-launch-1.0 +test-clip smpte duration=5.0
 	la liste des patterns (comme "smpte") -> https://gstreamer.freedesktop.org/documentation/gst-editing-services/ges-enums.html?gi-language=c#GESVideoTestPattern
 ges-launch-1.0 +clip 174.ogg inpoint=2 duration=2 #duration devrait devenir optionel (ira jusqu'à la fin du fichier) dans une prochaine version
 ges-launch-1.0 +clip 1.mp4 inpoint=2 duration=4 +clip 2.mp4 inpoint=2 duration=4 -o out.mp4 -f "video/quicktime:video/x-raw"
