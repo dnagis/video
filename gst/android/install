@@ -354,7 +354,7 @@ https://github.com/android/ndk-samples/tree/android-mk --> contient des hello wo
 ### Liens Downloads
 NDK (09-23) : https://developer.android.com/ndk/downloads --> android-ndk-r25c-linux.zip (507Mo)
 Command Line Tools (09-23) : https://developer.android.com/studio/index.html --> Tout en bas: "Command line tools only" --> commandlinetools-linux-10406996_latest.zip (142Mo)
-
+JDK (09-23) : jdk 20.0.2 : https://jdk.java.net/20/ --> openjdk-20.0.2_linux-x64_bin.tar.gz (188.8Mo)
 
 
 
@@ -363,40 +363,48 @@ Command Line Tools (09-23) : https://developer.android.com/studio/index.html -->
 ###Essai build hello world
 samples dont hello-jni/ --> git clone --depth=1 https://github.com/android/ndk-samples.git #100Mo
 
-#env up to date
-cd /initrd/mnt/dev_save/packages/ndk/ndk-samples/hello-jni
-export JAVA_HOME=/initrd/mnt/dev_save/packages/jdk-11 
-export PATH=/initrd/mnt/dev_save/packages/jdk-11/bin:/initrd/mnt/dev_save/android/cmdline-tools/bin:$PATH
+#environment up to date
+cd /initrd/mnt/dev_save/android/ndk/ndk-samples/hello-jni
+export JAVA_HOME=/initrd/mnt/dev_save/packages/jdk-20.0.2
+export PATH=/initrd/mnt/dev_save/packages/jdk-20.0.2/bin:/initrd/mnt/dev_save/android/cmdline-tools/bin:$PATH
 export ANDROID_SDK_ROOT=/initrd/mnt/dev_save/android/cmdline-tools
+
+
 ./gradlew build
 
 
 
-#LOG
-./gradlew 
-ERROR: JAVA_HOME is not set and no 'java' command could be found in your PATH
----> Je ressors le travail fait lors de l'unlock Xiaomi (mtox/Android)
-wget https://download.java.net/openjdk/jdk11/ri/openjdk-11+28_linux-x64_bin.tar.gz #180Mo
-export JAVA_HOME=/initrd/mnt/dev_save/packages/jdk-11 
+###LOG
+./gradlew build
 
-export PATH=/initrd/mnt/dev_save/packages/jdk-11/bin:$PATH
+./gradlew --> problème de license à accepter 
 
-com.android.builder.errors.EvalIssueException: SDK location not found. Define location with an ANDROID_SDK_ROOT environment variable or by setting the sdk.dir path in your project's local properties file at '/initrd/mnt/dev_save/packages/ndk/ndk-samples/hello-jni/local.properties'.
 
-google "android sdk" > page studio > en bas il y a "commandline tools" commandlinetools-linux-8512546_latest.zip
-export ANDROID_SDK_ROOT=/initrd/mnt/dev_save/android/cmdline-tools
-./gradlew --> problème de license à accepter
-
+##sdkmanager en commandline (avec les env vars ci dessus sauf que android_sdk_root a pas l'air de marcher)
 sdkmanager --help
 sdkmanager --licenses
 
 Error: Could not determine SDK root
 
-
 sdkmanager --licenses --sdk_root=/initrd/mnt/dev_save/android/cmdline-tools
 
 
+NDK not configured. Download it with SDK manager. Preferred NDK version is '23.1.7779620'.
+https://developer.android.com/tools/sdkmanager #contient un exemple de syntaxe pour install NDK
 
+sdkmanager --sdk_root=/initrd/mnt/dev_save/android/cmdline-tools --install "ndk;23.1.77796207"
+Failed to find package 'ndk;23.1.77796207'
+
+
+sdkmanager --sdk_root=/initrd/mnt/dev_save/android/cmdline-tools --list
+--> affiche ce qui est disponible (remotely)
+
+--> ndk;23.1.7779620
+
+
+sdkmanager --sdk_root=/initrd/mnt/dev_save/android/cmdline-tools --install "ndk;23.1.7779620"
+
+--> a installé dans android/cmdline-tools/ndk/
 
 
 
