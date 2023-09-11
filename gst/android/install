@@ -352,15 +352,16 @@ https://developer.android.com/ndk/samples/sample_hellojni --> This sample guides
 https://github.com/android/ndk-samples/tree/android-mk --> contient des hello worlds NDK
 
 ### Liens Downloads
-NDK (09-23) : https://developer.android.com/ndk/downloads --> android-ndk-r25c-linux.zip (507Mo)
 Command Line Tools (09-23) : https://developer.android.com/studio/index.html --> Tout en bas: "Command line tools only" --> commandlinetools-linux-10406996_latest.zip (142Mo)
 JDK (09-23) : jdk 20.0.2 : https://jdk.java.net/20/ --> openjdk-20.0.2_linux-x64_bin.tar.gz (188.8Mo)
 
+NDK (09-23) : NB le sdkmanager le télécharge, en choisissant probablement la bonne version pour le projet
+https://developer.android.com/ndk/downloads --> android-ndk-r25c-linux.zip (507Mo) 
 
 
 
 
-###Essai build hello world
+###Essai build hello world JNI
 samples dont hello-jni/ --> git clone --depth=1 https://github.com/android/ndk-samples.git #100Mo
 
 #environment up to date
@@ -374,13 +375,12 @@ export ANDROID_SDK_ROOT=/initrd/mnt/dev_save/android/cmdline-tools
 
 
 
-###LOG
-./gradlew build
+###Différentes erreurs rencontrées:
 
-./gradlew --> problème de license à accepter 
+##problème de license à accepter 
 
 
-##sdkmanager en commandline (avec les env vars ci dessus sauf que android_sdk_root a pas l'air de marcher)
+# sdkmanager en commandline (avec les env vars ci dessus sauf que android_sdk_root a pas l'air de marcher)
 sdkmanager --help
 sdkmanager --licenses
 
@@ -388,29 +388,56 @@ Error: Could not determine SDK root
 
 sdkmanager --licenses --sdk_root=/initrd/mnt/dev_save/android/cmdline-tools
 
-
+# NDK
 NDK not configured. Download it with SDK manager. Preferred NDK version is '23.1.7779620'.
 https://developer.android.com/tools/sdkmanager #contient un exemple de syntaxe pour install NDK
 
 sdkmanager --sdk_root=/initrd/mnt/dev_save/android/cmdline-tools --install "ndk;23.1.77796207"
 Failed to find package 'ndk;23.1.77796207'
 
-
 sdkmanager --sdk_root=/initrd/mnt/dev_save/android/cmdline-tools --list
 --> affiche ce qui est disponible (remotely)
 
 --> ndk;23.1.7779620
-
 
 sdkmanager --sdk_root=/initrd/mnt/dev_save/android/cmdline-tools --install "ndk;23.1.7779620"
 
 --> a installé dans android/cmdline-tools/ndk/
 
 
+# Failed to find target with hash string 'android-33'
+
+Could not determine the dependencies of task ':app:lintVitalReportRelease'.
+> Failed to find target with hash string 'android-33' in: /initrd/mnt/dev_save/android/cmdline-tools
+
+
+je relance sans rien modifier, pour avoir du log avec --info: 
+./gradlew build --info
+et à la fin j'ai BUILD SUCCESSFUL
+
+
+# Install
+je cherche des apk:
+
+./app/build/outputs/apk/debug/app-debug.apk
+./app/build/outputs/apk/release/app-release-unsigned.apk
+
+
+adb install ./app/build/outputs/apk/debug/app-debug.apk --> OK
+adb uninstall com.example.hellojni --> OK (trouvé en haut dans un fichier source kotlin)
 
 
 
--le NDK de chez lineageOS (ancienne version: r7 et actuellement on est en r25...)
+
+
+
+
+
+
+
+# Anciennes notes LOS
+
+le NDK de chez lineageOS (ancienne version: r7 et actuellement on est en r25...)
 https://github.com/LineageOS qui contient 2500 repos dont android_ndk: https://github.com/LineageOS/android_ndk
 git clone --depth=1 https://github.com/LineageOS/android_ndk.git #37Mo
 ouvrir la doc html incluse dedans
