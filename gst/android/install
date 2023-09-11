@@ -346,11 +346,18 @@ libs/arm64-v8a/libgstreamer_android.so: ELF 64-bit LSB shared object, ARM aarch6
 |_| \_|____/|_|\_\
   
 
-###Liens
+### Liens Docs
 Page officielle google: https://developer.android.com/ndk --> le guide utilise Studio.
 https://developer.android.com/ndk/samples/sample_hellojni --> This sample guides you through hello-jni, a minimal C/C++ application built with the NDK
 https://github.com/android/ndk-samples/tree/android-mk --> contient des hello worlds NDK
-NDK: https://developer.android.com/ndk/downloads --> android-ndk-r25b-linux.zip 530Mo
+
+### Liens Downloads
+NDK (09-23) : https://developer.android.com/ndk/downloads --> android-ndk-r25c-linux.zip (507Mo)
+Command Line Tools (09-23) : https://developer.android.com/studio/index.html --> Tout en bas: "Command line tools only" --> commandlinetools-linux-10406996_latest.zip (142Mo)
+
+
+
+
 
 
 ###Essai build hello world
