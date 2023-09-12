@@ -198,7 +198,7 @@ error: "libsimplejni (SHARED_LIBRARIES android-arm) missing gstreamer_android (S
 | | | | (_| |   <  | |_) | |_| | | | (_| |
 |_| |_|\__,_|_|\_\ |_.__/ \__,_|_|_|\__,_|
  
-Le Howto NDK est dans mtox/ndk depuis 09-2023
+Le Howto NDK est désormais dans mtox/ndk depuis 09-2023
 
 
 #NDK: https://developer.android.com/ndk/downloads --> android-ndk-r25b-linux.zip 530Mo
@@ -212,7 +212,7 @@ dans arm64/ les executable binaries sont ARM aarch64,  dans armv7/ ELF 32-bit LS
 je prends un executable au hasard dans out/ c'est du ELF 64-bit LSB shared object, ARM aarch64, version 1 (SYSV)
 --> donc il me faut ce qui est dans arm64/
 
-#Samples Gstreamer: gst-docs 
+#Samples Gstreamer: gst-docs (NB c'est très vieux ne plus prendre ça
 git clone --depth 1 https://github.com/GStreamer/gst-docs.git #18Mo
 gst-docs/examples/tutorials/android
 
