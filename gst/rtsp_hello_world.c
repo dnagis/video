@@ -8,7 +8,7 @@
  * 
  * X-compil:
  * export PATH PKG_CONFIG_LIBDIR PKG_CONFIG_SYSROOT_DIR
- * arm-linux-gnueabihf-gcc rtsp_hello_world.c -o rtsp_hello_world `pkg-config --cflags --libs gstreamer-1.0 gstreamer-rtsp-server-1.0`
+ * aarch64-linux-gnu-gcc rtsp_hello_world.c -o rtsp_hello_world `pkg-config --cflags --libs gstreamer-1.0 gstreamer-rtsp-server-1.0`
  * 
  * lecture en local:
  * gst-launch-1.0 rtspsrc location=rtsp://127.0.0.1:8554/test ! fakesink
@@ -46,13 +46,13 @@ main (int argc, char *argv[])
   factory = gst_rtsp_media_factory_new ();
   
   //NUC simple
-  gst_rtsp_media_factory_set_launch (factory, "( videotestsrc is-live=1 ! timeoverlay ! vaapih264enc ! rtph264pay name=pay0 pt=96 )");
+  //gst_rtsp_media_factory_set_launch (factory, "( videotestsrc is-live=1 ! timeoverlay ! vaapih264enc ! rtph264pay name=pay0 pt=96 )");
   
   //NUC avec essai tee filesink: un fichier n'apparait que lorsque un client commence lecture rtsp. Et EOS pas reçu dans le stream donc pas playable
   //gst_rtsp_media_factory_set_launch (factory, "( videotestsrc is-live=1 ! video/x-raw,format=YUY2,width=640,height=480 ! videoconvert ! tee name=t t. ! queue ! vaapih264enc ! rtph264pay name=pay0 pt=96 t. ! queue ! vaapih264enc ! h264parse ! mp4mux ! filesink location=/root/test.mp4 )");
   
   //RPi
-  //gst_rtsp_media_factory_set_launch (factory, "( videotestsrc is-live=1 ! v4l2h264enc ! video/x-h264,level=(string)3 ! rtph264pay name=pay0 pt=96 )");
+  gst_rtsp_media_factory_set_launch (factory, "( videotestsrc is-live=1 ! v4l2h264enc ! video/x-h264,level=(string)3 ! rtph264pay name=pay0 pt=96 )");
 
   gst_rtsp_media_factory_set_shared (factory, TRUE);
 
